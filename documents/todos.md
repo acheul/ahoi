@@ -4,6 +4,8 @@
 
 - [x] publish: crate & npm
 - [ ] build a book
-- [ ] panic path debug
-- [ ] mut-borrow guard by path
+
+- [ ] panic path debug (high priority)
+- [ ] mut-borrow guard by path (low priority)
+
 - [ ] support tsain feature

@@ -23,6 +23,7 @@ rustc-ice-*
 .obsidian
 .claude
 .vscode
+playgrounds/ahoi-wasm/prints
 
 # Temporary
 playgrounds-tsain
