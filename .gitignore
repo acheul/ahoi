@@ -18,7 +18,6 @@ target
 pkg
 
 # Custom
-memo*
 /memo
 rustc-ice-*
 .obsidian
