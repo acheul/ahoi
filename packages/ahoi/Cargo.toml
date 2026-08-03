@@ -1,0 +1,26 @@
+[package]
+name = "ahoi"
+description.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+categories.workspace = true
+keywords.workspace = true
+readme.workspace = true
+
+[features]
+js = ["dep:serde", "dep:wasm-bindgen", "dep:js-sys"]
+serde-wasm-bindgen = ["js", "dep:serde-wasm-bindgen"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[dependencies]
+ahoi-core = { workspace = true }
+wasm-bindgen = { version = "0.2.121", optional = true }
+js-sys = { version = "0.3.103", optional = true }
+serde = { version = "1.0", optional = true }
+serde-wasm-bindgen = { version = "0.6.5", optional = true }

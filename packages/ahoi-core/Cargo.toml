@@ -1,0 +1,32 @@
+[package]
+name = "ahoi-core"
+description.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+categories.workspace = true
+keywords.workspace = true
+readme.workspace = true
+
+[features]
+long-path = []
+
+[dependencies]
+ahoi-stock-macro = { workspace = true }
+slotmap = "1.1.1"
+nohash-hasher = "0.2.0"
+hashbrown = "0.17.1"
+indexmap = "2.14.0"
+smallvec = "1.15.2"
+futures-channel = "0.3"
+futures-util = "0.3"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = { version = "0.4" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1.52", features = ["rt"]}
+
+

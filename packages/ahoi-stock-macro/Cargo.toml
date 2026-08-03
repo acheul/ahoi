@@ -1,0 +1,22 @@
+[package]
+name = "ahoi-stock-macro"
+description.workspace = true
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+categories.workspace = true
+keywords.workspace = true
+readme.workspace = true
+
+exclude = ["ahoi-stock-macro.md"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+proc-macro-crate = "3"
+quote = "1.0"
+syn = { version = "2.0", features = ["full", "extra-traits"] }

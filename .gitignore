@@ -1,0 +1,27 @@
+# Local
+.DS_Store
+*.local
+*.log*
+
+# Dist
+node_modules
+dist
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Cargo
+.cargo
+target
+Cargo.lock
+pkg
+
+# Custom
+memo*
+/memo
+rustc-ice-*
+.obsidian
+.claude
+.vscode

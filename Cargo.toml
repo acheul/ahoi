@@ -1,0 +1,25 @@
+[workspace]
+resolver = "3"
+members = [
+    "packages/ahoi", 
+    "packages/ahoi-core", 
+    "packages/ahoi-stock-macro", 
+    "playgrounds/ahoi-wasm"
+]
+exclude = []
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["Acheul <seoul605.21@gmail.com>"]
+license = "MIT"
+repository = "https://github.com/acheul/ahoi"
+description = "Reactive State Management from Rust to Js"
+categories = ["Web programming", "WebAssembly"]
+keywords = ["wasm", "web", "reactive"]
+readme = "./README.md"
+
+[workspace.dependencies]
+ahoi= { path = "packages/ahoi", version = "0.1.0" }
+ahoi-core = { path = "packages/ahoi-core", version = "0.1.0" }
+ahoi-stock-macro = { path = "packages/ahoi-stock-macro", version = "0.1.0" }

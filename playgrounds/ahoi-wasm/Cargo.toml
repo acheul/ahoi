@@ -1,0 +1,16 @@
+[package]
+name = "ahoi-wasm"
+publish = false
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+ahoi.workspace = true
+
+[profile.release]
+opt-level = 3
