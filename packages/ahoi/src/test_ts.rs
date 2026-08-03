@@ -1,7 +1,7 @@
 //! Snapshot tests for `#[derive(Rets)]` output.
 
 use crate::Rets;
-use crate::ts::{TsDecl, TsFile};
+use crate::js_bridge::ts::{TsDecl, TsFile};
 
 // referenced data types need NO derives — they render by identifier and are
 // only asserted to exist

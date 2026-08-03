@@ -43,7 +43,7 @@ pub fn set_panic_hook() {
 // run this test to (re)generate the ret maps for the JS side
 #[test]
 fn generate() {
-    ahoi::ts::TsFile::new()
+    ahoi::js_bridge::TsFile::new()
         .import("Fruit", "./Fruit")
         .with::<Hail>()
         .with::<Tell>()

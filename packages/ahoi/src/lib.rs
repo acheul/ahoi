@@ -3,8 +3,7 @@ pub use ahoi_core::{self, *};
 #[cfg(feature = "js")]
 pub mod js_bridge;
 
-pub mod ts;
-
+#[cfg(feature = "js")]
 pub use ahoi_rets_macro::Rets;
 
 // Extends ahoi-core's macro-support surface (glob-imported above) with the
@@ -14,7 +13,8 @@ pub use ahoi_rets_macro::Rets;
 pub mod __macro_support {
     pub use ahoi_core::__macro_support::*;
 
-    pub use crate::ts::TsDecl;
+    #[cfg(feature = "js")]
+    pub use crate::js_bridge::ts::TsDecl;
 }
 
 #[cfg(test)]

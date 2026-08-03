@@ -1,6 +1,7 @@
 - [x] return type macro
+- [ ] other frameworks exmples
 - [ ] support other than serde-wasm-bindgen converter?
-- [ ] npm package
+- [ ] npm package publish
 - [ ] panic path debug
 - [ ] mut-borrow guard by path
 - [ ] support tsain feature

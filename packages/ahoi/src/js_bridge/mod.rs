@@ -3,6 +3,9 @@ pub use js_sys;
 pub use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
+pub mod ts;
+pub use ts::TsFile;
+
 #[cfg(feature = "serde-wasm-bindgen")]
 pub mod converters;
 #[cfg(feature = "serde-wasm-bindgen")]
