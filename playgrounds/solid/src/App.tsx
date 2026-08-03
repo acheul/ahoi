@@ -3,7 +3,7 @@
  * `playgrounds/ahoi-wasm/src/lib.rs`.
  */
 import { For, Show, createSignal } from "solid-js";
-import { PierProvider, usePier } from "./bridge";
+import { PierProvider, usePier } from "./ahoi";
 import type { Fruit } from "../../ahoi-wasm/bindings/Fruit";
 
 function Counter() {
