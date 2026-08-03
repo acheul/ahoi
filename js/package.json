@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/acheul/ahoi"
   },
-  "keywords": ["wasm", "rust", "reactive", "solid", "react", "state"],
+  "keywords": ["wasm", "rust", "reactive", "solid", "react", "vue", "svelte", "state"],
   "type": "module",
   "sideEffects": false,
   "files": ["dist", "src"],
@@ -23,6 +23,14 @@
     "./react": {
       "types": "./dist/react.d.ts",
       "import": "./dist/react.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js"
+    },
+    "./svelte": {
+      "types": "./dist/svelte.d.ts",
+      "import": "./dist/svelte.js"
     }
   },
   "scripts": {
@@ -32,7 +40,9 @@
   },
   "peerDependencies": {
     "react": ">=18",
-    "solid-js": ">=1.8"
+    "solid-js": ">=1.8",
+    "svelte": ">=4",
+    "vue": ">=3.4"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -40,12 +50,20 @@
     },
     "solid-js": {
       "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
     }
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "react": "^19.0.0",
     "solid-js": "^1.9.0",
-    "typescript": "^5.6.0"
+    "svelte": "^5.0.0",
+    "typescript": "^5.6.0",
+    "vue": "^3.5.0"
   }
 }

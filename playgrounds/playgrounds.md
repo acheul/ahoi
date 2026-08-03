@@ -32,6 +32,35 @@ pnpm -C playgrounds/react dev
 
 - Dev server: http://localhost:5175
 
+## Vue
+
+Same features again, through the `ahoi-js/vue` adapter (`shallowRef` + `onScopeDispose`; `useHail` returns a writable ref, so `count++` and `v-model` just work).
+
+```sh
+cargo test -p ahoi-wasm
+wasm-pack build playgrounds/ahoi-wasm --target web --dev
+pnpm -C playgrounds/vue dev
+```
+
+- Dev server: http://localhost:5176
+
+## Svelte
+
+Through the `ahoi-js/svelte` adapter. Hails are **stores**, so `$count` / `bind:value={$info}` work as usual (Svelte 4 and 5). There is no provider component — `providePier("Top")` at the top of a component's `<script>` sets the pier for it and its children.
+
+```sh
+cargo test -p ahoi-wasm
+wasm-pack build playgrounds/ahoi-wasm --target web --dev
+pnpm -C playgrounds/svelte dev
+```
+
+- Dev server: http://localhost:5177
+
+## Other setups (no playground needed)
+
+- **Preact** — use `ahoi-js/react` as-is; alias `react`/`react-dom` to `preact/compat` in your bundler config, as with any React library.
+- **No framework** — the [bench](#bench) app drives `AhoiStorage` directly (enrol, cleanup scopes, and a hand-written signal in ~30 lines); it doubles as the vanilla-JS example.
+
 ## Bench
 
 Core + bridge reactivity micro-benchmarks (for checking regressions while working on the core — not a framework showcase).
