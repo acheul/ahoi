@@ -4,7 +4,7 @@ members = [
     "packages/ahoi",
     "packages/ahoi-core",
     "packages/ahoi-stock-macro",
-    "packages/ahoi-ts-macro",
+    "packages/ahoi-rets-macro",
     "playgrounds/ahoi-wasm"
 ]
 exclude = []
@@ -24,4 +24,4 @@ readme = "./README.md"
 ahoi= { path = "packages/ahoi", version = "0.1.0" }
 ahoi-core = { path = "packages/ahoi-core", version = "0.1.0" }
 ahoi-stock-macro = { path = "packages/ahoi-stock-macro", version = "0.1.0" }
-ahoi-ts-macro = { path = "packages/ahoi-ts-macro", version = "0.1.0" }
+ahoi-rets-macro = { path = "packages/ahoi-rets-macro", version = "0.1.0" }

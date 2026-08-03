@@ -1,5 +1,5 @@
 [package]
-name = "ahoi-ts-macro"
+name = "ahoi-rets-macro"
 description.workspace = true
 version.workspace = true
 edition.workspace = true

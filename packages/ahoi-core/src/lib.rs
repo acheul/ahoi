@@ -38,7 +38,7 @@ pub mod __macro_support {
 // exports for end users
 
 pub use ahoi_stock_macro::{Stock, stock};
-pub use ahoi_ts_macro::Rets;
+pub use ahoi_rets_macro::Rets;
 
 /// Type Alias for `hashbrown::HashMap<SphereId, Box<dyn Any>, nohash_hasher::BuildNoHashHasher<K>>`;
 pub type HailsMap = IntMap<SphereId, Box<dyn Any>>; // export for HailDispatcher
