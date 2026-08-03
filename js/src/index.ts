@@ -99,11 +99,16 @@ export class AhoiStorage<PierKey, HailKey> {
 
     private _hail_keys: Map<string, SphereId> = new Map();
 
+    /**
+     * Constructing a storage fully wires it: the ABI is checked and the
+     * storage is bound as the page's dispatch target (see [`bindBridge`]).
+     */
     constructor(
         public _job: Job<PierKey, HailKey>,
         public _batch_update: <T>(fn: () => T) => T,
     ) {
         checkAbi(_job._abi_version);
+        bindBridge(this);
     }
 
     _enrol_pier = (
@@ -224,12 +229,14 @@ export class AhoiStorage<PierKey, HailKey> {
 
 /**
  * Installs the `__AHOI__` global the wasm side dispatches hails into
- * (`js_namespace = "__AHOI__"`). The global sink is created once and frozen;
- * calling again only swaps the storage behind it — so re-running setup code
- * (dev-server HMR, tests) must not throw. One bridge per page: the last
- * storage bound wins.
+ * (`js_namespace = "__AHOI__"`) and binds `ahoi` as its target. Called by the
+ * [`AhoiStorage`] constructor — not part of the public API.
+ *
+ * The global sink is created once and frozen; binding again only swaps the
+ * storage behind it — so re-running setup code (dev-server HMR, tests) must
+ * not throw. One bridge per page: the last storage constructed wins.
  */
-export function buildBridge<PierKey, HailKey>(ahoi: AhoiStorage<PierKey, HailKey>) {
+function bindBridge(ahoi: AhoiStorage<any, any>) {
     const global = globalThis as Record<string, any>;
     if (global.__AHOI__ === undefined) {
         const BRIDGE: { _storage?: AhoiStorage<any, any> } = {};

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ahoi bench</title>
+</head>
+
+<body>
+    <h1>ahoi reactivity bench</h1>
+    <p>
+        Core + bridge micro-benchmarks (no UI framework involved).
+        Run, then <i>save baseline</i>; later runs show the delta against it.
+    </p>
+    <button id="run">run all</button>
+    <button id="save-baseline">save baseline</button>
+    <button id="clear-baseline">clear baseline</button>
+    <span id="status"></span>
+    <table id="results" border="1" cellpadding="4" style="border-collapse: collapse; margin-top: 8px;">
+        <thead>
+            <tr>
+                <th>scenario</th>
+                <th>median (µs/op)</th>
+                <th>p95</th>
+                <th>mean</th>
+                <th>vs baseline</th>
+                <th>dispatch ok</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <pre id="json"></pre>
+    <script type="module" src="/main.ts"></script>
+</body>
+
+</html>

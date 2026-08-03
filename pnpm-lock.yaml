@@ -17,6 +17,19 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  playgrounds/bench:
+    dependencies:
+      ahoi-js:
+        specifier: workspace:*
+        version: link:../../js
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.3
+
   playgrounds/solid:
     dependencies:
       ahoi-js:

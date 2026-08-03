@@ -40,7 +40,6 @@ import {
 } from "solid-js";
 import {
     AhoiStorage,
-    buildBridge,
     type HailRet,
     type Job,
     type SphereId,
@@ -80,7 +79,6 @@ export function createAhoi<PierKey, HailKey, TellKey, HailRets = {}, TellRets = 
     job: SolidJob<PierKey, HailKey, TellKey>,
 ): SolidAhoi<PierKey, HailKey, TellKey, HailRets, TellRets> {
     const storage = new AhoiStorage<PierKey, HailKey>(job, batch);
-    buildBridge(storage);
 
     class Sphere implements PierSphere<HailKey, TellKey, HailRets, TellRets> {
         constructor(public id?: SphereId) { }
