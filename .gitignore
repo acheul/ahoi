@@ -15,7 +15,6 @@ dist
 # Cargo
 .cargo
 target
-Cargo.lock
 pkg
 
 # Custom

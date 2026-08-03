@@ -17,8 +17,8 @@ authors = ["Acheul <seoul605.21@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/acheul/ahoi"
 description = "Reactive State Management from Rust to Js"
-categories = ["Web programming", "WebAssembly"]
-keywords = ["wasm", "web", "reactive"]
+categories = ["wasm", "web-programming"]
+keywords = ["wasm", "web", "reactive", "signals", "state"]
 readme = "./README.md"
 
 [workspace.dependencies]
