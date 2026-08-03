@@ -11,7 +11,7 @@ members = [
 exclude = []
 
 [workspace.package]
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 authors = ["Acheul <seoul605.21@gmail.com>"]
 license = "MIT"
@@ -22,7 +22,7 @@ keywords = ["wasm", "web", "reactive", "signals", "state"]
 readme = "./README.md"
 
 [workspace.dependencies]
-ahoi= { path = "packages/ahoi", version = "0.1.0" }
-ahoi-core = { path = "packages/ahoi-core", version = "0.1.0" }
-ahoi-stock-macro = { path = "packages/ahoi-stock-macro", version = "0.1.0" }
-ahoi-rets-macro = { path = "packages/ahoi-rets-macro", version = "0.1.0" }
+ahoi= { path = "packages/ahoi", version = "0.1.1" }
+ahoi-core = { path = "packages/ahoi-core", version = "0.1.1" }
+ahoi-stock-macro = { path = "packages/ahoi-stock-macro", version = "0.1.1" }
+ahoi-rets-macro = { path = "packages/ahoi-rets-macro", version = "0.1.1" }
