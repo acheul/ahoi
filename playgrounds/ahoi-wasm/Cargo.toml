@@ -10,7 +10,11 @@ license.workspace = true
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-ahoi.workspace = true
-
-[profile.release]
-opt-level = 3
+ahoi = { workspace = true, features = ["serde-wasm-bindgen"] }
+serde = { version = "1.0", features = ["derive"] }
+ts-rs = { version = "10" }
+serde-wasm-bindgen = { version = "0.6.5" }
+wasm-bindgen = { version = "0.2" }
+gloo-console = { version = "0.4.0" }
+console_error_panic_hook = { version = "0.1" }
+gloo-timers = { version = "0.4", features = ["futures"] }

@@ -8,6 +8,7 @@ use std::sync::{
 mod test_cbs;
 mod test_hail;
 mod test_propagation;
+mod test_ts;
 
 // ── Pool borrow semantics ──────────────────────────────────────────────────
 

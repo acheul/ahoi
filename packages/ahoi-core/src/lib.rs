@@ -19,6 +19,8 @@ use states::runtime;
 
 pub mod hooks;
 
+pub mod ts;
+
 #[cfg(test)]
 mod tests;
 
@@ -30,11 +32,13 @@ pub mod __macro_support {
         ChainedPipe, GetNext, GetNextOpt, MapNext, Memo, OptReadStock, OptStock, Pipeline,
         ReadStock, Stock,
     };
+    pub use crate::ts::TsDecl;
 }
 
 // exports for end users
 
 pub use ahoi_stock_macro::{Stock, stock};
+pub use ahoi_ts_macro::Rets;
 
 /// Type Alias for `hashbrown::HashMap<SphereId, Box<dyn Any>, nohash_hasher::BuildNoHashHasher<K>>`;
 pub type HailsMap = IntMap<SphereId, Box<dyn Any>>; // export for HailDispatcher

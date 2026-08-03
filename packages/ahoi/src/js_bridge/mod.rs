@@ -3,24 +3,21 @@ pub use js_sys;
 pub use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
-#[cfg(any(feature = "tsain"))]
+#[cfg(feature = "serde-wasm-bindgen")]
 pub mod converters;
-#[cfg(any(feature = "tsain"))]
+#[cfg(feature = "serde-wasm-bindgen")]
 pub use converters::*;
 
-/// Export Ts Helper Script
-pub fn export_ts_script(path: impl AsRef<std::path::Path>) {
-    let path = path.as_ref();
-    let script = include_str!("../../../scripts/ahoi.ts");
+/// Version of the wasm⇄JS bridge ABI (the `pier`/`hail`/`clear`/`write`/`tell`
+/// surface). The npm-side bridge checks this at init to catch crate/npm
+/// version skew. Bump only when the exported function signatures or the
+/// `__AHOI__.hail` callback contract change.
+pub const ABI_VERSION: u32 = 1;
 
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).expect("Failed to create parent directories");
-    }
-    std::fs::write(path, script).expect("Failed to write Latent TypeScript file");
-    println!(
-        "cargo:warning=Exported Latent TypeScript to {}",
-        path.display()
-    );
+/// Exported for the JS bridge's runtime ABI check.
+#[wasm_bindgen]
+pub fn abi_version() -> u32 {
+    ABI_VERSION
 }
 
 /// Dispatch Bridge Hail
@@ -62,14 +59,14 @@ pub fn write(sphere_id: u32, hail_value: JsValue) {
 /// - `@pier`: enrols a Pier (scope-like) sphere. The runner only sets up the
 ///   sphere (context, effects, …) and returns nothing; the export returns the
 ///   new sphere id.
-///   ```rust, no_run
+///   ```rust, ignore
 ///       #[wasm_bindgen]
 ///       pub fn pier(par_sphere_id: Option<u32>, key: wasm_bindgen::JsValue) -> u32;
 ///   ```
 ///
 /// - `@hail`: enrols a Hail (reactive value channel) sphere. The runner returns
 ///   the initial hail value; the export returns `[sphere_id, initial_value]`.
-///   ```rust, no_run
+///   ```rust, ignore
 ///       #[wasm_bindgen]
 ///       pub fn hail(par_sphere_id: u32, key: wasm_bindgen::JsValue) -> js_sys::Array;
 ///   ```
@@ -116,7 +113,7 @@ pub fn clear(sphere_id: u32) {
 }
 
 /// Expanded into `tell` wasm-bindgen function:
-///  ```rust, no_run
+///  ```rust, ignore
 ///     #[wasm_bindgen]
 ///     pub fn tell(sphere_id: u32, key: wasm_bindgen::JsValue) -> wasm_bindgen::JsValue;
 /// ```
