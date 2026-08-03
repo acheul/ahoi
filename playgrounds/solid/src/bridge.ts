@@ -15,7 +15,7 @@ import { createAhoi } from "ahoi-js/solid";
 import type { Pier } from "../../ahoi-wasm/bindings/Pier";
 import type { Hail } from "../../ahoi-wasm/bindings/Hail";
 import type { Tell } from "../../ahoi-wasm/bindings/Tell";
-import type { HailRets, TellRets } from "../../ahoi-wasm/bindings/Keys";
+import type { HailRets, TellRets } from "../../ahoi-wasm/bindings/Rets";
 
 // wasm state cannot hot-swap — force a full page reload when this module
 // (or the wasm pkg) changes during dev

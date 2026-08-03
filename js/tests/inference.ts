@@ -11,7 +11,7 @@ import type { Hail } from "../../playgrounds/ahoi-wasm/bindings/Hail";
 import type { Tell } from "../../playgrounds/ahoi-wasm/bindings/Tell";
 import type { Pier } from "../../playgrounds/ahoi-wasm/bindings/Pier";
 import type { Fruit } from "../../playgrounds/ahoi-wasm/bindings/Fruit";
-import type { HailRets, TellRets } from "../../playgrounds/ahoi-wasm/bindings/Keys";
+import type { HailRets, TellRets } from "../../playgrounds/ahoi-wasm/bindings/Rets";
 
 type AssertEq<A, B> = A extends B ? (B extends A ? true : never) : never;
 

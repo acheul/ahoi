@@ -4,7 +4,7 @@
 //! - key/data **types** → any exporter you like; here: ts-rs (`#[derive(TS)]`,
 //!   exported to `bindings/` by the `export_bindings_*` tests)
 //! - key **return types** → ahoi's `#[derive(Rets)]` + `#[ret(..)]`,
-//!   exported to `bindings/Keys.ts` by the `generate` test
+//!   exported to `bindings/Rets.ts` by the `generate` test
 //! - **values** on the wire → `SerdeWasmBindgenConverter`
 //!
 //! The keys are kept small but each one verifies a distinct bridge feature:
@@ -47,7 +47,7 @@ fn generate() {
         .import("Fruit", "./Fruit")
         .with::<Hail>()
         .with::<Tell>()
-        .export("./bindings/Keys.ts");
+        .export("./bindings/Rets.ts");
 }
 
 // ── data ───────────────────────────────────────────────────────────────────
