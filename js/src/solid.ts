@@ -6,7 +6,7 @@
  *
  * ```tsx
  * import wasmInit, { pier, hail, clear, write, tell, abi_version } from "../wpkg/wpkg.js";
- * import { createAhoi } from "ahoi-js/solid";
+ * import { createAhoi } from "@acheul/ahoi-js/solid";
  * import type { Pier, Hail, Tell } from "./bindings";      // e.g. ts-rs output
  * import type { HailRets, TellRets } from "./Keys";        // ahoi's TsFile output
  *

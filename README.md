@@ -7,7 +7,7 @@
 > Render components with JS, manage state with Rust — the best of both.
 
 [![crates.io](https://img.shields.io/crates/v/ahoi.svg)](https://crates.io/crates/ahoi)
-[![npm](https://img.shields.io/npm/v/ahoi-js.svg)](https://www.npmjs.com/package/ahoi-js)
+[![npm](https://img.shields.io/npm/v/@acheul/ahoi-js.svg)](https://www.npmjs.com/package/@acheul/ahoi-js)
 [![docs.rs](https://img.shields.io/docsrs/ahoi)](https://docs.rs/ahoi)
 
 Ahoi is a fine-grained reactive state engine written in Rust. Rust owns the data
@@ -151,7 +151,7 @@ wasm-pack build --target web
 ### 3. JS side
 
 ```sh
-npm i ahoi-js
+npm i @acheul/ahoi-js
 ```
 
 ```ts
@@ -164,7 +164,7 @@ import wasmInit, {
   tell,
   write,
 } from "../pkg/my_app";
-import { createAhoi } from "ahoi-js/solid"; // or /react, /vue, /svelte
+import { createAhoi } from "@acheul/ahoi-js/solid"; // or /react, /vue, /svelte
 import type { Pier } from "./bindings/Pier";
 import type { Hail } from "./bindings/Hail";
 import type { Tell } from "./bindings/Tell";
@@ -227,13 +227,13 @@ peer dependency, so you only install what you use.
 
 | Import           | Provides                                                           |
 | ---------------- | ------------------------------------------------------------------ |
-| `ahoi-js/solid`  | `PierProvider`, `usePier()` → `.hail` / `.readHail` / `.tell`      |
-| `ahoi-js/react`  | `PierProvider`, `useHail`, `useReadHail`, `useTell`                |
-| `ahoi-js/vue`    | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
-| `ahoi-js/svelte` | `providePier`, `useHail` (store), `useReadHail`, `useTell`         |
-| `ahoi-js`        | `AhoiStorage` — the framework-agnostic core, for anything else     |
+| `@acheul/ahoi-js/solid`  | `PierProvider`, `usePier()` → `.hail` / `.readHail` / `.tell`      |
+| `@acheul/ahoi-js/react`  | `PierProvider`, `useHail`, `useReadHail`, `useTell`                |
+| `@acheul/ahoi-js/vue`    | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
+| `@acheul/ahoi-js/svelte` | `providePier`, `useHail` (store), `useReadHail`, `useTell`         |
+| `@acheul/ahoi-js`        | `AhoiStorage` — the framework-agnostic core, for anything else     |
 
-Using **Preact**? Use `ahoi-js/react` and alias `react`/`react-dom` to
+Using **Preact**? Use `@acheul/ahoi-js/react` and alias `react`/`react-dom` to
 `preact/compat`, as with any React library.
 
 ---

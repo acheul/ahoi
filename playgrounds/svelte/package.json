@@ -8,7 +8,7 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "ahoi-js": "workspace:*",
+    "@acheul/ahoi-js": "workspace:*",
     "svelte": "^5.0.0"
   },
   "devDependencies": {

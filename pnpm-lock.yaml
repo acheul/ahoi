@@ -31,7 +31,7 @@ importers:
 
   playgrounds/bench:
     dependencies:
-      ahoi-js:
+      '@acheul/ahoi-js':
         specifier: workspace:*
         version: link:../../js
     devDependencies:
@@ -44,7 +44,7 @@ importers:
 
   playgrounds/react:
     dependencies:
-      ahoi-js:
+      '@acheul/ahoi-js':
         specifier: workspace:*
         version: link:../../js
       react:
@@ -72,7 +72,7 @@ importers:
 
   playgrounds/solid:
     dependencies:
-      ahoi-js:
+      '@acheul/ahoi-js':
         specifier: workspace:*
         version: link:../../js
       solid-js:
@@ -91,7 +91,7 @@ importers:
 
   playgrounds/svelte:
     dependencies:
-      ahoi-js:
+      '@acheul/ahoi-js':
         specifier: workspace:*
         version: link:../../js
       svelte:
@@ -113,7 +113,7 @@ importers:
 
   playgrounds/vue:
     dependencies:
-      ahoi-js:
+      '@acheul/ahoi-js':
         specifier: workspace:*
         version: link:../../js
       vue:

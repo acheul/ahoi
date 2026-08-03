@@ -1,4 +1,4 @@
-# ahoi-js
+# @acheul/ahoi-js
 
 JS bridge for [**ahoi**](https://github.com/acheul/ahoi) — a fine-grained
 reactive state engine written in Rust. Rust owns the state and reactivity;
@@ -8,7 +8,7 @@ This package is the JS half of the bridge. You also need the
 [`ahoi`](https://crates.io/crates/ahoi) crate on the Rust side.
 
 ```sh
-npm i ahoi-js
+npm i @acheul/ahoi-js
 ```
 
 ## Adapters
@@ -18,13 +18,13 @@ peer dependency** — you only install what you use.
 
 | Import | Provides |
 | --- | --- |
-| `ahoi-js/solid` | `PierProvider`, `usePier()` → `.hail` / `.readHail` / `.tell` |
-| `ahoi-js/react` | `PierProvider`, `useHail`, `useReadHail`, `useTell` |
-| `ahoi-js/vue` | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
-| `ahoi-js/svelte` | `providePier`, `useHail` (store), `useReadHail`, `useTell` |
-| `ahoi-js` | `AhoiStorage` — the framework-agnostic core, for anything else |
+| `@acheul/ahoi-js/solid` | `PierProvider`, `usePier()` → `.hail` / `.readHail` / `.tell` |
+| `@acheul/ahoi-js/react` | `PierProvider`, `useHail`, `useReadHail`, `useTell` |
+| `@acheul/ahoi-js/vue` | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
+| `@acheul/ahoi-js/svelte` | `providePier`, `useHail` (store), `useReadHail`, `useTell` |
+| `@acheul/ahoi-js` | `AhoiStorage` — the framework-agnostic core, for anything else |
 
-Using **Preact**? Use `ahoi-js/react` and alias `react`/`react-dom` to
+Using **Preact**? Use `@acheul/ahoi-js/react` and alias `react`/`react-dom` to
 `preact/compat`, as with any React library.
 
 ## Usage
@@ -34,7 +34,7 @@ Wire the wasm exports once:
 ```ts
 // ahoi.ts
 import wasmInit, { abi_version, clear, hail, pier, tell, write } from "../pkg/my_app";
-import { createAhoi } from "ahoi-js/solid";
+import { createAhoi } from "@acheul/ahoi-js/solid";
 import type { Pier } from "./bindings/Pier";
 import type { Hail } from "./bindings/Hail";
 import type { Tell } from "./bindings/Tell";
@@ -70,7 +70,7 @@ Tsify, …).
 ## Versioning
 
 The crate and this package agree on an `ABI_VERSION`, checked when the bridge
-starts. Keep the `ahoi` crate and `ahoi-js` versions aligned; a mismatch fails
+starts. Keep the `ahoi` crate and `@acheul/ahoi-js` versions aligned; a mismatch fails
 immediately with a clear message.
 
 ## Docs

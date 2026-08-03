@@ -22,7 +22,7 @@ pnpm -C playgrounds/solid dev
 
 ## React
 
-Same features as the Solid playground (shares the `ahoi-wasm` crate and its `bindings/`), but through the `ahoi-js/react` adapter. Runs under `<StrictMode>` on purpose — the adapter must survive its double-mount / discarded-render behavior.
+Same features as the Solid playground (shares the `ahoi-wasm` crate and its `bindings/`), but through the `@acheul/ahoi-js/react` adapter. Runs under `<StrictMode>` on purpose — the adapter must survive its double-mount / discarded-render behavior.
 
 ```sh
 cargo test -p ahoi-wasm
@@ -34,7 +34,7 @@ pnpm -C playgrounds/react dev
 
 ## Vue
 
-Same features again, through the `ahoi-js/vue` adapter (`shallowRef` + `onScopeDispose`; `useHail` returns a writable ref, so `count++` and `v-model` just work).
+Same features again, through the `@acheul/ahoi-js/vue` adapter (`shallowRef` + `onScopeDispose`; `useHail` returns a writable ref, so `count++` and `v-model` just work).
 
 ```sh
 cargo test -p ahoi-wasm
@@ -46,7 +46,7 @@ pnpm -C playgrounds/vue dev
 
 ## Svelte
 
-Through the `ahoi-js/svelte` adapter. Hails are **stores**, so `$count` / `bind:value={$info}` work as usual (Svelte 4 and 5). There is no provider component — `providePier("Top")` at the top of a component's `<script>` sets the pier for it and its children.
+Through the `@acheul/ahoi-js/svelte` adapter. Hails are **stores**, so `$count` / `bind:value={$info}` work as usual (Svelte 4 and 5). There is no provider component — `providePier("Top")` at the top of a component's `<script>` sets the pier for it and its children.
 
 ```sh
 cargo test -p ahoi-wasm
@@ -58,7 +58,7 @@ pnpm -C playgrounds/svelte dev
 
 ## Other setups (no playground needed)
 
-- **Preact** — use `ahoi-js/react` as-is; alias `react`/`react-dom` to `preact/compat` in your bundler config, as with any React library.
+- **Preact** — use `@acheul/ahoi-js/react` as-is; alias `react`/`react-dom` to `preact/compat` in your bundler config, as with any React library.
 - **No framework** — the [bench](#bench) app drives `AhoiStorage` directly (enrol, cleanup scopes, and a hand-written signal in ~30 lines); it doubles as the vanilla-JS example.
 
 ## Bench

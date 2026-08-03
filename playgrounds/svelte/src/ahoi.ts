@@ -11,7 +11,7 @@ import wasmInit, {
     tell,
     write,
 } from "../../ahoi-wasm/pkg/ahoi_wasm";
-import { createAhoi } from "ahoi-js/svelte";
+import { createAhoi } from "@acheul/ahoi-js/svelte";
 import type { Pier } from "../../ahoi-wasm/bindings/Pier";
 import type { Hail } from "../../ahoi-wasm/bindings/Hail";
 import type { Tell } from "../../ahoi-wasm/bindings/Tell";

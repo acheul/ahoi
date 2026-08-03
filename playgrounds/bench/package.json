@@ -7,7 +7,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "ahoi-js": "workspace:*"
+    "@acheul/ahoi-js": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.6.0",

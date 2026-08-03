@@ -12,7 +12,7 @@
  * a "fast" regression that silently stops propagating shows up as ✗.
  */
 import wasmInit, { abi_version, clear, hail, pier, set_panic_hook, tell, write } from "./pkg/bench_wasm";
-import { AhoiStorage, type SphereId } from "ahoi-js";
+import { AhoiStorage, type SphereId } from "@acheul/ahoi-js";
 
 await wasmInit();
 set_panic_hook();

@@ -8,7 +8,7 @@
  ╚═╝  ╚═╝ ╚═╝  ╚═╝  ╚═════╝  ╚═╝ ╚═╝
 
  Framework-agnostic core of the ahoi JS bridge.
- Framework adapters (e.g. `ahoi-js/solid`) build on this module.
+ Framework adapters (e.g. `@acheul/ahoi-js/solid`) build on this module.
 
  ************************************/
 
