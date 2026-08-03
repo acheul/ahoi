@@ -107,7 +107,7 @@ fn run_pier(key: Pier) {
 
             let state = Stock::new(State {
                 count: 0,
-                items: vec![10, 20],
+                items: vec![10],
                 last_fruit: None,
                 fruit_counts: Default::default(),
             });

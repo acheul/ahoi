@@ -20,6 +20,18 @@ pnpm -C playgrounds/solid dev
 - `cargo test -p ahoi-wasm` regenerates `bindings/` (ts-rs types + `Keys.ts` ret maps); only needed after changing the key enums.
 - Dev server: http://localhost:5173
 
+## React
+
+Same features as the Solid playground (shares the `ahoi-wasm` crate and its `bindings/`), but through the `ahoi-js/react` adapter. Runs under `<StrictMode>` on purpose — the adapter must survive its double-mount / discarded-render behavior.
+
+```sh
+cargo test -p ahoi-wasm
+wasm-pack build playgrounds/ahoi-wasm --target web --dev
+pnpm -C playgrounds/react dev
+```
+
+- Dev server: http://localhost:5175
+
 ## Bench
 
 Core + bridge reactivity micro-benchmarks (for checking regressions while working on the core — not a framework showcase).

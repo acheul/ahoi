@@ -7,7 +7,7 @@
     "type": "git",
     "url": "https://github.com/acheul/ahoi"
   },
-  "keywords": ["wasm", "rust", "reactive", "solid", "state"],
+  "keywords": ["wasm", "rust", "reactive", "solid", "react", "state"],
   "type": "module",
   "sideEffects": false,
   "files": ["dist", "src"],
@@ -19,6 +19,10 @@
     "./solid": {
       "types": "./dist/solid.d.ts",
       "import": "./dist/solid.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
     }
   },
   "scripts": {
@@ -27,14 +31,20 @@
     "test": "tsc -p tsconfig.tests.json"
   },
   "peerDependencies": {
+    "react": ">=18",
     "solid-js": ">=1.8"
   },
   "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
     "solid-js": {
       "optional": true
     }
   },
   "devDependencies": {
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
     "solid-js": "^1.9.0",
     "typescript": "^5.6.0"
   }

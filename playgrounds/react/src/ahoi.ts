@@ -1,5 +1,5 @@
 /**
- * Wires the wasm module to the solid adapter. This is the only
+ * Wires the wasm module to the react adapter. This is the only
  * framework-specific setup an app needs.
  */
 import wasmInit, {
@@ -11,7 +11,7 @@ import wasmInit, {
     tell,
     write,
 } from "../../ahoi-wasm/pkg/ahoi_wasm";
-import { createAhoi } from "ahoi-js/solid";
+import { createAhoi } from "ahoi-js/react";
 import type { Pier } from "../../ahoi-wasm/bindings/Pier";
 import type { Hail } from "../../ahoi-wasm/bindings/Hail";
 import type { Tell } from "../../ahoi-wasm/bindings/Tell";
@@ -24,7 +24,13 @@ if (import.meta.hot) import.meta.hot.accept(() => import.meta.hot!.invalidate())
 await wasmInit();
 set_panic_hook();
 
-export const { PierProvider, usePier } = createAhoi<Pier, Hail, Tell, HailRets, TellRets>({
+export const { PierProvider, useHail, useReadHail, useTell } = createAhoi<
+    Pier,
+    Hail,
+    Tell,
+    HailRets,
+    TellRets
+>({
     _enrol_pier: pier,
     _enrol_hail: (p, k) => hail(p, k) as [number, any],
     _clear_sphere: clear,
