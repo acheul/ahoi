@@ -6,6 +6,7 @@
 
 > Render components with JS, manage state with Rust — the best of both.
 
+[![github.com](https://img.shields.io/badge/github-repo-blue?logo=github)](https://github.com/acheul/ahoi)
 [![crates.io](https://img.shields.io/crates/v/ahoi.svg)](https://crates.io/crates/ahoi)
 [![npm](https://img.shields.io/npm/v/@acheul/ahoi-js.svg)](https://www.npmjs.com/package/@acheul/ahoi-js)
 [![docs.rs](https://img.shields.io/docsrs/ahoi)](https://docs.rs/ahoi)
@@ -225,8 +226,8 @@ and `sphere.tell("Increase")` is `number`.
 Every adapter is a subpath of the same package; the framework is an optional
 peer dependency, so you only install what you use.
 
-| Import           | Provides                                                           |
-| ---------------- | ------------------------------------------------------------------ |
+| Import                   | Provides                                                           |
+| ------------------------ | ------------------------------------------------------------------ |
 | `@acheul/ahoi-js/solid`  | `PierProvider`, `usePier()` → `.hail` / `.readHail` / `.tell`      |
 | `@acheul/ahoi-js/react`  | `PierProvider`, `useHail`, `useReadHail`, `useTell`                |
 | `@acheul/ahoi-js/vue`    | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
