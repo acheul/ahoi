@@ -1,3 +1,7 @@
+<div align="center">
+    <img src="https://raw.githubusercontent.com/acheul/ahoi/main/documents/ahoi.svg" width="200" />
+</div>
+
 # Ahoi: Reactivity _from_ Rust _to_ JS
 
 > Render components with JS, manage state with Rust — the best of both.
@@ -373,4 +377,4 @@ See [`playgrounds/playgrounds.md`](playgrounds/playgrounds.md) for how to run th
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT LICENSE](LICENSE)
