@@ -1,0 +1,9 @@
+{
+  "name": "ahoi-workspace",
+  "private": true,
+  "scripts": {
+    "build:js": "pnpm -C js build",
+    "test:js": "pnpm -C js test",
+    "dev:solid": "pnpm -C playgrounds/solid dev"
+  }
+}

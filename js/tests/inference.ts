@@ -1,7 +1,7 @@
 /**
  * Type-level tests: ret resolution must work converter-agnostically —
  * key types here come from ts-rs output (structural, externally-tagged),
- * ret maps from `#[derive(AhoiRets)]`, and Tsain-style `ret`-branded keys
+ * ret maps from `#[derive(Rets)]`, and Tsain-style `ret`-branded keys
  * must resolve from their brand. Checked by `pnpm run test` (tsc only).
  */
 
@@ -24,14 +24,14 @@ const _v2: AssertEq<VariantOf<{ Item: number }>, "Item"> = true;
 
 const _h1: AssertEq<HailRet<"Count", HailRets>, number> = true;
 const _h2: AssertEq<HailRet<{ Item: number }, HailRets>, number | undefined> = true;
-const _h3: AssertEq<HailRet<"Fruits", HailRets>, [string, Fruit][]> = true;
-const _h4: AssertEq<HailRet<{ Fruit: string }, HailRets>, Fruit | undefined> = true;
+const _h3: AssertEq<HailRet<"FruitCounts", HailRets>, Map<string, number>> = true;
+const _h4: AssertEq<HailRet<"LastFruit", HailRets>, Fruit | undefined> = true;
 
-const _t1: AssertEq<TellRet<"IncreaseCount", TellRets>, number> = true;
-const _t2: AssertEq<TellRet<"PopItem", TellRets>, boolean> = true;
+const _t1: AssertEq<TellRet<"Increase", TellRets>, number> = true;
+const _t2: AssertEq<TellRet<"PopItem", TellRets>, number | undefined> = true;
 // un-annotated Tell variants fall back to undefined
-const _t3: AssertEq<TellRet<{ SetCompInfo: string }, TellRets>, undefined> = true;
-const _t4: AssertEq<TellRet<{ InsertFruit: [string, Fruit] }, TellRets>, boolean> = true;
+const _t3: AssertEq<TellRet<{ PushItem: number }, TellRets>, undefined> = true;
+const _t4: AssertEq<TellRet<{ SetFruit: Fruit }, TellRets>, number> = true;
 
 // ── ret resolution via a Tsain-style brand (takes priority over the map) ────
 
@@ -50,17 +50,17 @@ const sphere = usePier();
 const count = sphere.readHail("Count");
 const _c: AssertEq<ReturnType<typeof count>, number> = true;
 
-const [item, setItem] = sphere.hail({ Item: 3 });
+const [item, setItem] = sphere.hail({ Item: 1 });
 const _i: AssertEq<ReturnType<typeof item>, number | undefined> = true;
 const _is: AssertEq<Parameters<typeof setItem>[0], number | undefined> = true;
 
 const popped = sphere.tell("PopItem");
-const _p: AssertEq<typeof popped, boolean> = true;
+const _p: AssertEq<typeof popped, number | undefined> = true;
 
-const nothing = sphere.tell({ SetCompInfo: "hi" });
+const nothing = sphere.tell({ PushItem: 5 });
 const _n: AssertEq<typeof nothing, undefined> = true;
 
-// cross-key / invalid keys are still rejected structurally
+// cross-key / invalid keys are rejected structurally
 // @ts-expect-error - "PopItem" is a Tell variant, not a Hail variant
 sphere.readHail("PopItem");
 // @ts-expect-error - unknown variant

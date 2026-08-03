@@ -6,21 +6,19 @@ import type { Fruit } from "./Fruit";
 // # Rets of Hail
 export type HailRets = {
   Count: number;
+  Doubled: number;
   Items: number[];
   Item: number | undefined;
-  ItemLength: number;
-  Fruits: [string, Fruit][];
-  Fruit: Fruit | undefined;
-  FruitsEven: boolean;
-  CompInfo: string;
-  AboutInfo: string;
-  CountResourceValue: number | undefined;
+  CountX10: number | undefined;
+  LastFruit: Fruit | undefined;
+  FruitCounts: Map<string, number>;
+  PanelInfo: string;
 };
 
 // # Rets of Tell
 export type TellRets = {
-  IncreaseCount: number;
-  PopItem: boolean;
-  InsertFruit: boolean;
+  Increase: number;
+  PopItem: number | undefined;
+  SetFruit: number;
 };
 

@@ -20,6 +20,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 ahoi-core = { workspace = true }
+ahoi-rets-macro = { workspace = true }
 wasm-bindgen = { version = "0.2.121", optional = true }
 js-sys = { version = "0.3.103", optional = true }
 serde = { version = "1.0", optional = true }

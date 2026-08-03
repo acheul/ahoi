@@ -223,24 +223,30 @@ export class AhoiStorage<PierKey, HailKey> {
 }
 
 /**
- * Installs the frozen `__AHOI__` global the wasm side dispatches hails into
- * (`js_namespace = "__AHOI__"`). Call once per storage, before any hail fires.
+ * Installs the `__AHOI__` global the wasm side dispatches hails into
+ * (`js_namespace = "__AHOI__"`). The global sink is created once and frozen;
+ * calling again only swaps the storage behind it — so re-running setup code
+ * (dev-server HMR, tests) must not throw. One bridge per page: the last
+ * storage bound wins.
  */
 export function buildBridge<PierKey, HailKey>(ahoi: AhoiStorage<PierKey, HailKey>) {
-    function hail(hails: (SphereId | any)[]) {
-        ahoi._update_hails(hails);
+    const global = globalThis as Record<string, any>;
+    if (global.__AHOI__ === undefined) {
+        const BRIDGE: { _storage?: AhoiStorage<any, any> } = {};
+        Object.defineProperty(BRIDGE, "hail", {
+            value: (hails: (SphereId | any)[]) => {
+                BRIDGE._storage?._update_hails(hails);
+            },
+            writable: false,
+            configurable: false,
+            enumerable: false,
+        });
+        Object.defineProperty(globalThis, "__AHOI__", {
+            value: BRIDGE,
+            writable: false,
+            configurable: false,
+            enumerable: false,
+        });
     }
-    const BRIDGE = {};
-    Object.defineProperty(BRIDGE, "hail", {
-        value: hail,
-        writable: false,
-        configurable: false,
-        enumerable: false,
-    });
-    Object.defineProperty(globalThis, "__AHOI__", {
-        value: BRIDGE,
-        writable: false,
-        configurable: false,
-        enumerable: false,
-    });
+    global.__AHOI__._storage = ahoi;
 }

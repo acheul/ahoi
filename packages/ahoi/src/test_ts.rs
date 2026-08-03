@@ -33,7 +33,10 @@ enum TsHail {
     #[ret(ts = "MyCustom")]
     Insert(usize, i32),
     // un-annotated variants are omitted from the map
-    Plain { a: bool, b: Option<String> },
+    Plain {
+        a: bool,
+        b: Option<String>,
+    },
 }
 
 #[test]

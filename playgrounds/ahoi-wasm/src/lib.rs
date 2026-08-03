@@ -1,4 +1,4 @@
-//! Playground wasm crate: exercises the whole bridge without Tsain.
+//! Shared wasm example crate for the framework playgrounds (solid, react, ...).
 //!
 //! Division of labour:
 //! - key/data **types** → any exporter you like; here: ts-rs (`#[derive(TS)]`,
@@ -6,6 +6,25 @@
 //! - key **return types** → ahoi's `#[derive(Rets)]` + `#[ret(..)]`,
 //!   exported to `bindings/Keys.ts` by the `generate` test
 //! - **values** on the wire → `SerdeWasmBindgenConverter`
+//!
+//! The keys are kept small but each one verifies a distinct bridge feature:
+//!
+//! | key                 | verifies                                        |
+//! |---------------------|-------------------------------------------------|
+//! | `Hail::Count`       | writable hail (JS ⇄ Rust round-trip)            |
+//! | `Hail::Doubled`     | read-only hail over a memo                      |
+//! | `Hail::Item(i)`     | *writable* path-derived hail (selective         |
+//! |                     | propagation + write into a derived path)        |
+//! | `Hail::CountX10`    | async resource → hail dispatch from a batch     |
+//! | `Hail::LastFruit`   | enum value on the wire (externally tagged)      |
+//! | `Hail::FruitCounts` | map value on the wire (JS `Map`)                |
+//! | `Hail::PanelInfo`   | context under a nested pier + sphere cleanup    |
+//! | `Tell::Increase`    | tell with a return value                        |
+//! | `Tell::PushItem`    | tell without a return value                     |
+//! | `Tell::SetFruit`    | enum argument (JS → Rust)                       |
+//! | `Tell::AddCount`    | context-stored sync `Callback`                  |
+//! | `Tell::StartTicker` | async `Action` mutating state over time         |
+//! | `Tell::StopTicker`  | cancelling a running `Action`                   |
 
 use ahoi::js_bridge::SerdeWasmBindgenConverter as Converter;
 use ahoi::js_bridge::*;
@@ -31,309 +50,204 @@ fn generate() {
         .export("./bindings/Keys.ts");
 }
 
-// data
+// ── data ───────────────────────────────────────────────────────────────────
+
 #[derive(Stock, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct State {
     pub count: i32,
     pub items: Vec<i32>,
-    pub fruits: HashMap<String, Fruit>,
+    pub last_fruit: Option<Fruit>,
+    pub fruit_counts: HashMap<String, u32>,
 }
 
-#[derive(Stock, TS, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(TS, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[ts(export)]
 pub enum Fruit {
     Apple,
     Banana(String),
 }
 
-#[derive(Clone, Copy)]
-struct FruitsContext(Stock<HashMap<String, Fruit>>);
-
-#[derive(Clone, Copy)]
-struct FruitsEven(Stock<bool>);
-
-#[derive(Clone, Copy)]
-struct Info(Stock<String>);
-
-#[derive(Clone, Copy)]
-struct AddCountCb(Callback<i32, ()>);
-
-#[derive(Clone, Copy)]
-struct AddCountAction(Action<i32, ()>);
-
-#[derive(Clone, Copy)]
-struct CountResource(Resource<i32>);
-
-/// Pier Key
-#[derive(TS, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[ts(export)]
-pub enum Pier {
-    Top,
-    Comp,
-    About,
-}
-
-wasm_bindgen_enrol_sphere!(@pier, Pier, run_pier, Converter);
-
-fn run_pier(key: Pier) -> () {
-    match key {
-        Pier::Top => {
-            // Set Local Hail Dispatcher
-            let _ = set_js_hail_dispatcher();
-
-            // Provide State
-            let state = Stock::new(State {
-                count: 0,
-                items: vec![10i32],
-                fruits: Default::default(),
-            });
-            provide_context(state);
-
-            // provide fruits_even (test effect reactivity)
-            let fruits: Stock<_> = state.fruits().into();
-            let _ = provide_context(FruitsContext(fruits));
-
-            // (test of effect)
-            let fruits_even: Stock<bool> = Stock::new(fruits.peek().len() % 2 == 0);
-
-            let _ = Effect::new(move || {
-                let len = fruits.read().len();
-                let is_even = len % 2 == 0;
-                gloo_console::log!(&format!("effect len: {}", len));
-                *fruits_even.write() = is_even;
-            });
-            let _ = provide_context(FruitsEven(fruits_even));
-        }
-        Pier::Comp => {
-            let info = Stock::new(String::from("Component"));
-            provide_context(Info(info));
-
-            let state = use_context::<Stock<State>>().unwrap();
-
-            // Callback: count 에 n 을 더하는 sync 콜백
-            let add_count = Callback::new(move |n: i32| {
-                *state.count().write() += n;
-            });
-            provide_context(AddCountCb(add_count));
-
-            // Action: 1_000ms 마다 count 에 n 더하는 async Action
-            let action: Action<i32, ()> = Action::new(move |x| async move {
-                loop {
-                    gloo_timers::future::TimeoutFuture::new(1_000).await;
-                    let mut count = state.count().write();
-                    *count += x;
-                }
-            });
-            provide_context(AddCountAction(action));
-
-            // Resource: count 가 바뀔 때마다 count * 10 을 자동 fetch (1_000ms latency 부여)
-            let count_res: Resource<i32> = Resource::new(move || async move {
-                gloo_timers::future::TimeoutFuture::new(1_000).await;
-                let c = state.count().read();
-                *c * 10
-            });
-            provide_context(CountResource(count_res));
-        }
-        Pier::About => {
-            let info: Stock<String> = Stock::new(String::from("information"));
-            provide_context(Info(info));
+impl Fruit {
+    fn name(&self) -> &'static str {
+        match self {
+            Fruit::Apple => "Apple",
+            Fruit::Banana(_) => "Banana",
         }
     }
 }
 
-/// Hail Key
+/// Context provided by the `Panel` pier only.
+#[derive(Clone, Copy)]
+struct PanelInfo(Stock<String>);
+
+/// Sync callback stored in context: adds `n` to the count.
+#[derive(Clone, Copy)]
+struct AddCount(Callback<i32, ()>);
+
+/// Async action stored in context: adds `x` to the count every second until
+/// cancelled.
+#[derive(Clone, Copy)]
+struct Ticker(Action<i32, ()>);
+
+// ── Pier ───────────────────────────────────────────────────────────────────
+
+#[derive(TS, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[ts(export)]
+pub enum Pier {
+    Top,
+    Panel,
+}
+
+wasm_bindgen_enrol_sphere!(@pier, Pier, run_pier, Converter);
+
+fn run_pier(key: Pier) {
+    match key {
+        Pier::Top => {
+            set_js_hail_dispatcher();
+
+            let state = Stock::new(State {
+                count: 0,
+                items: vec![10, 20],
+                last_fruit: None,
+                fruit_counts: Default::default(),
+            });
+            provide_context(state);
+
+            let add_count = Callback::new(move |n: i32| {
+                *state.count().write() += n;
+            });
+            provide_context(AddCount(add_count));
+
+            let ticker: Action<i32, ()> = Action::new(move |x| async move {
+                loop {
+                    gloo_timers::future::TimeoutFuture::new(1_000).await;
+                    *state.count().write() += x;
+                }
+            });
+            provide_context(Ticker(ticker));
+        }
+        Pier::Panel => {
+            let info = Stock::new(String::from("hello from panel"));
+            provide_context(PanelInfo(info));
+        }
+    }
+}
+
+// ── Hail ───────────────────────────────────────────────────────────────────
+
 #[derive(Rets, TS, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[ts(export)]
 pub enum Hail {
     #[ret(i32)]
     Count,
+    #[ret(i32)]
+    Doubled,
     #[ret(Vec<i32>)]
     Items,
     #[ret(Option<i32>)]
     Item(usize),
-    #[ret(usize)]
-    ItemLength,
-    #[ret(Vec<(String, Fruit)>)]
-    Fruits,
-    #[ret(Option<Fruit>)]
-    Fruit(String),
-    #[ret(bool)]
-    FruitsEven,
-    #[ret(String)]
-    CompInfo,
-    #[ret(String)]
-    AboutInfo,
     #[ret(Option<i32>)]
-    CountResourceValue,
+    CountX10,
+    #[ret(Option<Fruit>)]
+    LastFruit,
+    #[ret(HashMap<String, u32>)]
+    FruitCounts,
+    #[ret(String)]
+    PanelInfo,
 }
 
 wasm_bindgen_enrol_sphere!(@hail, Hail, run_hail, Converter);
 
 fn run_hail(key: Hail) -> JsValue {
+    let state = || use_context::<Stock<State>>().unwrap();
     match key {
-        Hail::Count => {
-            // use state
-            let state = use_context::<Stock<State>>().unwrap();
-            state.count().set_hail::<Converter>()
+        Hail::Count => state().count().set_hail::<Converter>(),
+        Hail::Doubled => {
+            let doubled = state().count().memo(|c| *c * 2);
+            doubled.set_read_hail::<Converter>()
         }
-        Hail::Items => {
-            // use state
-            let state = use_context::<Stock<State>>().unwrap();
-            // derive items
-            let items = state.items();
-            // set bridge
-            items.set_hail::<Converter>()
-        }
-        Hail::Item(index) => {
-            // use state
-            let state = use_context::<Stock<State>>().unwrap();
-            // derive items
-            let items = state.items();
-            // derive item
-            let item = items.get(index);
-            // set bridge
-            item.set_hail::<Converter>()
-        }
-        Hail::ItemLength => {
-            // use state
-            let state = use_context::<Stock<State>>().unwrap();
-            // derive items
-            let items = state.items();
-            // memo length
-            let length = items.memo(|e| e.len());
-            // set bridge
-            length.set_read_hail::<Converter>()
-        }
-        Hail::Fruits => {
-            // use fruits
-            let FruitsContext(fruits) = use_context::<FruitsContext>().unwrap();
-
-            // memo
-            let fruits = fruits.memo(|e| {
-                e.iter()
-                    .map(|(a, b)| (a.clone(), b.clone()))
-                    .collect::<Vec<(String, Fruit)>>()
+        Hail::Items => state().items().set_hail::<Converter>(),
+        Hail::Item(index) => state().items().get(index).set_hail::<Converter>(),
+        Hail::CountX10 => {
+            let state = state();
+            let resource: Resource<i32> = Resource::new(move || async move {
+                gloo_timers::future::TimeoutFuture::new(500).await;
+                let count = state.count().read();
+                *count * 10
             });
-            // set bridge
-            fruits.set_read_hail::<Converter>()
-        }
-        Hail::Fruit(name) => {
-            // use fruits
-            let FruitsContext(fruits) = use_context::<FruitsContext>().unwrap();
-            // derive fruit
-            let fruit = fruits.get(name);
-            // set bridge
-            fruit.set_hail::<Converter>()
-        }
-        Hail::FruitsEven => {
-            // use fruits_even
-            let FruitsEven(fruits_even) = use_context::<FruitsEven>().unwrap();
-            // set bridge
-            fruits_even.set_hail::<Converter>()
-        }
-        Hail::CompInfo => {
-            let Info(info) = use_context::<Info>().unwrap();
-            info.set_hail::<Converter>()
-        }
-        Hail::AboutInfo => {
-            let Info(info) = use_context::<Info>().unwrap();
-            info.set_hail::<Converter>()
-        }
-        Hail::CountResourceValue => {
-            let CountResource(resource) = use_context::<CountResource>().unwrap();
             resource.set_read_hail::<Converter>()
+        }
+        Hail::LastFruit => state().last_fruit().set_hail::<Converter>(),
+        Hail::FruitCounts => state().fruit_counts().set_hail::<Converter>(),
+        Hail::PanelInfo => {
+            let PanelInfo(info) = use_context::<PanelInfo>().unwrap();
+            info.set_hail::<Converter>()
         }
     }
 }
 
-/// Tell
+// ── Tell ───────────────────────────────────────────────────────────────────
+
 #[derive(Rets, TS, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[ts(export)]
 pub enum Tell {
-    #[ret(usize)]
-    IncreaseCount,
-    InsertItem(usize, i32),
-    #[ret(bool)]
+    #[ret(i32)]
+    Increase,
+    PushItem(i32),
+    #[ret(Option<i32>)]
     PopItem,
-    #[ret(bool)]
-    InsertFruit(String, Fruit),
-    SetCompInfo(String),
-    SetAboutInfo(String),
+    #[ret(u32)]
+    SetFruit(Fruit),
     AddCount(i32),
-    CallAddCountAction(i32),
-    CancelAddCountAction,
-    ExSpawnBatch,
+    StartTicker(i32),
+    StopTicker,
 }
 
 wasm_bindgen_tell!(Tell, run_tell, Converter);
 
 fn run_tell(tell: Tell) -> JsValue {
+    let state = use_context::<Stock<State>>().unwrap();
     match tell {
-        Tell::IncreaseCount => {
-            let count = {
-                // js<->rs 비용에 비하면 매번 use context 부르는 비용은 negligible
-                let state = use_context::<Stock<State>>().unwrap();
+        Tell::Increase => {
+            let new_count = {
                 let mut count = state.count().write();
                 *count += 1;
                 *count
             };
-            serde_wasm_bindgen::to_value(&count).unwrap()
+            serde_wasm_bindgen::to_value(&new_count).unwrap()
         }
-        Tell::InsertItem(index, v) => {
-            {
-                let state = use_context::<Stock<State>>().unwrap();
-                state.items().write().insert(index, v);
-            };
+        Tell::PushItem(v) => {
+            state.items().write().push(v);
             JsValue::undefined()
         }
-
         Tell::PopItem => {
-            let state = use_context::<Stock<State>>().unwrap();
-            let popped = state.items().write().pop().is_some();
+            let popped = state.items().write().pop();
             serde_wasm_bindgen::to_value(&popped).unwrap()
         }
-
-        Tell::InsertFruit(name, fruit) => {
-            // use fruits
-            let FruitsContext(fruits) = use_context::<FruitsContext>().unwrap();
-            let is_new = fruits.write().insert(name, fruit).is_none();
-            serde_wasm_bindgen::to_value(&is_new).unwrap()
-        }
-        Tell::SetCompInfo(new_info) => {
-            let Info(info) = use_context::<Info>().unwrap();
-            *info.write() = new_info;
-            JsValue::undefined()
-        }
-        Tell::SetAboutInfo(new_info) => {
-            let Info(info) = use_context::<Info>().unwrap();
-            *info.write() = new_info;
-            JsValue::undefined()
+        Tell::SetFruit(fruit) => {
+            let name = fruit.name().to_string();
+            *state.last_fruit().write() = Some(fruit);
+            let new_count = {
+                let mut counts = state.fruit_counts().write();
+                let n = counts.entry(name).or_insert(0);
+                *n += 1;
+                *n
+            };
+            serde_wasm_bindgen::to_value(&new_count).unwrap()
         }
         Tell::AddCount(n) => {
-            let AddCountCb(cb) = use_context::<AddCountCb>().unwrap();
-            cb.call(n);
+            let AddCount(callback) = use_context::<AddCount>().unwrap();
+            callback.call(n);
             JsValue::undefined()
         }
-        Tell::CallAddCountAction(n) => {
-            let AddCountAction(action) = use_context::<AddCountAction>().unwrap();
-            let _ = action.call(n);
+        Tell::StartTicker(x) => {
+            let Ticker(ticker) = use_context::<Ticker>().unwrap();
+            let _ = ticker.call(x);
             JsValue::undefined()
         }
-        Tell::CancelAddCountAction => {
-            let AddCountAction(action) = use_context::<AddCountAction>().unwrap();
-            let _ = action.cancel();
-            JsValue::undefined()
-        }
-        Tell::ExSpawnBatch => {
-            // Fire-and-forget: detach so the task survives this synchronous handler
-            // returning (otherwise the handle drops and aborts it before it runs).
-            ahoi::spawn_batch(async move {
-                let sphere_id = ahoi::current_sphere_id();
-                gloo_console::log!(&format!("Msg In spawn_batch: {:?}", sphere_id));
-            })
-            .detach();
-            let sphere_id = ahoi::current_sphere_id();
-            gloo_console::log!(&format!("Msg Out Of spawn_batch: {:?}", sphere_id));
+        Tell::StopTicker => {
+            let Ticker(ticker) = use_context::<Ticker>().unwrap();
+            let _ = ticker.cancel();
             JsValue::undefined()
         }
     }

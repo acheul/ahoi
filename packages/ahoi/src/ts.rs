@@ -80,6 +80,9 @@ impl TsFile {
             std::fs::create_dir_all(parent).expect("Failed to create parent directories");
         }
         std::fs::write(path, self.to_source()).expect("Failed to write TypeScript file");
-        println!("cargo:warning=Exported ahoi TypeScript types to {}", path.display());
+        println!(
+            "cargo:warning=Exported ahoi TypeScript types to {}",
+            path.display()
+        );
     }
 }

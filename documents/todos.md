@@ -1,4 +1,6 @@
-- [ ] retrun type brand
+- [x] return type macro
+- [ ] support other than serde-wasm-bindgen converter?
 - [ ] npm package
 - [ ] panic path debug
 - [ ] mut-borrow guard by path
+- [ ] support tsain feature

@@ -56,21 +56,18 @@ use proc_macro2::TokenStream as TokenStream2;
 use quote::{format_ident, quote};
 use syn::{Data, DeriveInput, LitStr, Type, parse_macro_input, spanned::Spanned};
 
-/// Resolves the path to the macro-support module (`__macro_support`); same
-/// strategy as `ahoi-stock-macro` — probe the `ahoi` facade first, then
-/// `ahoi-core`, handling in-crate expansion and renamed dependencies.
+/// Resolves the path to the macro-support module (`__macro_support`) of the
+/// `ahoi` crate (which hosts `TsDecl`), handling in-crate expansion and a
+/// renamed dependency; same strategy as `ahoi-stock-macro`.
 fn macro_support_path() -> TokenStream2 {
-    let root = ["ahoi", "ahoi-core"]
-        .into_iter()
-        .find_map(|name| match crate_name(name) {
-            Ok(FoundCrate::Itself) => Some(quote! { crate }),
-            Ok(FoundCrate::Name(found)) => {
-                let id = format_ident!("{}", found);
-                Some(quote! { ::#id })
-            }
-            Err(_) => None,
-        })
-        .unwrap_or_else(|| quote! { ::ahoi });
+    let root = match crate_name("ahoi") {
+        Ok(FoundCrate::Itself) => quote! { crate },
+        Ok(FoundCrate::Name(found)) => {
+            let id = format_ident!("{}", found);
+            quote! { ::#id }
+        }
+        Err(_) => quote! { ::ahoi },
+    };
     quote! { #root::__macro_support }
 }
 
