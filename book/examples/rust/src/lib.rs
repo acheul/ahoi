@@ -41,12 +41,21 @@ pub struct State {
     /// Reactive on purpose: it has to travel in the same dispatch as everything
     /// else, so the JS side sees it settle together with the value it explains.
     label_runs: u32,
+    /// How many times the effect watching `items[0]` (resp. `items[1]`) ran —
+    /// the observable half of the path-selectivity demo.
+    watch0_runs: u32,
+    watch1_runs: u32,
 }
 
 /// An async value derived from `count`, created once per pier so both the value
 /// hail and the loading hail observe the same resource.
 #[derive(Clone, Copy)]
 struct TenTimes(Resource<i32>);
+
+/// Async action stored in context: adds `step` to the count every second until
+/// cancelled.
+#[derive(Clone, Copy)]
+struct Ticker(Action<i32, ()>);
 
 #[derive(TS, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[ts(export)]
@@ -64,8 +73,29 @@ fn run_pier(key: Pier) {
                 count: 0,
                 items: vec![10, 20],
                 label_runs: 0,
+                watch0_runs: 0,
+                watch1_runs: 0,
             });
             provide_context(state);
+
+            // One watcher per item path. Each re-runs only when *its* path is
+            // written — the counters make that selectivity visible.
+            let _watch0 = Effect::new(move || {
+                let _ = state.items().get(0).try_read();
+                *state.watch0_runs().write() += 1;
+            });
+            let _watch1 = Effect::new(move || {
+                let _ = state.items().get(1).try_read();
+                *state.watch1_runs().write() += 1;
+            });
+
+            let ticker: Action<i32, ()> = Action::new(move |step| async move {
+                loop {
+                    gloo_timers::future::TimeoutFuture::new(1_000).await;
+                    *state.count().write() += step;
+                }
+            });
+            provide_context(Ticker(ticker));
 
             // Reads `count` inside the async block on purpose: a resource
             // re-enters its tracking context on every poll, so this still
@@ -101,6 +131,12 @@ pub enum Hail {
     TenTimes,
     #[ret(bool)]
     TenTimesLoading,
+    #[ret(bool)]
+    TickerRunning,
+    #[ret(u32)]
+    Watch0Runs,
+    #[ret(u32)]
+    Watch1Runs,
 }
 
 wasm_bindgen_enrol_sphere!(@hail, Hail, run_hail, Converter);
@@ -136,6 +172,12 @@ fn run_hail(key: Hail) -> JsValue {
             let TenTimes(resource) = use_context::<TenTimes>().unwrap();
             Memo::new(move || resource.pending()).set_read_hail::<Converter>()
         }
+        Hail::TickerRunning => {
+            let Ticker(ticker) = use_context::<Ticker>().unwrap();
+            Memo::new(move || ticker.pending()).set_read_hail::<Converter>()
+        }
+        Hail::Watch0Runs => state.watch0_runs().set_read_hail::<Converter>(),
+        Hail::Watch1Runs => state.watch1_runs().set_read_hail::<Converter>(),
     }
 }
 
@@ -150,6 +192,9 @@ pub enum Tell {
     PopItem,
     /// Adds `n` to the count.
     Bump(i32),
+    /// Starts the ticker action: `+step` every second until stopped.
+    StartTicker(i32),
+    StopTicker,
 }
 
 wasm_bindgen_tell!(Tell, run_tell, Converter);
@@ -175,6 +220,16 @@ fn run_tell(tell: Tell) -> JsValue {
         }
         Tell::Bump(n) => {
             *state.count().write() += n;
+            JsValue::undefined()
+        }
+        Tell::StartTicker(step) => {
+            let Ticker(ticker) = use_context::<Ticker>().unwrap();
+            let _ = ticker.call(step);
+            JsValue::undefined()
+        }
+        Tell::StopTicker => {
+            let Ticker(ticker) = use_context::<Ticker>().unwrap();
+            ticker.cancel();
             JsValue::undefined()
         }
     }

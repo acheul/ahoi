@@ -12,6 +12,9 @@ export type HailRets = {
   LabelRuns: number;
   TenTimes: number | undefined;
   TenTimesLoading: boolean;
+  TickerRunning: boolean;
+  Watch0Runs: number;
+  Watch1Runs: number;
 };
 
 // # Rets of Tell
