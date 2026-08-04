@@ -1,0 +1,127 @@
+---
+title: Async work
+description: Callback, Action, and Resource — synchronous handlers, cancellable tasks, and values that fetch themselves.
+sidebar:
+  order: 4
+---
+
+Three tools, and the choice is mostly about who starts the work and whether it
+can be cancelled.
+
+| | Runs | Started by | Cancellable |
+| --- | --- | --- | --- |
+| `Callback<A, R>` | synchronously | you call it | — |
+| `Action<A, R>` | async | you call it | yes |
+| `Resource<T>` | async | its dependencies | refetches |
+
+## Callback
+
+A `Callback<A, R>` is a function that can read and write reactive state.
+
+```rust
+let add = Callback::new(move |n: i32| {
+    *state.count().write() += n;
+});
+
+add.call(5);
+```
+
+It is `Copy`, so it can be stored in context and used from anywhere inside the
+pier.
+
+```rust
+#[derive(Clone, Copy)]
+struct AddCount(Callback<i32, ()>);
+
+// in run_pier
+provide_context(AddCount(add));
+
+// in run_tell
+let AddCount(add) = use_context::<AddCount>().unwrap();
+add.call(n);
+```
+
+That pattern — a callback in context, invoked by a tell — is how you keep a
+rule in one place instead of repeating it in every runner that needs it.
+
+## Action
+
+An `Action<A, R>` is a callback that awaits, and can be cancelled.
+
+```rust
+let ticker: Action<i32, ()> = Action::new(move |step| async move {
+    loop {
+        sleep(1_000).await;
+        *state.count().write() += step;
+    }
+});
+
+ticker.call(1); // start
+ticker.cancel(); // stop
+```
+
+It also tracks its own state:
+
+```rust
+ticker.pending(); // running
+ticker.ready(); // finished
+```
+
+An action is the right answer when a [tell](../../bridge/tell/) needs to start
+something slow. The tell returns immediately, the action keeps working, and the
+hails watching the state it mutates update on their own.
+
+## Resource
+
+A `Resource<T>` is an async value that **refetches when its dependencies
+change**. You do not call it.
+
+```rust
+let profile: Resource<User> = Resource::new(move || {
+    let id = *user_id.read(); // dependency
+    async move { fetch_user(id).await }
+});
+```
+
+Change `user_id`, and the resource fetches again.
+
+Reading gives an `Option<T>` — `None` while the first fetch is in flight:
+
+```rust
+match &*profile.read() {
+    Some(user) => { /* ... */ }
+    None => { /* loading */ }
+}
+```
+
+Wire it to JS with `set_read_hail`, and declare the ret as `Option<T>` so the
+loading state arrives as `undefined`:
+
+```rust
+#[ret(Option<User>)]
+Profile,
+```
+
+```rust
+Hail::Profile => resource.set_read_hail::<Converter>(),
+```
+
+```ts
+const profile = sphere.readHail("Profile"); // User | undefined
+```
+
+:::note
+Track dependencies **outside** the async block, as in the example above. A
+`read()` inside the future runs after tracking has finished, so it would not
+register — and the resource would never refetch.
+:::
+
+## Which one
+
+- A synchronous rule you want to reuse → **Callback**
+- Something slow that a user starts or stops → **Action**
+- Data that follows a value → **Resource**
+
+## Next
+
+All of these belong to a scope. [Sphere and lifetime](../sphere/) is that scope.

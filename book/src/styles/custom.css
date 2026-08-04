@@ -48,6 +48,16 @@
   margin-top: 2.5rem;
 }
 
+/* Rows whose label cell is empty are annotations, not data — the language
+   boundary markers in the comparison table. Keep them quiet and let them take
+   less vertical space than a real row. */
+.sl-markdown-content tr:has(> td:first-child:empty) td {
+  padding-block: 0.15rem;
+  line-height: 1;
+  color: var(--sl-color-gray-3);
+  border-block: 0;
+}
+
 /* The wordmark is wide, so cap its height rather than its width. */
 .site-title img {
   height: 1.5rem;
