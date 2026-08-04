@@ -31,11 +31,11 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm
@@ -48,7 +48,11 @@ jobs:
         with:
           key: book
 
-      - uses: jetli/wasm-pack-action@v0.4.0
+      # `jetli/wasm-pack-action` has had no release since 2022. This one is
+      # maintained and installs the same prebuilt binary.
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
 
       - run: pnpm install --frozen-lockfile
 
@@ -60,7 +64,7 @@ jobs:
 
       - run: pnpm -C book build
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: book/dist
 
@@ -73,4 +77,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
