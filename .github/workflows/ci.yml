@@ -52,4 +52,7 @@ jobs:
         with:
           key: wasm
 
-      - run: scripts/check-wasm-release.sh
+      # Invoked via `bash` rather than executed directly: the repo is developed
+      # on Windows, where git does not record the exec bit, so a future edit can
+      # silently drop it again.
+      - run: bash scripts/check-wasm-release.sh
