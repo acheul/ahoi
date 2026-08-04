@@ -4,7 +4,7 @@ name: Book
 # Requires Settings -> Pages -> Source: "GitHub Actions" to be enabled once.
 on:
   push:
-    branches: [main, feature/book]
+    branches: [main]
     paths:
       - "book/**"
       - ".github/workflows/book.yml"
