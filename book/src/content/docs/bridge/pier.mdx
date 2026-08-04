@@ -1,0 +1,151 @@
+---
+title: Pier
+description: A pier is a scope. It sets up state and context for one region of your UI, and cleans it up on unmount.
+sidebar:
+  order: 1
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+A pier is a **scope**. It runs some setup code, and everything created during
+that run belongs to it.
+
+When the component that opened the pier unmounts, the scope is cleared and all
+of it goes away.
+
+## Opening a pier
+
+Wrap the part of your UI that needs the state.
+
+<Tabs syncKey="framework">
+<TabItem label="Solid">
+```tsx
+<PierProvider pier="Top">
+  <Counter />
+</PierProvider>
+```
+</TabItem>
+<TabItem label="React">
+```tsx
+<PierProvider pier="Top">
+  <Counter />
+</PierProvider>
+```
+</TabItem>
+<TabItem label="Vue">
+```vue
+<PierProvider pier="Top">
+  <Counter />
+</PierProvider>
+```
+</TabItem>
+<TabItem label="Svelte">
+```svelte
+<script lang="ts">
+  import { providePier } from "./ahoi";
+  import Counter from "./Counter.svelte";
+
+  providePier("Top");
+</script>
+
+<Counter />
+```
+</TabItem>
+</Tabs>
+
+Svelte has no provider component. `providePier` uses `setContext` directly, so
+you call it in the script block of the component that owns the scope.
+
+## The Rust side
+
+Your pier key is an enum. One variant per scope your app needs.
+
+```rust
+#[derive(Serialize, Deserialize)]
+pub enum Pier {
+    Top,
+    Panel,
+}
+
+wasm_bindgen_enrol_sphere!(@pier, Pier, run_pier, Converter);
+
+fn run_pier(key: Pier) {
+    match key {
+        Pier::Top => {
+            set_js_hail_dispatcher();
+            provide_context(Stock::new(State { count: 0 }));
+        }
+        Pier::Panel => {
+            provide_context(Stock::new(String::from("hello")));
+        }
+    }
+}
+```
+
+`run_pier` runs **once**, when the provider mounts. It returns nothing. Its job
+is to create state and put it in context.
+
+:::caution
+`set_js_hail_dispatcher()` must be called in your root pier. It is what lets
+Rust push values back to JS. Without it, writes will not reach the frontend.
+:::
+
+## Context
+
+`provide_context` stores a value on the pier. `use_context` finds it.
+
+```rust
+// in run_pier
+provide_context(Stock::new(State { count: 0 }));
+
+// anywhere inside that pier
+let state = use_context::<Stock<State>>().unwrap();
+```
+
+Lookup walks **up** the parent chain, the same way React context does. A hail
+running inside `Panel` can see anything `Top` provided.
+
+Context is keyed by type. Providing two values of the same type means the
+nearer one wins.
+
+That is why the examples wrap bare types in a newtype:
+
+```rust
+#[derive(Clone, Copy)]
+struct PanelInfo(Stock<String>);
+```
+
+Two different `Stock<String>` values would otherwise collide.
+
+## Nesting
+
+Piers form a tree. Nest a provider inside another and the inner pier becomes a
+child of the outer one.
+
+```tsx
+<PierProvider pier="Top">
+  <Counter />
+  <PierProvider pier="Panel">
+    <Panel />
+  </PierProvider>
+</PierProvider>
+```
+
+Use a child pier when a section of the UI needs its own state that should
+disappear with it — a modal, a tab panel, a row being edited.
+
+## Cleanup
+
+When the provider unmounts, its scope is cleared.
+
+Clearing **cascades to children**, so dropping a parent frees the whole subtree.
+It is also idempotent and order-independent, which means each framework adapter
+can simply clear its own pier on unmount and stay correct no matter what order
+components tear down in.
+
+You do not write cleanup code. Every stock, memo, effect, and action created
+inside the pier goes away with it.
+
+## Next
+
+A pier holds the state. [Hails](../hail/) are how JS reads it.
