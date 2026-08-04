@@ -9,6 +9,10 @@
     ui-monospace, 'JetBrains Mono', 'SFMono-Regular', 'Cascadia Mono', Menlo,
     Consolas, monospace;
 
+  /* The logo's typeface. Headings only — Comfortaa is a rounded display face,
+     and it gets tiring over a paragraph. */
+  --ahoi-font-display: 'Comfortaa Variable', var(--sl-font), sans-serif;
+
   --sl-content-width: 48rem;
 
   /* Dark theme (Starlight's default scope). */
@@ -25,10 +29,19 @@
   --sl-color-text-accent: #0e7490;
 }
 
-/* Calmer headings — the default weights read a little shouty. */
+/* Headings, the page title, and the hero all pick up the logo's typeface. */
+.sl-markdown-content :is(h1, h2, h3, h4, h5, h6),
+.content-panel h1,
+.hero h1,
+.hero .tagline {
+  font-family: var(--ahoi-font-display);
+}
+
+/* Comfortaa runs wide and its lowercase is large, so the tightening that
+   suited the system font now reads cramped. Let it breathe instead. */
 .sl-markdown-content :is(h2, h3, h4) {
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .sl-markdown-content h2 {
