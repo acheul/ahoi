@@ -1,0 +1,37 @@
+---
+/**
+ * Starlight's sidebar, with the documented crate version above it.
+ *
+ * Which release these pages describe is otherwise invisible — the only hint is
+ * a version string inside an example snippet, which is illustrative rather than
+ * a statement about the docs.
+ */
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+
+// Injected by `vite.define` in astro.config.mjs, from the root Cargo.toml.
+declare const __CRATE_VERSION__: string;
+---
+
+<p class="version-badge">
+  documents ahoi <code>v{__CRATE_VERSION__}</code>
+</p>
+
+<Default />
+
+<style>
+  .version-badge {
+    margin: 0 0 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--sl-color-hairline-light);
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+
+  .version-badge code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: var(--sl-color-text-accent);
+  }
+</style>
