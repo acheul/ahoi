@@ -1,0 +1,107 @@
+---
+/**
+ * A paired Rust + JS example.
+ *
+ * Both sides are read from real files under `book/examples/`. The Rust comes
+ * from a named region of the crate that actually compiles, and the JS files are
+ * the same ones the live demos mount — so nothing here can drift from what runs.
+ *
+ * Stacked rather than side by side on purpose: the content column is 48rem, and
+ * two columns of code at ~45 characters each is unreadable.
+ */
+import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
+import { basename, frameworkFiles, langOf, readFile, readRegion } from './examples';
+
+interface Props {
+  /** Example directory under `book/examples/`, e.g. `counter`. */
+  name: string;
+  /** Region in `examples/rust/src/lib.rs`. Defaults to `name`. */
+  region?: string;
+  /** Drop the Rust panel for a JS-only example. */
+  jsOnly?: boolean;
+  /** Path of the Rust file to slice, relative to `book/examples/`. */
+  rustFile?: string;
+  /** Show this exact filename in each framework directory instead of guessing. */
+  file?: string;
+}
+
+const {
+  name,
+  region = name,
+  jsOnly = false,
+  rustFile = 'rust/src/lib.rs',
+  file,
+} = Astro.props;
+
+const rust = jsOnly ? null : readRegion(rustFile, region);
+const files = frameworkFiles(name, file);
+const hasDemo = Astro.slots.has('demo');
+---
+
+<div class="example">
+  {
+    rust && (
+      <div class="example__panel example__panel--rust">
+        <Code code={rust} lang="rust" title={basename(rustFile)} />
+      </div>
+    )
+  }
+
+  <div class="example__panel example__panel--js">
+    <Tabs syncKey="framework">
+      {
+        files.map(({ label, path }) => (
+          <TabItem label={label}>
+            <Code code={readFile(path)} lang={langOf(path)} title={basename(path)} />
+          </TabItem>
+        ))
+      }
+    </Tabs>
+  </div>
+
+  {
+    hasDemo && (
+      <div class="example__demo">
+        <p class="example__demo-label">Running now, in your browser</p>
+        <slot name="demo" />
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .example {
+    margin: 1.5rem 0;
+  }
+
+  /* A colour spine per side, so a reader scanning the page can tell which
+     language a block is without reading it. */
+  .example__panel {
+    border-inline-start: 3px solid var(--example-spine);
+    padding-inline-start: 0.75rem;
+  }
+
+  .example__panel--rust {
+    --example-spine: #c06030;
+    margin-bottom: 1.25rem;
+  }
+
+  .example__panel--js {
+    --example-spine: var(--sl-color-accent);
+  }
+
+  .example__demo {
+    margin-top: 1.5rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    padding: 1rem;
+  }
+
+  .example__demo-label {
+    margin: 0 0 0.75rem;
+    font-size: var(--sl-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--sl-color-gray-3);
+  }
+</style>

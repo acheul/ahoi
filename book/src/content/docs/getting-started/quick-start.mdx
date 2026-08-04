@@ -1,0 +1,68 @@
+---
+title: Quick start
+description: Build a counter whose state lives in Rust, and see the round trip in your own browser.
+sidebar:
+  order: 3
+---
+
+import Example from '../../../components/Example.astro';
+import CounterIsland from '../../../../examples/counter/solid/island.tsx';
+
+A counter is a small thing, but it exercises the whole bridge: a value pushed
+from Rust, a write sent back, a command, and a derived value recomputed in Rust.
+
+## The example
+
+Pick your framework in the tabs. The choice follows you across the whole book.
+
+<Example name="counter">
+  <CounterIsland client:only="@astrojs/solid-js" slot="demo" />
+</Example>
+
+The demo above is not a recording. It is this page running the code in the
+Solid tab, against the Rust in the top panel, compiled to wasm.
+
+## What just happened
+
+Reading the Rust panel from the top:
+
+**`State` holds the data.** `#[derive(Stock)]` generates an accessor per field,
+so `state.count()` is a reactive handle on that one field.
+
+**`Pier::Top` sets up a scope.** It runs once, provides the state as context,
+and everything created inside belongs to that scope. When the JS component
+unmounts, the scope is cleared and all of it goes away.
+
+**`Hail::Count` is a channel.** `set_hail` makes it read-write, so the JS side
+gets both a value and a setter. `Hail::Doubled` uses `set_read_hail` instead —
+read-only, and its `memo` only recomputes when `count` actually changes.
+
+**`Tell::Increase` is a command.** It mutates state and returns the new value.
+The `#[ret(i32)]` on each variant is what makes that return a `number` in
+TypeScript rather than `unknown`.
+
+## Two ways to change state
+
+The demo has two buttons, and they take different routes.
+
+**Write** sends the new value straight into the stock. Use it when the JS side
+already knows what the value should be — a form field, a toggle, a slider.
+
+**Tell** asks Rust to do something. Use it when the logic belongs in Rust:
+validation, a computation, anything touching several pieces of state at once.
+
+Both end up in the same place. Writing is shorter, telling keeps rules on the
+Rust side.
+
+## One dispatch, not many
+
+`Doubled` updated on every click without you wiring anything.
+
+When a write lands, Rust walks only the values that actually depend on what
+changed, recomputes those, and sends the results to JS **in a single batch**.
+One write that touches twenty hails costs one crossing, not twenty.
+
+## Next
+
+Read about [what Ahoi is](../what-is-ahoi/) if you skipped it, or keep going
+into the bridge: piers, hails, and tells in full.
