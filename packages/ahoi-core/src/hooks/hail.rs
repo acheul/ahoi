@@ -1,5 +1,6 @@
 use super::*;
 
+#[cfg_attr(debug_assertions, track_caller)]
 fn help_set_read_hail<
     X: HailConverter<T> + 'static,
     T: 'static,
@@ -24,6 +25,7 @@ fn help_set_read_hail<
     return initial_hail_value;
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub fn set_read_hail<
     X: HailConverter<T> + 'static,
     T: 'static,
@@ -40,6 +42,7 @@ pub fn set_read_hail<
     return initial_hail_value;
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub fn set_hail<
     X: HailConverter<T> + 'static,
     T: 'static,

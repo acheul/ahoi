@@ -20,6 +20,7 @@ impl<T> Clone for Memo<T> {
 impl<T> Copy for Memo<T> {}
 
 impl<T: 'static> Memo<T> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new(runner: impl Fn() -> T + 'static) -> Self
     where
         T: PartialEq,
@@ -27,6 +28,7 @@ impl<T: 'static> Memo<T> {
         Self::new_with(runner, |x, y| x.eq(y))
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new_with(
         runner: impl Fn() -> T + 'static,
         eq_checker: impl Fn(&T, &T) -> bool + 'static,
@@ -66,6 +68,7 @@ impl<T: 'static> Memo<T> {
         self.stock.read()
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn set_read_hail<X: HailConverter<T> + 'static>(self) -> X::HailValue {
         self.stock.set_read_hail::<X>()
     }

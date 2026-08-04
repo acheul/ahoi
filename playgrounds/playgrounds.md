@@ -9,6 +9,23 @@ pnpm -C js build
 
 > Note: after changing the `js/` package itself, run `pnpm -C js build` again **and restart the dev server** — Vite caches the linked package's `dist`, so a running server keeps serving the old build.
 
+## Panic diagnostics
+
+Every playground ends with a "Panic diagnostics" section that triggers a
+double-borrow on purpose (`Tell::PanicDemo`). It exists to show *where* a panic
+is reported: because ahoi carries `#[track_caller]` from the public API down to
+the `RefCell` borrow, a `--dev` build blames the caller's own line —
+
+```
+panicked at playgrounds\ahoi-wasm\src\lib.rs:265:39:
+RefCell already mutably borrowed
+```
+
+— rather than a line inside ahoi-core. Those locations are compiled out of
+release builds; `scripts/check-wasm-release.sh` enforces that.
+
+Note that wasm panics abort the module, so the page must be reloaded afterwards.
+
 ## Solid Js
 
 ```sh

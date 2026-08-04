@@ -18,6 +18,7 @@ impl<A, R> Clone for Callback<A, R> {
 impl<A, R> Copy for Callback<A, R> {}
 
 impl<A: 'static, R: 'static> Callback<A, R> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new(runner: impl Fn(A) -> R + 'static) -> Self {
         let executer_id = runtime::insert::insert_executer_runner_state(runner);
         return Self {

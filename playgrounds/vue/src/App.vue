@@ -10,6 +10,7 @@ import Counter from "./Counter.vue";
 import Items from "./Items.vue";
 import Fruits from "./Fruits.vue";
 import Panel from "./Panel.vue";
+import PanicDemo from "./PanicDemo.vue";
 
 const showPanel = ref(false);
 </script>
@@ -28,5 +29,6 @@ const showPanel = ref(false);
                 <Panel />
             </PierProvider>
         </section>
+        <PanicDemo />
     </PierProvider>
 </template>

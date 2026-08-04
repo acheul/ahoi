@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Tests run with `debug_assertions` on, which is the only configuration where
+  # the creation-site registry exists. The release check exists because that
+  # code path is `#[cfg]`-ed out during tests and would otherwise bit-rot
+  # unnoticed — see `packages/ahoi-core/src/utils/location.rs`.
+  test:
+    name: test + release check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Test (debug — location tracking on)
+        run: cargo test --workspace --all-targets
+
+      - name: Doc tests
+        run: cargo test --workspace --doc
+
+      # Type-checks everything behind `#[cfg(not(debug_assertions))]`, which no
+      # test run ever compiles.
+      - name: Check release profile (location tracking off)
+        run: cargo check --workspace --all-targets --release
+
+  # The "no source paths in release" constraint rests entirely on
+  # `#[cfg(debug_assertions)]` gates; nothing in the code enforces it. This
+  # builds a real release wasm and fails if the debug-only location registry
+  # survived into it.
+  wasm-release-guard:
+    name: wasm release guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: wasm
+
+      - run: scripts/check-wasm-release.sh

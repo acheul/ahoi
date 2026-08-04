@@ -32,6 +32,7 @@ impl<A, R> Deref for Action<A, R> {
 }
 
 impl<A: 'static, R: 'static> Action<A, R> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new<Func, Fut>(runner: Func) -> Self
     where
         Func: Fn(A) -> Fut + 'static,

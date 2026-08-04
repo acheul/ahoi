@@ -12,6 +12,7 @@
     import Items from "./Items.svelte";
     import Fruits from "./Fruits.svelte";
     import Panel from "./Panel.svelte";
+    import PanicDemo from "./PanicDemo.svelte";
 
     providePier("Top");
     let showPanel = $state(false);
@@ -29,3 +30,4 @@
         <Panel />
     {/if}
 </section>
+<PanicDemo />
