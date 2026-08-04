@@ -2,7 +2,7 @@
  * SolidJS adapter for the ahoi bridge.
  *
  * Key types come from whatever exporter you use (ts-rs, Tsify, Tsain, ...);
- * the `{Hail,Tell}Rets` maps come from `#[derive(AhoiRets)]` on the Rust side.
+ * the `{Hail,Tell}Rets` maps come from `#[derive(Rets)]` on the Rust side.
  *
  * ```tsx
  * import wasmInit, { pier, hail, clear, write, tell, abi_version } from "../wpkg/wpkg.js";
