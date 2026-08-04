@@ -10,7 +10,7 @@
 - [x] publish: crate & npm
 - [ ] build a book
 
-- [ ] panic location debug (high priority)
+- [x] panic location debug (high priority)
 - [ ] mut-borrow guard by path (low priority)
 
 - [ ] support tsain feature
