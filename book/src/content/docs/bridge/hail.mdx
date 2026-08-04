@@ -1,0 +1,146 @@
+---
+title: Hail
+description: A hail binds one Rust value to one JS signal. Read-only or read-write, pushed in batches.
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+A hail is a **channel for one value**. Rust holds the value, JS gets a signal
+that tracks it.
+
+## Read-only or read-write
+
+Two constructors, and the choice decides what JS gets.
+
+```rust
+fn run_hail(key: Hail) -> JsValue {
+    let state = use_context::<Stock<State>>().unwrap();
+    match key {
+        // read-write — JS gets a value and a setter
+        Hail::Count => state.count().set_hail::<Converter>(),
+
+        // read-only — JS gets a value
+        Hail::Doubled => state.count().memo(|c| *c * 2).set_read_hail::<Converter>(),
+    }
+}
+```
+
+`set_hail` needs something writable. `set_read_hail` works on anything you can
+read.
+
+| You have | Can use |
+| --- | --- |
+| `Stock<T>` | both |
+| `ReadStock<T>` | `set_read_hail` |
+| `Memo<T>` | `set_read_hail` |
+| `Resource<T>` | `set_read_hail` |
+
+Like `run_pier`, `run_hail` runs once per key — when a component first asks for
+it. After that the value is pushed.
+
+## Reading it
+
+<Tabs syncKey="framework">
+<TabItem label="Solid">
+```tsx
+const sphere = usePier();
+
+const [count, setCount] = sphere.hail("Count"); // () => number
+const doubled = sphere.readHail("Doubled"); // () => number
+
+setCount(count() + 1);
+```
+</TabItem>
+<TabItem label="React">
+```tsx
+const [count, setCount] = useHail("Count"); // number
+const doubled = useReadHail("Doubled"); // number
+
+setCount(count + 1);
+```
+</TabItem>
+<TabItem label="Vue">
+```ts
+const count = useHail("Count"); // WritableComputedRef<number>
+const doubled = useReadHail("Doubled"); // ComputedRef<number>
+
+count.value++; // or v-model, or count++ in a template
+```
+</TabItem>
+<TabItem label="Svelte">
+```ts
+const count = useHail("Count"); // Writable<number>
+const doubled = useReadHail("Doubled"); // Readable<number>
+
+$count += 1;
+```
+</TabItem>
+</Tabs>
+
+Each adapter returns whatever is idiomatic for that framework. A Vue hail is a
+writable ref, so `v-model` works on it directly. A Svelte hail is a store, so
+`$count` works.
+
+## Keys can carry data
+
+A key is any value your enum can be. Give a variant a field and the key becomes
+an object.
+
+```rust
+#[derive(Rets, Serialize, Deserialize)]
+pub enum Hail {
+    #[ret(Vec<i32>)]
+    Items,
+    #[ret(Option<i32>)]
+    Item(usize),
+}
+```
+
+```ts
+sphere.readHail("Items"); // number[]
+sphere.readHail({ Item: 3 }); // number | undefined
+```
+
+That is plain serde. No constructors, no wrapper objects — the key is the value
+you write.
+
+## Values that may be absent
+
+Some values are not always there. An index past the end of a `Vec`, a missing
+map key, a field on the wrong enum variant.
+
+Those become `OptStock<T>` on the Rust side and `undefined` on the JS side, so
+declare the ret as `Option<T>`:
+
+```rust
+#[ret(Option<i32>)]
+Item(usize),
+```
+
+```rust
+Hail::Item(i) => state.items().get(i).set_hail::<Converter>(),
+```
+
+Writing to an absent path is simply ignored. It does not panic.
+
+## Writes are precise
+
+Ahoi tracks which value each hail actually read. When you write, only the hails
+that depend on that value are recomputed.
+
+Derivation is **path-selective**. Writing `items[0]` notifies subscribers of
+that path and of its ancestors — but not of `items[1]`.
+
+## One dispatch per change
+
+Recomputed hails are collected and sent to JS **in a single batch** per
+propagation cycle.
+
+One write that touches twenty hails costs one crossing, not twenty. You do not
+need to batch anything by hand.
+
+## Next
+
+Hails are how values come out. [Tells](../tell/) are how commands go in.

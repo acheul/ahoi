@@ -6,7 +6,8 @@ members = [
     "packages/ahoi-stock-macro",
     "packages/ahoi-rets-macro",
     "playgrounds/ahoi-wasm",
-    "playgrounds/bench"
+    "playgrounds/bench",
+    "book/examples/rust"
 ]
 exclude = []
 
