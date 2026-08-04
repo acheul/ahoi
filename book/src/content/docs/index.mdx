@@ -1,0 +1,39 @@
+---
+title: Ahoi!
+description: Reactivity from Rust to JS. Rust owns the state, your JS framework renders it.
+template: splash
+# Without this the home page would be titled "Ahoi | Ahoi".
+head:
+  - tag: title
+    content: Ahoi! — Reactivity from Rust to JS
+hero:
+  tagline: Render components with JS, manage state with Rust — the best of both.
+  actions:
+    - text: Get started
+      link: getting-started/what-is-ahoi/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/acheul/ahoi
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid>
+  <Card title="Rust holds the truth">
+    All state, derivations, and effects live in Rust. There is one source of
+    truth, and it is typed.
+  </Card>
+  <Card title="JS just renders">
+    Your components subscribe to values and push user input back. Nothing else.
+  </Card>
+  <Card title="Four adapters">
+    Solid, React, Vue, and Svelte. The core is framework-agnostic, so plain JS
+    works too.
+  </Card>
+  <Card title="Typed across the bridge">
+    Keys are plain values. Their return types come from generated maps, so the
+    JS side knows what each key gives back.
+  </Card>
+</CardGrid>
