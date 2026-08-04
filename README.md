@@ -10,6 +10,7 @@
 [![crates.io](https://img.shields.io/crates/v/ahoi.svg)](https://crates.io/crates/ahoi)
 [![npm](https://img.shields.io/npm/v/@acheul/ahoi-js.svg)](https://www.npmjs.com/package/@acheul/ahoi-js)
 [![docs.rs](https://img.shields.io/docsrs/ahoi)](https://docs.rs/ahoi)
+[![Book](https://img.shields.io/badge/Book-v0.1.1-blue)](https://acheul.github.io/ahoi/)
 
 Ahoi is a fine-grained reactive state engine written in Rust. Rust owns the data
 and reactivity; a JS framework owns rendering. The two talk over a thin,
@@ -17,6 +18,8 @@ type-safe wasm bridge.
 
 Adapters ship for **Solid, React, Vue, and Svelte** — the core is
 framework-agnostic, so plain JS works too.
+
+Look the [Book](https://acheul.github.io/ahoi/) to get started!
 
 ---
 
