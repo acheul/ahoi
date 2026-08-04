@@ -15,9 +15,13 @@ from Rust, a write sent back, a command, and a derived value recomputed in Rust.
 
 Pick your framework in the tabs. The choice follows you across the whole book.
 
-<Example name="counter">
+<Example name="counter" region="all">
   <CounterIsland client:only="@astrojs/solid-js" slot="demo" />
 </Example>
+
+The Rust panel is the whole file, so it also declares a couple of keys — `Items`
+and `PushItem` — that a [later page](../../bridge/hail/#keys-can-carry-data)
+uses. Ignore them for now.
 
 The demo above is not a recording. It is this page running the code in the
 Solid tab, against the Rust in the top panel, compiled to wasm.

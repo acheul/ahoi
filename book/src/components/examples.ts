@@ -52,6 +52,9 @@ export function readRegion(path: string, name: string): string {
   const start = new RegExp(`^\\s*//\\s*#region\\s+${escaped}\\s*$`);
   const end = new RegExp(`^\\s*//\\s*#endregion\\s+${escaped}\\s*$`);
 
+  // Any *other* region's markers must not survive into the shown snippet.
+  const anyMarker = /^\s*\/\/\s*#(?:end)?region\b/;
+
   const blocks: string[] = [];
   let current: string[] | null = null;
 
@@ -61,7 +64,7 @@ export function readRegion(path: string, name: string): string {
     } else if (end.test(line)) {
       if (current) blocks.push(current.join('\n').replace(/^\n+|\n+$/g, ''));
       current = null;
-    } else if (current) {
+    } else if (current && !anyMarker.test(line)) {
       current.push(line);
     }
   }

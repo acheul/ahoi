@@ -6,6 +6,8 @@ sidebar:
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
+import Example from '../../../components/Example.astro';
+import ItemsIsland from '../../../../examples/items/solid/island.tsx';
 
 A hail is a **channel for one value**. Rust holds the value, JS gets a signal
 that tracks it.
@@ -120,10 +122,25 @@ Item(usize),
 ```
 
 ```rust
-Hail::Item(i) => state.items().get(i).set_hail::<Converter>(),
+Hail::Item(index) => state.items().get(index).set_hail::<Converter>(),
 ```
 
 Writing to an absent path is simply ignored. It does not panic.
+
+## Try it
+
+`Items` is a plain list. `Item(0)` is derived from it — writable, and
+`undefined` once the list is empty.
+
+Push and pop go through [tells](../tell/); the `+1` button writes straight into
+the derived path.
+
+<Example name="items" jsOnly>
+  <ItemsIsland client:only="@astrojs/solid-js" slot="demo" />
+</Example>
+
+Watch what happens when you pop the list empty: `item 0` becomes `undefined`
+rather than throwing, and `+1` on it does nothing.
 
 ## Writes are precise
 

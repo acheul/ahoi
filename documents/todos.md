@@ -8,7 +8,7 @@
 - [ ] support other than serde-wasm-bindgen converter?
 
 - [x] publish: crate & npm
-- [ ] build a book
+- [x] build a book
 
 - [x] panic location debug (high priority)
 - [ ] mut-borrow guard by path (low priority)
