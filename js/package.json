@@ -39,7 +39,9 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "test": "tsc -p tsconfig.tests.json",
+    "test:types": "tsc -p tsconfig.tests.json",
+    "test:runtime": "node tests/storage.test.mjs",
+    "test": "pnpm test:types && pnpm build && pnpm test:runtime",
     "prepublishOnly": "pnpm build"
   },
   "peerDependencies": {

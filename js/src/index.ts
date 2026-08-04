@@ -80,8 +80,51 @@ export function checkAbi(abi_version: (() => number) | undefined): void {
     }
 }
 
+/**
+ * Cache key for a hail key value.
+ *
+ * Keys follow serde's externally-tagged shape, so almost all of them are either
+ * a bare variant name or a single-variant object with a primitive payload.
+ * Both are handled without serialising anything, which matters because React
+ * resolves a key on every render.
+ *
+ * The three branches cannot collide: serde variant names are Rust identifiers,
+ * so they contain neither `\0` nor the `{`/`[` that opens a JSON fallback.
+ */
+function keyOf(key: unknown): string {
+    if (typeof key === "string") return key;
+
+    if (key !== null && typeof key === "object" && !Array.isArray(key)) {
+        const names = Object.keys(key);
+        if (names.length === 1) {
+            const name = names[0]!;
+            const payload = (key as Record<string, unknown>)[name];
+            const kind = typeof payload;
+            if (kind === "number" || kind === "string" || kind === "boolean") {
+                // The type tag keeps `{ Item: 3 }` and `{ Item: "3" }` apart,
+                // which a bare concatenation would merge.
+                return name + "\u0000" + kind[0] + payload;
+            }
+        }
+    }
+
+    // Anything else — a struct payload, say. Object property order is not
+    // meaningful but `JSON.stringify` preserves it, so sort on the way out:
+    // two callers spelling the same key differently must not fork the cache.
+    return JSON.stringify(key, (_, value) =>
+        value !== null && typeof value === "object" && !Array.isArray(value)
+            ? Object.fromEntries(
+                  Object.keys(value)
+                      .sort()
+                      .map((k) => [k, value[k]]),
+              )
+            : value,
+    );
+}
+
 // Hail Entry
 interface HailEntry<T> {
+    _par_pier_id: SphereId;
     _key_str: string;
     _count: number;
     _accessor: () => T;
@@ -97,7 +140,8 @@ export class AhoiStorage<PierKey, HailKey> {
         HailEntry<any>
     > = new Map();
 
-    private _hail_keys: Map<string, SphereId> = new Map();
+    // <pier-id, <key, hail-id>>
+    private _hail_keys: Map<SphereId, Map<string, SphereId>> = new Map();
 
     /**
      * Constructing a storage fully wires it: the ABI is checked and the
@@ -119,6 +163,7 @@ export class AhoiStorage<PierKey, HailKey> {
         const sphere_id = this._job._enrol_pier(par_pier_id, pier_key);
 
         on_clean_up(() => {
+            this._hail_keys.delete(sphere_id);
             this._job._clear_sphere(sphere_id);
         });
 
@@ -152,8 +197,8 @@ export class AhoiStorage<PierKey, HailKey> {
         on_clean_up: <F extends () => any>(fn: F) => F,
         use_write: boolean,
     ): [() => T, ((_: T) => void) | undefined] => {
-        let _key_str = JSON.stringify(key);
-        let sphere_id = this._hail_keys.get(_key_str);
+        let _key_str = keyOf(key);
+        let sphere_id = this._hail_keys.get(par_pier_id)?.get(_key_str);
         let accessor!: (() => T);
         let writer: ((_: T) => void) | undefined;
 
@@ -184,6 +229,7 @@ export class AhoiStorage<PierKey, HailKey> {
 
             // record to _hails
             this._hails.set(sphere_id, {
+                _par_pier_id: par_pier_id,
                 _count: 1,
                 _key_str,
                 _accessor,
@@ -191,8 +237,13 @@ export class AhoiStorage<PierKey, HailKey> {
                 _setter,
             });
 
-            // record to _keys
-            this._hail_keys.set(_key_str, sphere_id);
+            // record to _hail_keys
+            let _map = this._hail_keys.get(par_pier_id);
+            if (_map === undefined) {
+                _map = new Map();
+                this._hail_keys.set(par_pier_id, _map);
+            }
+            _map.set(_key_str, sphere_id);
         }
 
         // add CleanUp Logic
@@ -210,7 +261,7 @@ export class AhoiStorage<PierKey, HailKey> {
         if (sphere._count <= 0) {
             // delete from _hails & _keys
             this._hails.delete(sphere_id);
-            this._hail_keys.delete(sphere._key_str);
+            this._hail_keys.get(sphere._par_pier_id)?.delete(sphere._key_str);
             // cleare sphere
             this._job._clear_sphere(sphere_id);
         }
