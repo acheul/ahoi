@@ -47,6 +47,10 @@ export default defineConfig({
           label: 'The bridge',
           items: [{ autogenerate: { directory: 'bridge' } }],
         },
+        {
+          label: 'Rust reactivity',
+          items: [{ autogenerate: { directory: 'reactivity' } }],
+        },
       ],
     }),
   ],
