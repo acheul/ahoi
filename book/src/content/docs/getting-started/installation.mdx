@@ -1,0 +1,106 @@
+---
+title: Installation
+description: Add the crate, export the types, build the wasm module, and wire it to your framework.
+sidebar:
+  order: 2
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components';
+import Example from '../../../components/Example.astro';
+
+Ahoi has two halves. A Rust crate that holds the state, and an npm package that
+connects it to your framework.
+
+## 1. The Rust side
+
+Add the crate. The `serde-wasm-bindgen` feature gives you a ready-made
+converter for values crossing the bridge.
+
+```toml title="Cargo.toml"
+[dependencies]
+ahoi = { version = "0.1", features = ["serde-wasm-bindgen"] }
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+wasm-bindgen = "0.2"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+```
+
+`cdylib` is what produces the wasm module. `rlib` keeps `cargo test` working.
+
+## 2. Export the types
+
+Ahoi does not convert Rust types to TypeScript. Pick an exporter you like —
+[ts-rs] or [Tsify] — and use it for your key and data types.
+
+Ahoi adds the one thing those tools cannot know: **what each key returns**.
+Write a test that generates the map.
+
+```rust title="src/lib.rs"
+#[test]
+fn generate() {
+    ahoi::js_bridge::TsFile::new()
+        .with::<Hail>()
+        .with::<Tell>()
+        .export("./bindings/Rets.ts");
+}
+```
+
+Run `cargo test` and you get:
+
+```ts title="bindings/Rets.ts"
+export type HailRets = { Count: number; Doubled: number };
+export type TellRets = { Increase: number };
+```
+
+## 3. Build the wasm module
+
+```bash
+wasm-pack build --target web
+```
+
+This writes a `pkg/` directory. Your JS imports the module from there.
+
+Re-run it whenever the Rust changes. Wasm cannot hot-reload, so a dev server
+needs a full page refresh to pick up a new build.
+
+## 4. The JS side
+
+```bash
+npm i @acheul/ahoi-js
+```
+
+Every adapter is a subpath of that one package. The framework itself is an
+optional peer dependency, so you only pull in what you use.
+
+| Import | For |
+| --- | --- |
+| `@acheul/ahoi-js/solid` | Solid |
+| `@acheul/ahoi-js/react` | React, and Preact via `preact/compat` |
+| `@acheul/ahoi-js/vue` | Vue |
+| `@acheul/ahoi-js/svelte` | Svelte |
+| `@acheul/ahoi-js` | The framework-agnostic core |
+
+## 5. Wire it up
+
+This is the only setup file an app needs. It hands the six wasm exports to the
+adapter and gives you back the hooks.
+
+<Example name="setup" jsOnly file="ahoi.ts" />
+
+The generic parameters are your key types and the generated ret maps. They are
+what make `useHail("Count")` a `number` instead of `unknown`.
+
+:::note
+`await wasmInit()` at the top level means this module resolves before anything
+imports it. In a bundler that does not allow top-level await, move the init into
+an async function and await it before mounting your app.
+:::
+
+## Next
+
+Build a counter and see the round trip.
+
+[ts-rs]: https://github.com/Aleph-Alpha/ts-rs
+[Tsify]: https://github.com/madonoharu/tsify

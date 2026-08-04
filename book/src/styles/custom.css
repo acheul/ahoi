@@ -1,0 +1,42 @@
+/* Ahoi book theme.
+   Light first, one accent colour, no gradients or glow. */
+
+:root {
+  --sl-font:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --sl-font-mono:
+    ui-monospace, 'JetBrains Mono', 'SFMono-Regular', 'Cascadia Mono', Menlo,
+    Consolas, monospace;
+
+  --sl-content-width: 48rem;
+
+  /* Dark theme (Starlight's default scope). */
+  --sl-color-accent-low: #0a2b34;
+  --sl-color-accent: #1c8ba8;
+  --sl-color-accent-high: #a6dbe8;
+  --sl-color-text-accent: #7cc7da;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #ddeef3;
+  --sl-color-accent: #0e7490;
+  --sl-color-accent-high: #08414f;
+  --sl-color-text-accent: #0e7490;
+}
+
+/* Calmer headings — the default weights read a little shouty. */
+.sl-markdown-content :is(h2, h3, h4) {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.sl-markdown-content h2 {
+  margin-top: 2.5rem;
+}
+
+/* The wordmark is wide, so cap its height rather than its width. */
+.site-title img {
+  height: 1.5rem;
+  width: auto;
+}

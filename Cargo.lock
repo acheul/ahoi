@@ -15,6 +15,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ahoi-book-examples"
+version = "0.1.1"
+dependencies = [
+ "ahoi",
+ "console_error_panic_hook",
+ "serde",
+ "serde-wasm-bindgen",
+ "ts-rs",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "ahoi-core"
 version = "0.1.1"
 dependencies = [

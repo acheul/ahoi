@@ -1,0 +1,155 @@
+---
+title: Tell
+description: A tell is a one-shot command from JS to Rust. It can take arguments and return a value.
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+A tell is a **command**. JS asks Rust to do something, and Rust does it
+immediately.
+
+Unlike a hail, a tell is not a subscription. Nothing is pushed back later.
+
+## Sending one
+
+<Tabs syncKey="framework">
+<TabItem label="Solid">
+```tsx
+const sphere = usePier();
+
+sphere.tell("Increase");
+sphere.tell({ PushItem: 7 });
+```
+</TabItem>
+<TabItem label="React">
+```tsx
+const tell = useTell();
+
+tell("Increase");
+tell({ PushItem: 7 });
+```
+</TabItem>
+<TabItem label="Vue">
+```ts
+const tell = useTell();
+
+tell("Increase");
+tell({ PushItem: 7 });
+```
+</TabItem>
+<TabItem label="Svelte">
+```ts
+const tell = useTell();
+
+tell("Increase");
+tell({ PushItem: 7 });
+```
+</TabItem>
+</Tabs>
+
+## The Rust side
+
+```rust
+#[derive(Rets, Serialize, Deserialize)]
+pub enum Tell {
+    #[ret(i32)]
+    Increase,
+    PushItem(i32),
+    #[ret(Option<i32>)]
+    PopItem,
+}
+
+wasm_bindgen_tell!(Tell, run_tell, Converter);
+
+fn run_tell(tell: Tell) -> JsValue {
+    let state = use_context::<Stock<State>>().unwrap();
+    match tell {
+        Tell::Increase => {
+            let new_count = {
+                let mut count = state.count().write();
+                *count += 1;
+                *count
+            };
+            serde_wasm_bindgen::to_value(&new_count).unwrap()
+        }
+        Tell::PushItem(v) => {
+            state.items().write().push(v);
+            JsValue::undefined()
+        }
+        Tell::PopItem => {
+            let popped = state.items().write().pop();
+            serde_wasm_bindgen::to_value(&popped).unwrap()
+        }
+    }
+}
+```
+
+A tell runs inside its pier, so `use_context` finds whatever that pier
+provided.
+
+## Return values
+
+Add `#[ret(..)]` and the tell returns that type in TypeScript.
+
+```ts
+const next = tell("Increase"); // number
+const popped = tell("PopItem"); // number | undefined
+```
+
+Leave `#[ret(..)]` off and the return type is `undefined`. Return
+`JsValue::undefined()` from the runner to match.
+
+## Hold the write guard briefly
+
+Note the extra braces in `Tell::Increase`:
+
+```rust
+let new_count = {
+    let mut count = state.count().write();
+    *count += 1;
+    *count
+};
+```
+
+`write()` returns a guard. While it is alive, that value cannot be read again —
+including by the propagation your write triggers. Keep the guard in a small
+scope and drop it before you do anything else.
+
+Holding it too long panics with a clear message pointing at your line, rather
+than deadlocking.
+
+## Tell or write?
+
+Both change state. They differ in where the logic lives.
+
+**Write** sends a value straight into a stock. The JS side decides what the new
+value is. Good for form fields, toggles, sliders.
+
+**Tell** asks Rust to decide. Good for validation, computation, or anything
+touching several pieces of state at once.
+
+A rule of thumb: if JS would have to know a business rule to compute the new
+value, make it a tell.
+
+## Doing async work
+
+A tell returns immediately, so it is the wrong place to await something.
+
+For async work, store an `Action` in context during `run_pier` and have the tell
+start it. The action mutates state as it goes, and the hails watching that state
+update on their own.
+
+```rust
+Tell::StartTicker(x) => {
+    let Ticker(ticker) = use_context::<Ticker>().unwrap();
+    let _ = ticker.call(x);
+    JsValue::undefined()
+}
+```
+
+## Next
+
+Both hails and tells declare what they return. [Rets](../rets/) is how that
+reaches TypeScript.

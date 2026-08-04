@@ -1,3 +1,4 @@
 packages:
   - js
+  - book
   - playgrounds/*
