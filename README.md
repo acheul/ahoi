@@ -28,6 +28,10 @@ framework-agnostic, so plain JS works too.
 - **JS just renders** — the frontend subscribes to values and pushes user input back.
 - **Bridge is bidirectional** — values flow Rust→JS (push) and JS→Rust (write).
 
+<div align="center">
+    <img src="https://raw.githubusercontent.com/acheul/ahoi/main/documents/PainPoints.png" width="800" />
+</div>
+
 ---
 
 ## Quickstart

@@ -51,6 +51,14 @@ export default defineConfig({
           label: 'Rust reactivity',
           items: [{ autogenerate: { directory: 'reactivity' } }],
         },
+        {
+          label: 'Framework guides',
+          items: [{ autogenerate: { directory: 'frameworks' } }],
+        },
+        {
+          label: 'Operations',
+          items: [{ autogenerate: { directory: 'operations' } }],
+        },
       ],
     }),
   ],
