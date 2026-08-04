@@ -4,6 +4,7 @@ export default function ResourceDemo() {
     const count = useReadHail("Count");
     const tenTimes = useReadHail("TenTimes"); // number | undefined
     const loading = useReadHail("TenTimesLoading");
+    const running = useReadHail("TickerRunning"); // Action state
     const tell = useTell();
 
     return (
@@ -16,6 +17,13 @@ export default function ResourceDemo() {
             <button id="bump-1" onClick={() => tell({ Bump: 1 })}>
                 +1
             </button>
+            <button id="start" onClick={() => tell({ StartTicker: 1 })}>
+                start ticker (+1/s)
+            </button>
+            <button id="stop" onClick={() => tell("StopTicker")}>
+                stop
+            </button>
+            <span id="running">{running ? " ticking…" : ""}</span>
         </div>
     );
 }

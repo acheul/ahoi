@@ -5,6 +5,9 @@ sidebar:
   order: 2
 ---
 
+import Example from '../../../components/Example.astro';
+import PathsIsland from '../../../../examples/paths/solid/island.tsx';
+
 `#[derive(Stock)]` generates one accessor per field, so you can drill into
 nested state and get a reactive handle on just that part.
 
@@ -71,7 +74,17 @@ notify `items[1]`.
 So a list of a thousand rows does not rerender because one row changed. You get
 that without writing any comparison logic.
 
-## Adding your own methods
+## See the selectivity
+
+On the Rust side of this demo, one effect watches `items[0]` and another
+watches `items[1]`. Each counts how often it actually ran.
+
+<Example name="paths" jsOnly>
+  <PathsIsland client:only="@astrojs/solid-js" slot="demo" />
+</Example>
+
+Bump `items[0]` and only its watcher moves. The two paths share a `Vec`, a
+struct, and a root stock — and still do not wake each other up.
 
 `#[stock]` attaches methods to `Stock<YourType>` through an extension trait.
 

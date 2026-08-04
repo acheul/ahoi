@@ -5,6 +5,7 @@ export default function ResourceDemo() {
     const count = sphere.readHail("Count");
     const tenTimes = sphere.readHail("TenTimes"); // number | undefined
     const loading = sphere.readHail("TenTimesLoading");
+    const running = sphere.readHail("TickerRunning"); // Action state
 
     return (
         <div class="demo">
@@ -16,6 +17,13 @@ export default function ResourceDemo() {
             <button id="bump-1" onClick={() => sphere.tell({ Bump: 1 })}>
                 +1
             </button>
+            <button id="start" onClick={() => sphere.tell({ StartTicker: 1 })}>
+                start ticker (+1/s)
+            </button>
+            <button id="stop" onClick={() => sphere.tell("StopTicker")}>
+                stop
+            </button>
+            <span id="running">{running() ? " ticking…" : ""}</span>
         </div>
     );
 }

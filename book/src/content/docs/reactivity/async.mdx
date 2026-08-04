@@ -123,7 +123,9 @@ read once the first request comes back still registers as a dependency.
 
 ## Try it
 
-This resource multiplies `count` by ten, after a deliberate 600ms wait.
+Both async tools in one place. The resource multiplies `count` by ten, after a
+deliberate 600ms wait. The ticker is an action: `+1` every second until
+stopped.
 
 Press `+1` and watch the order of events: `count` updates immediately, the
 resource marks itself pending, and the new value lands when the wait is over.
@@ -134,9 +136,14 @@ makes it follow.
   <ResourceIsland client:only="@astrojs/solid-js" slot="demo" />
 </Example>
 
-Press `+1` several times quickly and only the last fetch survives. Each run
-cancels the one before it, so you never see an older result overwrite a newer
-one.
+Three things worth trying:
+
+- Press `+1` several times quickly. Only the last fetch survives — each run
+  cancels the one before it, so an older result never overwrites a newer one.
+- Start the ticker. Every tick moves `count`, and the resource refetches each
+  time. Nobody wired those together; they both just depend on `count`.
+- Stop it. The count freezes exactly where it is, and `ticking…` disappears —
+  that indicator is a memo over the action's own `pending()` state.
 
 ## Which one
 
