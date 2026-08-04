@@ -8,7 +8,11 @@
     "build:wasm": "wasm-pack build examples/rust --target web --out-dir pkg",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "check:react": "tsc --noEmit -p examples/tsconfig.react.json",
+    "check:vue": "vue-tsc --noEmit -p examples/tsconfig.vue.json",
+    "check:svelte": "svelte-check --tsconfig examples/tsconfig.svelte.json",
+    "check:examples": "pnpm check && pnpm check:react && pnpm check:vue && pnpm check:svelte"
   },
   "dependencies": {
     "@acheul/ahoi-js": "workspace:*",
@@ -18,5 +22,17 @@
     "astro": "^7.1.6",
     "sharp": "^0.35.3",
     "solid-js": "^1.9.14"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "svelte": "^5.56.8",
+    "svelte-check": "^4.7.4",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.40",
+    "vue-tsc": "^2.2.12"
   }
 }

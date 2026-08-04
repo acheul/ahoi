@@ -1,0 +1,4 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": ["**/vue/**/*.ts", "**/vue/**/*.vue", "rust/pkg/*.d.ts"]
+}

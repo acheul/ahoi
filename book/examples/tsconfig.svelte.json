@@ -1,0 +1,7 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "types": ["svelte"]
+  },
+  "include": ["**/svelte/**/*.ts", "**/svelte/**/*.svelte", "rust/pkg/*.d.ts"]
+}

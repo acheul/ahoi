@@ -1,15 +1,28 @@
 name: Book
 
-# Deploys the book to GitHub Pages.
+# Builds and type-checks the book, and deploys it to GitHub Pages from `main`.
 # Requires Settings -> Pages -> Source: "GitHub Actions" to be enabled once.
+#
+# Pull requests run the build job only, so a broken example is caught before it
+# reaches `main` rather than at deploy time.
 on:
   push:
     branches: [main]
+    # Kept in sync with `pull_request.paths` below by hand — GitHub Actions
+    # does not support YAML anchors.
     paths:
       - "book/**"
       - ".github/workflows/book.yml"
       # The live demos compile the crate and import the npm package, so a
       # change to either can break the book.
+      - "packages/**"
+      - "js/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  pull_request:
+    paths:
+      - "book/**"
+      - ".github/workflows/book.yml"
       - "packages/**"
       - "js/**"
       - "Cargo.toml"
@@ -62,6 +75,11 @@ jobs:
 
       - run: pnpm -C book build:wasm
 
+      # Type-checks every example file against the generated bindings. Only the
+      # Solid example is compiled by the build, so without this the React, Vue,
+      # and Svelte snippets could drift from the API they document.
+      - run: pnpm -C book check:examples
+
       - run: pnpm -C book build
 
       - uses: actions/upload-pages-artifact@v5
@@ -71,6 +89,8 @@ jobs:
   deploy:
     name: deploy
     needs: build
+    # Pull requests build and check, but never publish.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

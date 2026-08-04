@@ -1,5 +1,18 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    // The only JSX the Astro build compiles is the Solid island.
+    "jsxImportSource": "solid-js"
+  },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  // Each of these is checked by its own config under `examples/`, because a
+  // single tsconfig cannot hold two different `jsxImportSource` values.
+  "exclude": [
+    "dist",
+    // wasm-pack output — generated glue, not ours to lint.
+    "examples/rust/pkg",
+    "examples/**/react/**",
+    "examples/**/vue/**",
+    "examples/**/svelte/**"
+  ]
 }
