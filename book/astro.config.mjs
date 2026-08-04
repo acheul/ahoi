@@ -31,7 +31,9 @@ export default defineConfig({
       social: [{ icon: 'github', label: 'GitHub', href: repo }],
       editLink: { baseUrl: `${repo}/edit/main/book/` },
       lastUpdated: true,
-      customCss: ['./src/styles/custom.css'],
+      // Comfortaa is the logo's typeface; headings reuse it. Self-hosted
+      // rather than loaded from Google Fonts — no external request, no flash.
+      customCss: ['@fontsource-variable/comfortaa', './src/styles/custom.css'],
       sidebar: [
         {
           label: 'Getting Started',
