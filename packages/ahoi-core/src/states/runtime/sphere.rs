@@ -38,34 +38,44 @@ pub fn current_sphere_id() -> Option<SphereId> {
 }
 
 /// Register created states
+/// * `.expect` sits outside the closure, so `#[track_caller]` reaches it and the
+///   "out of sphere" panic can name the user's constructor call.
+#[cfg_attr(debug_assertions, track_caller)]
 fn register_state_to_current_sphere(register: impl FnOnce(&mut Sphere)) {
     RUNTIME
         .with_borrow_mut(|runtime| runtime.update_current_sphere(register))
         .expect("create state out of sphere");
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn register_value_to_current_sphere(value_id: StateId) {
     register_state_to_current_sphere(|sphere| {
         sphere.values.insert(value_id);
     });
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn register_runner_to_current_sphere(runner_id: StateId) {
     register_state_to_current_sphere(|sphere| {
         sphere.runners.insert(runner_id);
     });
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn register_mapper_to_current_sphere(getter: StateId) {
     register_state_to_current_sphere(|sphere| {
         sphere.mappers.insert(getter);
     });
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn register_hail_to_current_sphere(write_callback_id: Option<StateId>) {
-    register_state_to_current_sphere(|sphere| {
+    // Captured out here: the panic below fires inside `register`, and
+    // `#[track_caller]` does not cross the closure boundary.
+    let origin = Location::caller();
+    register_state_to_current_sphere(move |sphere| {
         if sphere.hail.is_some() {
-            panic!("Already has hail")
+            panic_at!(Some(origin), "Already has hail")
         }
         let _ = sphere.hail.replace(write_callback_id);
     });
@@ -88,23 +98,26 @@ pub(crate) fn get_hail_writer_id(sphere_id: SphereId) -> Option<StateId> {
 /// `par_sphere_id` links this sphere to a parent: [`use_context`] resolves up
 /// the chain, and clearing the parent cascades into this sphere (see
 /// [`clear_sphere`]). The parent must already exist when the child is created.
+#[cfg_attr(debug_assertions, track_caller)]
 pub fn make_sphere<R>(par_sphere_id: Option<SphereId>, run: impl FnOnce() -> R) -> (SphereId, R) {
+    // Both panics below fire inside the closure, which `#[track_caller]` cannot
+    // reach — capture the caller here instead.
+    let origin = Location::caller();
+
     // set building_sphere
     RUNTIME.with_borrow_mut(|runtime| {
         // get par sphere
         let par_sphere = match par_sphere_id {
-            Some(par_sphere_id) => Some(
-                runtime
-                    .spheres
-                    .get_mut(&par_sphere_id)
-                    .expect("par-sphere not found"),
-            ),
+            Some(par_sphere_id) => Some(match runtime.spheres.get_mut(&par_sphere_id) {
+                Some(par_sphere) => par_sphere,
+                None => panic_at!(Some(origin), "par-sphere not found"),
+            }),
             None => None,
         };
 
         // set building sphere
         if runtime.building_sphere.is_some() {
-            panic!("sphere cannot be built nested");
+            panic_at!(Some(origin), "sphere cannot be built nested");
         }
 
         // get sphere id
@@ -198,13 +211,15 @@ impl Runtime {
         // * remove from pool
         for value_id in values {
             pool::remove_state(value_id).unwrap();
+            self.unregister_location(&value_id);
         }
 
         // Clear runners
         for runner_id in runners {
             // remove from pool
             let runner = pool::remove_state(runner_id).unwrap();
-            let is_citer = runner.as_runner().unwrap().is_citer();
+            let is_citer: bool = runner.as_runner().unwrap().is_citer();
+            self.unregister_location(&runner_id);
 
             // remove from cite-rels if it's citer
             if is_citer {
@@ -216,6 +231,7 @@ impl Runtime {
         for getter_id in mappers {
             // remove from pool
             pool::remove_state(getter_id).unwrap();
+            self.unregister_location(&getter_id);
         }
 
         // Clear child_spheres
@@ -227,6 +243,7 @@ impl Runtime {
     }
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub fn provide_context<T: 'static>(value: T) -> () {
     let type_id = TypeId::of::<T>();
 
@@ -243,8 +260,11 @@ pub fn provide_context<T: 'static>(value: T) -> () {
 /// Look up a context value of type `T`, walking up the parent-sphere chain.
 /// Returns `None` if no ancestor provided a `T`.
 /// Panics if called outside any sphere or work.
+#[cfg_attr(debug_assertions, track_caller)]
 pub fn use_context<T: Clone + 'static>() -> Option<T> {
     let type_id = TypeId::of::<T>();
+    // Captured outside the closure: see `utils::location`.
+    let origin = Location::caller();
 
     RUNTIME.with_borrow(|runtime| {
         // Resolves starting from the parent of the currently running sphere.
@@ -258,7 +278,7 @@ pub fn use_context<T: Clone + 'static>() -> Option<T> {
                 match runtime.working_spheres.last() {
                     Some(sphere_id) => Some(*sphere_id),
                     None => {
-                        panic!("use_context: out of sphere")
+                        panic_at!(Some(origin), "use_context: out of sphere")
                     }
                 }
             }

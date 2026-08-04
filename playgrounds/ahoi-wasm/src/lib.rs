@@ -25,6 +25,7 @@
 //! | `Tell::AddCount`    | context-stored sync `Callback`                  |
 //! | `Tell::StartTicker` | async `Action` mutating state over time         |
 //! | `Tell::StopTicker`  | cancelling a running `Action`                   |
+//! | `Tell::PanicDemo`   | panic diagnostics: blame lands on the caller    |
 
 use ahoi::js_bridge::SerdeWasmBindgenConverter as Converter;
 use ahoi::js_bridge::*;
@@ -201,6 +202,7 @@ pub enum Tell {
     AddCount(i32),
     StartTicker(i32),
     StopTicker,
+    PanicDemo,
 }
 
 wasm_bindgen_tell!(Tell, run_tell, Converter);
@@ -248,6 +250,19 @@ fn run_tell(tell: Tell) -> JsValue {
         Tell::StopTicker => {
             let Ticker(ticker) = use_context::<Ticker>().unwrap();
             let _ = ticker.cancel();
+            JsValue::undefined()
+        }
+        // Deliberate panic — the classic double-borrow bug in signal libraries:
+        // a write guard is still alive when the same value is read again.
+        //
+        // The point of the demo is *where* the panic is reported. ahoi carries
+        // `#[track_caller]` all the way down to the `RefCell` borrow, so a
+        // `--dev` build blames the `read()` line right below instead of some
+        // line inside ahoi-core. Those locations are compiled out in release
+        // builds, where the same panic reports no position at all.
+        Tell::PanicDemo => {
+            let _guard = state.count().write();
+            let _boom = state.count().read();
             JsValue::undefined()
         }
     }

@@ -41,6 +41,7 @@ impl<F: Future> Future for CitingFuture<F> {
 }
 
 impl<T: 'static> Resource<T> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new<Func, Fut>(runner: Func) -> Self
     where
         Func: Fn() -> Fut + 'static,
@@ -93,6 +94,7 @@ impl<T: 'static> Resource<T> {
         self.data.value.read()
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn set_read_hail<X: HailConverter<Option<T>> + 'static>(self) -> X::HailValue {
         self.data.value.set_read_hail::<X>()
     }

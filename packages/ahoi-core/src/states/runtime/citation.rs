@@ -31,12 +31,18 @@ pub(crate) fn mark_cited(value_id: StateId, path: Path, associated_citer_id: Opt
 fn raw_cite<R>(citer_id: StateId, run: impl FnOnce() -> R, replace_or_accumulate_rels: bool) -> R {
     // 1. Run
     // 1) Set running Cite
-    RUNTIME.with_borrow_mut(|runtime| match runtime.running_cites.0.entry(citer_id) {
-        indexmap::map::Entry::Occupied(_) => {
-            panic!("cite cycle detected");
-        }
-        indexmap::map::Entry::Vacant(v) => {
-            v.insert(Default::default());
+    RUNTIME.with_borrow_mut(|runtime| {
+        // A cycle is detected deep inside propagation, so the caller here is
+        // runtime code, not user code — blame the citer's creation site instead.
+        let origin = runtime.location_of(&citer_id);
+
+        match runtime.running_cites.0.entry(citer_id) {
+            indexmap::map::Entry::Occupied(_) => {
+                panic_at!(origin, "cite cycle detected");
+            }
+            indexmap::map::Entry::Vacant(v) => {
+                v.insert(Default::default());
+            }
         }
     });
 

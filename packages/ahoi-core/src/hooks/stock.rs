@@ -97,6 +97,7 @@ impl<T, Pipe, const OPT: bool> Deref for Stock<T, Pipe, OPT> {
 
 // New ReadStock
 impl<T: 'static> ReadStock<T, PooledPipe<T>, false> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new(value: T) -> Self {
         let value_id = runtime::insert::insert_value_state(value);
         Self {
@@ -111,10 +112,12 @@ impl<T: 'static> ReadStock<T, PooledPipe<T>, false> {
 
 /// New Stock
 impl<T: 'static> Stock<T> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new(value: T) -> Self {
         Self(ReadStock::new(value))
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub(super) fn new_citer_associated_stock(value: T, citer_id: StateId) -> Self {
         let mut stock = ReadStock::new(value);
         stock.associated_citer_id.replace(citer_id);
@@ -125,6 +128,7 @@ impl<T: 'static> Stock<T> {
 
 // Manually mark dirty
 impl<T, Pipe, const OPT: bool> Stock<T, Pipe, OPT> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn mark_dirty(&self) {
         runtime::propagation::mark_dirty(self.value_id, self.path)
     }
@@ -132,6 +136,9 @@ impl<T, Pipe, const OPT: bool> Stock<T, Pipe, OPT> {
 
 // Read
 impl<T, Pipe: Pipeline<T>, const OPT: bool> ReadStock<T, Pipe, OPT> {
+    /// `track_caller` here is not about the `Option` result — it is so a
+    /// `BorrowError` raised down in `pool::get_state` names the user's read.
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_peek(&self) -> Option<Ref<'static, T>> {
         let state = states::pool::get_state(self.value_id)?;
         Ref::filter_map(state, |state: &'_ states::State| {
@@ -142,6 +149,7 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> ReadStock<T, Pipe, OPT> {
         .ok()
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_read(&self) -> Option<Ref<'static, T>> {
         // 1. pull: settle the producing citer first so the value is fresh.
         // * Must run before `try_peek` — the producer's runner writes this very
@@ -156,6 +164,7 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> ReadStock<T, Pipe, OPT> {
         return value;
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_memo<U: PartialEq + 'static>(
         self,
         runner: impl Fn(Option<&T>) -> U + 'static,
@@ -168,6 +177,7 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> ReadStock<T, Pipe, OPT> {
         Memo::new(runner)
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn set_read_hail<X: HailConverter<T> + 'static>(self) -> X::HailValue
     where
         T: 'static,
@@ -178,14 +188,17 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> ReadStock<T, Pipe, OPT> {
 }
 
 impl<T, Pipe: Pipeline<T>> ReadStock<T, Pipe, false> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn peek(&self) -> Ref<'static, T> {
         self.try_peek().unwrap()
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn read(&self) -> Ref<'static, T> {
         self.try_read().unwrap()
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn memo<U: PartialEq + 'static>(self, runner: impl Fn(&T) -> U + 'static) -> Memo<U>
     where
         T: 'static,
@@ -197,6 +210,9 @@ impl<T, Pipe: Pipeline<T>> ReadStock<T, Pipe, false> {
 }
 
 impl<T, Pipe: Pipeline<T>, const OPT: bool> Stock<T, Pipe, OPT> {
+    /// See [`ReadStock::try_peek`]: carries the caller down to the `RefCell`
+    /// borrow so a `BorrowMutError` blames the user's write.
+    #[cfg_attr(debug_assertions, track_caller)]
     fn try_write_silent(&self) -> Option<RefMut<'static, T>> {
         let state = states::pool::get_mut_state(self.value_id)?;
         RefMut::filter_map(state, |state: &'_ mut states::State| {
@@ -207,6 +223,7 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> Stock<T, Pipe, OPT> {
         .ok()
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_write(&self) -> Option<RefMut<'static, T>> {
         // 1. peek_mut value
         let value = self.try_write_silent()?;
@@ -217,6 +234,7 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> Stock<T, Pipe, OPT> {
         return Some(value);
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_set(&self, value: T) -> Option<()>
     where
         T: 'static,
@@ -226,6 +244,7 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> Stock<T, Pipe, OPT> {
         Some(())
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn set_hail<X: HailConverter<T> + 'static>(self) -> X::HailValue
     where
         T: 'static,
@@ -236,10 +255,12 @@ impl<T, Pipe: Pipeline<T>, const OPT: bool> Stock<T, Pipe, OPT> {
 }
 
 impl<T, Pipe: Pipeline<T>> Stock<T, Pipe, false> {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn write(&self) -> RefMut<'static, T> {
         self.try_write().unwrap()
     }
 
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn set(&self, value: T) -> ()
     where
         T: 'static,

@@ -48,7 +48,7 @@ pub trait HailConverter<T>: Sized {
                 if allow_none {
                     Self::NONE
                 } else {
-                    panic!()
+                    unreachable!()
                 }
             }
         }

@@ -14,6 +14,7 @@ impl Clone for Effect {
 impl Copy for Effect {}
 
 impl Effect {
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn new(runner: impl Fn() -> () + 'static) -> Self {
         let citer_id = runtime::insert::insert_citer_runner_state(runner);
         let effect = Self { citer_id };
