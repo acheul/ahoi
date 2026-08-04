@@ -19,7 +19,7 @@ type-safe wasm bridge.
 Adapters ship for **Solid, React, Vue, and Svelte** — the core is
 framework-agnostic, so plain JS works too.
 
-Look the [Book](https://acheul.github.io/ahoi/) to get started!
+Read the [Book](https://acheul.github.io/ahoi/) to get started!
 
 ---
 
