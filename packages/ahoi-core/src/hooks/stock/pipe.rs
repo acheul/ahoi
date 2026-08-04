@@ -124,6 +124,7 @@ where
     Prev: Pipeline<T>,
     Next: MapNext<T, U>,
 {
+    #[cfg_attr(debug_assertions, track_caller)]
     fn pool(self) -> PooledPipe<U> {
         let pooled_id = runtime::insert::insert_mapper_state(Box::new(self));
         PooledPipe {
@@ -144,6 +145,7 @@ where
 {
     /// Materialize this chained read-stock into a pooled one: its pipeline is
     /// stored as a state, making the handle `Copy`. See [`Stock::pool`].
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn pool(self) -> ReadStock<U, PooledPipe<U>, OPT> {
         let pipeline = self.pipeline.pool();
         return ReadStock {
@@ -170,31 +172,41 @@ where
     /// Note: pooling allocates a mapper state that lives until the sphere is
     /// cleared, so do NOT call `.pool()` inside a reactive closure (it would leak
     /// one mapper per run) — derive inline there instead.
+    #[cfg_attr(debug_assertions, track_caller)]
     pub fn pool(self) -> Stock<U, PooledPipe<U>, OPT> {
-        Stock(self.0.into())
+        Stock(self.0.pool())
     }
 }
 
-// Chained ReadStock Into Pooled ReadStock
+// -----
+
+// Pooled ReadStock From Chained ReadStock Into
+//
+// NOTE: `From::from` is not declared `#[track_caller]` upstream, so the
+// attribute on these impls only helps for statically-resolved calls. When the
+// recorded creation site matters, prefer `.pool()` — it is an inherent method
+// and carries the caller reliably.
 impl<T: 'static, U: 'static, Prev: 'static, Next: 'static, const OPT: bool>
-    Into<ReadStock<U, PooledPipe<U>, OPT>> for ReadStock<U, ChainedPipe<Prev, Next, T, U>, OPT>
+    From<ReadStock<U, ChainedPipe<Prev, Next, T, U>, OPT>> for ReadStock<U, PooledPipe<U>, OPT>
 where
     Prev: Pipeline<T>,
     Next: MapNext<T, U>,
 {
-    fn into(self) -> ReadStock<U, PooledPipe<U>, OPT> {
-        self.pool()
+    #[cfg_attr(debug_assertions, track_caller)]
+    fn from(stock: ReadStock<U, ChainedPipe<Prev, Next, T, U>, OPT>) -> Self {
+        stock.pool()
     }
 }
 
-// Chained Stock Into Pooled Stock
+// Pooled Stock From Chained Stock
 impl<T: 'static, U: 'static, Prev: 'static, Next: 'static, const OPT: bool>
-    Into<Stock<U, PooledPipe<U>, OPT>> for Stock<U, ChainedPipe<Prev, Next, T, U>, OPT>
+    From<Stock<U, ChainedPipe<Prev, Next, T, U>, OPT>> for Stock<U, PooledPipe<U>, OPT>
 where
     Prev: Pipeline<T>,
     Next: MapNext<T, U>,
 {
-    fn into(self) -> Stock<U, PooledPipe<U>, OPT> {
-        self.pool()
+    #[cfg_attr(debug_assertions, track_caller)]
+    fn from(stock: Stock<U, ChainedPipe<Prev, Next, T, U>, OPT>) -> Self {
+        stock.pool()
     }
 }

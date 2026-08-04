@@ -1,26 +1,45 @@
 use super::*;
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn insert_value_state<T: 'static>(value: T) -> StateId {
     let id = pool::insert_state(State::Value(Box::new(value)));
     // register to building sphere
     runtime::sphere::register_value_to_current_sphere(id);
+
+    // register location
+    #[cfg(debug_assertions)]
+    register_location(id, Location::caller());
+
     id
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn insert_mapper_state(getter: Box<dyn Mapper>) -> StateId {
     let id = pool::insert_state(State::Mapper(getter));
     // register to building sphere
     runtime::sphere::register_mapper_to_current_sphere(id);
+
+    // register location
+    #[cfg(debug_assertions)]
+    register_location(id, Location::caller());
+
     id
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 fn insert_runner_state(runner: Runner) -> StateId {
     let id = pool::insert_state(State::Runner(runner));
     // register to building sphere
     runtime::sphere::register_runner_to_current_sphere(id);
+
+    // register location
+    #[cfg(debug_assertions)]
+    register_location(id, Location::caller());
+
     return id;
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn insert_citer_runner_state(f: impl Fn() + 'static) -> StateId {
     return insert_runner_state(Runner::Citer {
         runner: Box::new(f),
@@ -47,6 +66,7 @@ pub(crate) fn register_citer_output(citer_id: StateId, value_id: StateId) {
     });
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn insert_hail_citer_runner_state(
     hail_src_value: (StateId, Path),
     f: impl Fn() + 'static,
@@ -67,6 +87,7 @@ pub(crate) fn insert_hail_citer_runner_state(
     return citer_id;
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn insert_executer_runner_state<A: 'static, R: 'static>(
     f: impl Fn(A) -> R + 'static,
 ) -> StateId {

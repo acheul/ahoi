@@ -47,10 +47,15 @@ impl MutatedNode {
     }
 }
 
+#[cfg_attr(debug_assertions, track_caller)]
 pub(crate) fn mark_dirty(value_id: StateId, mutated_path: Path) {
+    // Captured outside the closure: `#[track_caller]` does not reach into it.
+    // Blames the write itself; the stock's own creation site is the fallback.
+    let origin = Location::caller();
+
     RUNTIME.with_borrow_mut(|runtime| {
         if !runtime.running_batch.is_batching {
-            panic!("Use batch when mutate state");
+            panic_at!(Some(origin), "Use batch when mutate state");
         }
 
         let mut node = runtime

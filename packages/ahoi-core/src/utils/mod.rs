@@ -1,6 +1,7 @@
 use super::*;
 
 pub(crate) mod hail_utils;
+pub(crate) mod location;
 pub(crate) mod path;
 
 // Consistent HashMaker over Local Thread
