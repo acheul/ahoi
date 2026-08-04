@@ -5,6 +5,9 @@ sidebar:
   order: 4
 ---
 
+import Example from '../../../components/Example.astro';
+import ResourceIsland from '../../../../examples/resource/solid/island.tsx';
+
 Three tools, and the choice is mostly about who starts the work and whether it
 can be cancelled.
 
@@ -77,9 +80,9 @@ A `Resource<T>` is an async value that **refetches when its dependencies
 change**. You do not call it.
 
 ```rust
-let profile: Resource<User> = Resource::new(move || {
+let profile: Resource<User> = Resource::new(move || async move {
     let id = *user_id.read(); // dependency
-    async move { fetch_user(id).await }
+    fetch_user(id).await
 });
 ```
 
@@ -111,10 +114,29 @@ const profile = sphere.readHail("Profile"); // User | undefined
 ```
 
 :::note
-Track dependencies **outside** the async block, as in the example above. A
-`read()` inside the future runs after tracking has finished, so it would not
-register — and the resource would never refetch.
+Dependencies are tracked wherever you read them — inside the async block
+included, and even after an `await`.
+
+A resource re-enters its tracking context on every poll, so a value you only
+read once the first request comes back still registers as a dependency.
 :::
+
+## Try it
+
+This resource multiplies `count` by ten, after a deliberate 600ms wait.
+
+Press `+1` and watch the order of events: `count` updates immediately, the
+resource marks itself pending, and the new value lands when the wait is over.
+Nothing subscribes it to `count` — reading the value inside the fetch is what
+makes it follow.
+
+<Example name="resource" jsOnly>
+  <ResourceIsland client:only="@astrojs/solid-js" slot="demo" />
+</Example>
+
+Press `+1` several times quickly and only the last fetch survives. Each run
+cancels the one before it, so you never see an older result overwrite a newer
+one.
 
 ## Which one
 

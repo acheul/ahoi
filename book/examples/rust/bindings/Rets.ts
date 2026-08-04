@@ -7,6 +7,11 @@ export type HailRets = {
   Doubled: number;
   Items: number[];
   Item: number | undefined;
+  Parity: number;
+  Label: string;
+  LabelRuns: number;
+  TenTimes: number | undefined;
+  TenTimesLoading: boolean;
 };
 
 // # Rets of Tell
