@@ -1,0 +1,76 @@
+name: Book
+
+# Deploys the book to GitHub Pages.
+# Requires Settings -> Pages -> Source: "GitHub Actions" to be enabled once.
+on:
+  push:
+    branches: [main, feature/book]
+    paths:
+      - "book/**"
+      - ".github/workflows/book.yml"
+      # The live demos compile the crate and import the npm package, so a
+      # change to either can break the book.
+      - "packages/**"
+      - "js/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once, and never cancel one half-way.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: book
+
+      - uses: jetli/wasm-pack-action@v0.4.0
+
+      - run: pnpm install --frozen-lockfile
+
+      # The npm package is consumed from source via the workspace link, so it
+      # has to be compiled before the book imports it.
+      - run: pnpm -C js build
+
+      - run: pnpm -C book build:wasm
+
+      - run: pnpm -C book build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: book/dist
+
+  deploy:
+    name: deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

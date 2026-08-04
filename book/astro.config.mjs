@@ -41,6 +41,10 @@ export default defineConfig({
             { slug: 'getting-started/quick-start' },
           ],
         },
+        {
+          label: 'The bridge',
+          items: [{ autogenerate: { directory: 'bridge' } }],
+        },
       ],
     }),
   ],

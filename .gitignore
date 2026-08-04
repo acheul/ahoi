@@ -12,6 +12,9 @@ dist
 !.vscode/extensions.json
 .idea
 
+# Astro (book)
+.astro
+
 # Cargo
 .cargo
 target

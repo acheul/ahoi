@@ -1,9 +1,12 @@
 {
   "name": "ahoi-workspace",
   "private": true,
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
     "build:js": "pnpm -C js build",
     "test:js": "pnpm -C js test",
-    "dev:solid": "pnpm -C playgrounds/solid dev"
+    "dev:solid": "pnpm -C playgrounds/solid dev",
+    "dev:book": "pnpm -C book dev",
+    "build:book": "pnpm -C book build"
   }
 }
