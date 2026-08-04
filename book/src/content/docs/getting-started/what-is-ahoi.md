@@ -24,15 +24,43 @@ Ahoi takes a third path:
 You keep your component model, your router, and your ecosystem. You move the
 state out.
 
+## Where the boundary goes
+
+There are three ways to put Rust behind a web frontend. Each one has a line
+where JavaScript stops and Rust begins. What differs is **where that line
+falls**, and who maintains it.
+
+|                    | JS framework + wasm | Rust framework | JS framework + Ahoi |
+| ------------------ | :-----------------: | :------------: | :-----------------: |
+| **Components**     |         JS          |    Rust 💥     |         JS          |
+|                    |                     |                |          ⇅          |
+| **Reactive state** |         JS          |      Rust      |        Rust         |
+|                    |        💥 ⇅         |                |                     |
+| **Rust-side data** |        Rust         |      Rust      |        Rust         |
+
+⇅ is the boundary. 💥 is where it hurts.
+
+**JS framework + wasm** keeps state in JavaScript and calls into Rust for the
+heavy parts. The line falls between your reactive state and your Rust data, and
+**you maintain it by hand**. Every change has to be copied across, both ways,
+forever.
+
+**A Rust framework** removes the line by pulling everything into Rust, including
+your UI components which JS actually fits better.
+
+**Ahoi** moves the line up instead. Components stay in JavaScript; everything
+below them is Rust. The line is still there — but the bridge maintains it, and
+that is the entire job of a hail.
+
 ## Three things cross the bridge
 
 Everything the frontend touches is one of three kinds of key.
 
-| Key      | What it does                                        |
-| -------- | --------------------------------------------------- |
+| Key      | What it does                                           |
+| -------- | ------------------------------------------------------ |
 | **Pier** | Sets up a scope. State and context for part of the UI. |
-| **Hail** | Binds one Rust value to one JS signal.               |
-| **Tell** | Sends a one-shot command to Rust.                    |
+| **Hail** | Binds one Rust value to one JS signal.                 |
+| **Tell** | Sends a one-shot command to Rust.                      |
 
 Keys are plain values, like `"Count"` or `{ Item: 3 }`. There are no
 constructors and no wrapper objects.

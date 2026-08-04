@@ -19,6 +19,9 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.41.6
         version: 0.41.6(@astrojs/markdown-remark@7.2.2)(astro@7.1.6(@astrojs/markdown-remark@7.2.2)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.3)(rollup@4.62.4))(typescript@5.9.3)
+      '@fontsource-variable/comfortaa':
+        specifier: ^5.3.0
+        version: 5.3.0
       astro:
         specifier: ^7.1.6
         version: 7.1.6(@astrojs/markdown-remark@7.2.2)(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@types/node@24.13.3)(rollup@4.62.4)
@@ -763,6 +766,9 @@ packages:
 
   '@expressive-code/plugin-text-markers@0.44.1':
     resolution: {integrity: sha512-B3BsJoJ8CFMlcIX9f+X9tcI3C4zPDO601+YuLi9GheSTNro7ZfqSjLptMQKBHOWZvxnAtY5zvIX7iO/qtBhNBg==}
+
+  '@fontsource-variable/comfortaa@5.3.0':
+    resolution: {integrity: sha512-al/XR/3rUwZRLPAgAN7VsHKudQ27++W2sEQPhRpkg7x9a8VISekS3eQr4c3lICNWDfflz+gVes8dfekL/yY+Ng==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -3470,6 +3476,8 @@ snapshots:
   '@expressive-code/plugin-text-markers@0.44.1':
     dependencies:
       '@expressive-code/core': 0.44.1
+
+  '@fontsource-variable/comfortaa@5.3.0': {}
 
   '@img/colour@1.1.0': {}
 
