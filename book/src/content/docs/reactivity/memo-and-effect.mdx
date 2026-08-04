@@ -5,6 +5,9 @@ sidebar:
   order: 3
 ---
 
+import Example from '../../../components/Example.astro';
+import MemoIsland from '../../../../examples/memo/solid/island.tsx';
+
 You never register a dependency by hand. Any `read()` inside a memo or effect
 records one, and that is what decides what re-runs later.
 
@@ -38,6 +41,25 @@ let label = parity.memo(|p| if *p == 0 { "even" } else { "odd" });
 
 Changing `count` from 1 to 3 recomputes `parity`, gets `1` again, and stops.
 `label` never runs. Chains stay cheap without you checking anything.
+
+## See it stop
+
+That last claim is the kind you normally have to take on faith — nothing
+happening looks exactly like nothing happening.
+
+So this demo counts it. The `label` memo increments a counter every time its
+body actually runs.
+
+<Example name="memo" jsOnly>
+  <MemoIsland client:only="@astrojs/solid-js" slot="demo" />
+</Example>
+
+Press `+2` a few times: `count` climbs, `parity` and `label` sit still, and the
+run counter **does not move**. Press `+1` and it ticks up by one.
+
+That is the whole point of the `PartialEq` bound — and note the counter is a
+hail like any other, so it arrives in the same dispatch as the value it
+explains.
 
 A memo is lazy. It computes on first read, then only when something it read has
 changed.

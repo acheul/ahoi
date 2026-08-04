@@ -36,7 +36,17 @@ fn generate() {
 pub struct State {
     count: i32,
     items: Vec<i32>,
+    /// How many times the `Label` memo's body has actually run.
+    ///
+    /// Reactive on purpose: it has to travel in the same dispatch as everything
+    /// else, so the JS side sees it settle together with the value it explains.
+    label_runs: u32,
 }
+
+/// An async value derived from `count`, created once per pier so both the value
+/// hail and the loading hail observe the same resource.
+#[derive(Clone, Copy)]
+struct TenTimes(Resource<i32>);
 
 #[derive(TS, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[ts(export)]
@@ -50,10 +60,21 @@ fn run_pier(key: Pier) {
     match key {
         Pier::Top => {
             set_js_hail_dispatcher();
-            provide_context(Stock::new(State {
+            let state = Stock::new(State {
                 count: 0,
                 items: vec![10, 20],
-            }));
+                label_runs: 0,
+            });
+            provide_context(state);
+
+            // Reads `count` inside the async block on purpose: a resource
+            // re-enters its tracking context on every poll, so this still
+            // registers as a dependency and drives the refetch.
+            let ten_times = Resource::new(move || async move {
+                gloo_timers::future::TimeoutFuture::new(600).await;
+                *state.count().read() * 10
+            });
+            provide_context(TenTimes(ten_times));
         }
     }
 }
@@ -69,6 +90,17 @@ pub enum Hail {
     Items,
     #[ret(Option<i32>)]
     Item(usize),
+    #[ret(i32)]
+    Parity,
+    #[ret(String)]
+    Label,
+    #[ret(u32)]
+    LabelRuns,
+    /// `undefined` until the first fetch lands.
+    #[ret(Option<i32>)]
+    TenTimes,
+    #[ret(bool)]
+    TenTimesLoading,
 }
 
 wasm_bindgen_enrol_sphere!(@hail, Hail, run_hail, Converter);
@@ -83,6 +115,27 @@ fn run_hail(key: Hail) -> JsValue {
         Hail::Items => state.items().set_read_hail::<Converter>(),
         // path-derived and writable; absent indexes arrive as `undefined`
         Hail::Item(index) => state.items().get(index).set_hail::<Converter>(),
+        Hail::Parity => state.count().memo(|c| *c % 2).set_read_hail::<Converter>(),
+        // Chained on top of `Parity`: it only re-runs when the parity value
+        // itself changes, which is what the demo makes visible.
+        Hail::Label => {
+            let parity = state.count().memo(|c| *c % 2);
+            Memo::new(move || {
+                *state.label_runs().write() += 1;
+                let label = if *parity.read() == 0 { "even" } else { "odd" };
+                label.to_string()
+            })
+            .set_read_hail::<Converter>()
+        }
+        Hail::LabelRuns => state.label_runs().set_read_hail::<Converter>(),
+        Hail::TenTimes => {
+            let TenTimes(resource) = use_context::<TenTimes>().unwrap();
+            resource.set_read_hail::<Converter>()
+        }
+        Hail::TenTimesLoading => {
+            let TenTimes(resource) = use_context::<TenTimes>().unwrap();
+            Memo::new(move || resource.pending()).set_read_hail::<Converter>()
+        }
     }
 }
 
@@ -95,6 +148,8 @@ pub enum Tell {
     PushItem(i32),
     #[ret(Option<i32>)]
     PopItem,
+    /// Adds `n` to the count.
+    Bump(i32),
 }
 
 wasm_bindgen_tell!(Tell, run_tell, Converter);
@@ -117,6 +172,10 @@ fn run_tell(tell: Tell) -> JsValue {
         Tell::PopItem => {
             let popped = state.items().write().pop();
             serde_wasm_bindgen::to_value(&popped).unwrap()
+        }
+        Tell::Bump(n) => {
+            *state.count().write() += n;
+            JsValue::undefined()
         }
     }
 }
