@@ -5,10 +5,13 @@
 export type HailRets = {
   Count: number;
   Doubled: number;
+  Items: number[];
+  Item: number | undefined;
 };
 
 // # Rets of Tell
 export type TellRets = {
   Increase: number;
+  PopItem: number | undefined;
 };
 

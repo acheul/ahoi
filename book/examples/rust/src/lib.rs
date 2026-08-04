@@ -4,8 +4,11 @@
 //!
 //! The `// #region <name>` markers are not decoration: `<Example name="..." />`
 //! slices this file by those names, so what a page shows is literally what
-//! compiles here. Add a demo by adding a region, never by pasting Rust into a
+//! compiles here. Add a demo by adding keys, never by pasting Rust into a
 //! markdown file.
+//!
+//! The key enums and their runners are single shared containers, so there is
+//! one region covering the whole file rather than one per demo.
 
 use ahoi::js_bridge::SerdeWasmBindgenConverter as Converter;
 use ahoi::js_bridge::*;
@@ -28,10 +31,11 @@ fn generate() {
         .export("./bindings/Rets.ts");
 }
 
-// #region counter
+// #region all
 #[derive(Stock, Serialize, Deserialize)]
 pub struct State {
     count: i32,
+    items: Vec<i32>,
 }
 
 #[derive(TS, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -46,7 +50,10 @@ fn run_pier(key: Pier) {
     match key {
         Pier::Top => {
             set_js_hail_dispatcher();
-            provide_context(Stock::new(State { count: 0 }));
+            provide_context(Stock::new(State {
+                count: 0,
+                items: vec![10, 20],
+            }));
         }
     }
 }
@@ -58,6 +65,10 @@ pub enum Hail {
     Count,
     #[ret(i32)]
     Doubled,
+    #[ret(Vec<i32>)]
+    Items,
+    #[ret(Option<i32>)]
+    Item(usize),
 }
 
 wasm_bindgen_enrol_sphere!(@hail, Hail, run_hail, Converter);
@@ -69,6 +80,9 @@ fn run_hail(key: Hail) -> JsValue {
         Hail::Count => state.count().set_hail::<Converter>(),
         // read-only, and recomputed only when `count` actually changes
         Hail::Doubled => state.count().memo(|c| *c * 2).set_read_hail::<Converter>(),
+        Hail::Items => state.items().set_read_hail::<Converter>(),
+        // path-derived and writable; absent indexes arrive as `undefined`
+        Hail::Item(index) => state.items().get(index).set_hail::<Converter>(),
     }
 }
 
@@ -77,6 +91,10 @@ fn run_hail(key: Hail) -> JsValue {
 pub enum Tell {
     #[ret(i32)]
     Increase,
+    // no `#[ret]` — returns undefined
+    PushItem(i32),
+    #[ret(Option<i32>)]
+    PopItem,
 }
 
 wasm_bindgen_tell!(Tell, run_tell, Converter);
@@ -92,6 +110,14 @@ fn run_tell(tell: Tell) -> JsValue {
             };
             serde_wasm_bindgen::to_value(&new_count).unwrap()
         }
+        Tell::PushItem(value) => {
+            state.items().write().push(value);
+            JsValue::undefined()
+        }
+        Tell::PopItem => {
+            let popped = state.items().write().pop();
+            serde_wasm_bindgen::to_value(&popped).unwrap()
+        }
     }
 }
-// #endregion counter
+// #endregion all
