@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useReadHail, useTell } from "../../setup/vue/ahoi";
+import { useReadHail, useTell } from "../../setup/vue/bridge";
 
 const count = useReadHail("Count");
 const tenTimes = useReadHail("TenTimes"); // number | undefined

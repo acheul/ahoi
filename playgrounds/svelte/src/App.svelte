@@ -7,7 +7,7 @@
      * Svelte has no provider component here: `providePier` sets the pier for
      * this component and everything below it.
      */
-    import { providePier } from "./ahoi";
+    import { providePier } from "./bridge";
     import Counter from "./Counter.svelte";
     import Items from "./Items.svelte";
     import Fruits from "./Fruits.svelte";

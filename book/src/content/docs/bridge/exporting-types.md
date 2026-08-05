@@ -14,10 +14,10 @@ details, and re-implementing one inside ahoi would only make you choose again.
 
 Two kinds of type cross the bridge, and they are handled by different tools.
 
-| What | Who handles it |
-| --- | --- |
-| Your key and data types (`Pier`, `Hail`, `Tell`, `Fruit`) | Your exporter: [ts-rs], [Tsify], … |
-| What each key **returns** | Ahoi's [`#[derive(Rets)]`](../rets/) |
+| What                                                      | Who handles it                       |
+| --------------------------------------------------------- | ------------------------------------ |
+| Your key and data types (`Pier`, `Hail`, `Tell`, `Fruit`) | Your exporter: [ts-rs], [Tsify], …   |
+| What each key **returns**                                 | Ahoi's [`#[derive(Rets)]`](../rets/) |
 
 No general-purpose converter can do the second one. It is not a property of a
 type, it is a property of a key.
@@ -39,7 +39,7 @@ pub enum Hail {
 ```
 
 ```ts title="bindings/Hail.ts"
-export type Hail = "Count" | { "Item": number };
+export type Hail = "Count" | { Item: number };
 ```
 
 That is your key type. `Rets.ts` is the return map. You need both.
@@ -61,11 +61,13 @@ export const { PierProvider, usePier } = createAhoi<
   Tell,
   HailRets,
   TellRets
->({ /* wasm exports */ });
+>({
+  /* wasm exports */
+});
 ```
 
-The key types make `sphere.hail("Cont")` a compile error. The ret maps make
-`sphere.hail("Count")` a `number`.
+The key types make `pier.hail("Cont")` a compile error. The ret maps make
+`pier.hail("Count")` a `number`.
 
 ## If your exporter brands keys
 

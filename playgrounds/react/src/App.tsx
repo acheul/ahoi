@@ -4,7 +4,7 @@
  * (same element ids), but hook-shaped.
  */
 import { useState } from "react";
-import { PierProvider, useHail, useReadHail, useTell } from "./ahoi";
+import { PierProvider, useHail, useReadHail, useTell } from "./bridge";
 import type { Fruit } from "../../ahoi-wasm/bindings/Fruit";
 
 function Counter() {

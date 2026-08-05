@@ -42,7 +42,7 @@ Wrap the part of your UI that needs the state.
 <TabItem label="Svelte">
 ```svelte
 <script lang="ts">
-  import { providePier } from "./ahoi";
+  import { providePier } from "./bridge";
   import Counter from "./Counter.svelte";
 
   providePier("Top");
@@ -133,6 +133,11 @@ child of the outer one.
 
 Use a child pier when a section of the UI needs its own state that should
 disappear with it — a modal, a tab panel, a row being edited.
+
+A child pier is not isolated, though. Its own `run_pier`, and every hail and
+tell that runs inside it, can `use_context` anything an ancestor provided. So a
+child pier adds state without having to re-provide what the parent already set
+up — which is what makes small, short-lived scopes cheap.
 
 ## Cleanup
 

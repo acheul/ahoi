@@ -1,4 +1,4 @@
-import { useHail, useReadHail, useTell } from "../../setup/react/ahoi";
+import { useHail, useReadHail, useTell } from "../../setup/react/bridge";
 
 export default function Items() {
     const items = useReadHail("Items"); // number[]

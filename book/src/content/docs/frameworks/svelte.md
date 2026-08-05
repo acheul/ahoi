@@ -24,7 +24,7 @@ Hails are Svelte **stores**. `$` auto-subscription works, and writing through
 
 ```svelte
 <script lang="ts">
-  import { useHail, useReadHail, useTell } from "./ahoi";
+  import { useHail, useReadHail, useTell } from "./bridge";
 
   const count = useHail("Count"); // Writable<number>
   const doubled = useReadHail("Doubled"); // Readable<number>
@@ -52,7 +52,7 @@ Call `providePier` at the top of the component that owns the scope:
 
 ```svelte
 <script lang="ts">
-  import { providePier } from "./ahoi";
+  import { providePier } from "./bridge";
   import Counter from "./Counter.svelte";
 
   providePier("Top");

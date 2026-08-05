@@ -1,11 +1,11 @@
-import { usePier } from "../../setup/solid/ahoi";
+import { usePier } from "../../setup/solid/bridge";
 
 export default function MemoDemo() {
-    const sphere = usePier();
-    const count = sphere.readHail("Count");
-    const parity = sphere.readHail("Parity"); // count % 2
-    const label = sphere.readHail("Label"); // memo over parity
-    const runs = sphere.readHail("LabelRuns"); // times the label memo ran
+    const pier = usePier();
+    const count = pier.readHail("Count");
+    const parity = pier.readHail("Parity"); // count % 2
+    const label = pier.readHail("Label"); // memo over parity
+    const runs = pier.readHail("LabelRuns"); // times the label memo ran
 
     return (
         <div class="demo">
@@ -16,10 +16,10 @@ export default function MemoDemo() {
             <p>
                 label memo has run <b id="runs">{runs()}</b> times
             </p>
-            <button id="bump-1" onClick={() => sphere.tell({ Bump: 1 })}>
+            <button id="bump-1" onClick={() => pier.tell({ Bump: 1 })}>
                 +1
             </button>
-            <button id="bump-2" onClick={() => sphere.tell({ Bump: 2 })}>
+            <button id="bump-2" onClick={() => pier.tell({ Bump: 2 })}>
                 +2
             </button>
         </div>

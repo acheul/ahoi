@@ -8,7 +8,7 @@
  *
  * ```vue
  * <script setup lang="ts">
- * import { useHail, useReadHail, useTell } from "./ahoi";
+ * import { useHail, useReadHail, useTell } from "./bridge";
  *
  * const count = useHail("Count");        // writable ref: count.value++
  * const doubled = useReadHail("Doubled");

@@ -1,4 +1,4 @@
-import { useReadHail, useTell } from "../../setup/react/ahoi";
+import { useReadHail, useTell } from "../../setup/react/bridge";
 
 export default function ResourceDemo() {
     const count = useReadHail("Count");

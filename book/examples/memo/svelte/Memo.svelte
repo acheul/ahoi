@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { useReadHail, useTell } from "../../setup/svelte/ahoi";
+    import { useReadHail, useTell } from "../../setup/svelte/bridge";
 
     const count = useReadHail("Count");
     const parity = useReadHail("Parity"); // count % 2

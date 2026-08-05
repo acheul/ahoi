@@ -1,9 +1,9 @@
-import { usePier } from "../../setup/solid/ahoi";
+import { usePier } from "../../setup/solid/bridge";
 
 export default function Counter() {
-    const sphere = usePier();
-    const [count, setCount] = sphere.hail("Count"); // writable
-    const doubled = sphere.readHail("Doubled"); // read-only memo
+    const pier = usePier();
+    const [count, setCount] = pier.hail("Count"); // writable
+    const doubled = pier.readHail("Doubled"); // read-only memo
 
     return (
         <div class="demo">
@@ -13,7 +13,7 @@ export default function Counter() {
             <button id="write-count" onClick={() => setCount(count() + 1)}>
                 +1 (write)
             </button>
-            <button id="tell-increase" onClick={() => sphere.tell("Increase")}>
+            <button id="tell-increase" onClick={() => pier.tell("Increase")}>
                 +1 (tell)
             </button>
         </div>

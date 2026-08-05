@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { useHail, useReadHail } from "../../setup/svelte/ahoi";
+    import { useHail, useReadHail } from "../../setup/svelte/bridge";
 
     const first = useHail({ Item: 0 }); // writable, path-derived
     const second = useHail({ Item: 1 });

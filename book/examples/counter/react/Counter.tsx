@@ -1,4 +1,4 @@
-import { useHail, useReadHail, useTell } from "../../setup/react/ahoi";
+import { useHail, useReadHail, useTell } from "../../setup/react/bridge";
 
 export default function Counter() {
     const [count, setCount] = useHail("Count"); // writable

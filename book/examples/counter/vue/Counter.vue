@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useHail, useReadHail, useTell } from "../../setup/vue/ahoi";
+import { useHail, useReadHail, useTell } from "../../setup/vue/bridge";
 
 const count = useHail("Count"); // writable ref
 const doubled = useReadHail("Doubled"); // read-only memo

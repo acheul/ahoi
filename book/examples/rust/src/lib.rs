@@ -7,8 +7,10 @@
 //! compiles here. Add a demo by adding keys, never by pasting Rust into a
 //! markdown file.
 //!
-//! The key enums and their runners are single shared containers, so there is
-//! one region covering the whole file rather than one per demo.
+//! The key enums and their runners are single shared containers, so regions
+//! open and close *inside* them. `quickstart` is the clearest case: it keeps
+//! two of nine `Hail` variants and their two match arms, and the slice is still
+//! valid Rust because the braces around them come along.
 
 use ahoi::js_bridge::SerdeWasmBindgenConverter as Converter;
 use ahoi::js_bridge::*;
@@ -32,10 +34,14 @@ fn generate() {
 }
 
 // #region all
+// #region quickstart
+// #region state
 #[derive(Stock, Serialize, Deserialize)]
 pub struct State {
     count: i32,
+    // #endregion quickstart
     items: Vec<i32>,
+    // #endregion state
     /// How many times the `Label` memo's body has actually run.
     ///
     /// Reactive on purpose: it has to travel in the same dispatch as everything
@@ -45,8 +51,12 @@ pub struct State {
     /// the observable half of the path-selectivity demo.
     watch0_runs: u32,
     watch1_runs: u32,
+    // #region quickstart
+    // #region state
 }
+// #endregion state
 
+// #endregion quickstart
 /// An async value derived from `count`, created once per pier so both the value
 /// hail and the loading hail observe the same resource.
 #[derive(Clone, Copy)]
@@ -57,6 +67,7 @@ struct TenTimes(Resource<i32>);
 #[derive(Clone, Copy)]
 struct Ticker(Action<i32, ()>);
 
+// #region quickstart
 #[derive(TS, Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[ts(export)]
 pub enum Pier {
@@ -71,12 +82,15 @@ fn run_pier(key: Pier) {
             set_js_hail_dispatcher();
             let state = Stock::new(State {
                 count: 0,
+                // #endregion quickstart
                 items: vec![10, 20],
                 label_runs: 0,
                 watch0_runs: 0,
                 watch1_runs: 0,
+                // #region quickstart
             });
             provide_context(state);
+            // #endregion quickstart
 
             // One watcher per item path. Each re-runs only when *its* path is
             // written — the counters make that selectivity visible.
@@ -105,6 +119,7 @@ fn run_pier(key: Pier) {
                 *state.count().read() * 10
             });
             provide_context(TenTimes(ten_times));
+            // #region quickstart
         }
     }
 }
@@ -116,6 +131,7 @@ pub enum Hail {
     Count,
     #[ret(i32)]
     Doubled,
+    // #endregion quickstart
     #[ret(Vec<i32>)]
     Items,
     #[ret(Option<i32>)]
@@ -137,6 +153,7 @@ pub enum Hail {
     Watch0Runs,
     #[ret(u32)]
     Watch1Runs,
+    // #region quickstart
 }
 
 wasm_bindgen_enrol_sphere!(@hail, Hail, run_hail, Converter);
@@ -148,6 +165,7 @@ fn run_hail(key: Hail) -> JsValue {
         Hail::Count => state.count().set_hail::<Converter>(),
         // read-only, and recomputed only when `count` actually changes
         Hail::Doubled => state.count().memo(|c| *c * 2).set_read_hail::<Converter>(),
+        // #endregion quickstart
         Hail::Items => state.items().set_read_hail::<Converter>(),
         // path-derived and writable; absent indexes arrive as `undefined`
         Hail::Item(index) => state.items().get(index).set_hail::<Converter>(),
@@ -178,6 +196,7 @@ fn run_hail(key: Hail) -> JsValue {
         }
         Hail::Watch0Runs => state.watch0_runs().set_read_hail::<Converter>(),
         Hail::Watch1Runs => state.watch1_runs().set_read_hail::<Converter>(),
+        // #region quickstart
     }
 }
 
@@ -186,6 +205,7 @@ fn run_hail(key: Hail) -> JsValue {
 pub enum Tell {
     #[ret(i32)]
     Increase,
+    // #endregion quickstart
     // no `#[ret]` — returns undefined
     PushItem(i32),
     #[ret(Option<i32>)]
@@ -195,6 +215,7 @@ pub enum Tell {
     /// Starts the ticker action: `+step` every second until stopped.
     StartTicker(i32),
     StopTicker,
+    // #region quickstart
 }
 
 wasm_bindgen_tell!(Tell, run_tell, Converter);
@@ -210,6 +231,7 @@ fn run_tell(tell: Tell) -> JsValue {
             };
             serde_wasm_bindgen::to_value(&new_count).unwrap()
         }
+        // #endregion quickstart
         Tell::PushItem(value) => {
             state.items().write().push(value);
             JsValue::undefined()
@@ -232,6 +254,8 @@ fn run_tell(tell: Tell) -> JsValue {
             ticker.cancel();
             JsValue::undefined()
         }
+        // #region quickstart
     }
 }
+// #endregion quickstart
 // #endregion all

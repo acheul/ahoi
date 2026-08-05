@@ -70,7 +70,7 @@ constructors and no wrapper objects.
 The JS side knows what each key returns.
 
 You annotate each key in Rust with `#[ret(..)]`. Ahoi collects those into a
-TypeScript map. So `sphere.hail("Count")` is a `number`, and a typo is a
+TypeScript map. So `pier.hail("Count")` is a `number`, and a typo is a
 compile error.
 
 Ahoi is **not** a Rust-to-TypeScript converter. Use [ts-rs] or [Tsify] for your

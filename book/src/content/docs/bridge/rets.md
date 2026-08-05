@@ -34,7 +34,7 @@ export type HailRets = {
 };
 ```
 
-Hand `HailRets` to `createAhoi` and `sphere.hail("Count")` is a `number`.
+Hand `HailRets` to `createAhoi` and `pier.hail("Count")` is a `number`.
 
 ## Referenced types need nothing
 

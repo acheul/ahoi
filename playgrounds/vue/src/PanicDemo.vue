@@ -9,32 +9,34 @@
  * them out.
  */
 import { ref } from "vue";
-import { useTell } from "./ahoi";
+import { useTell } from "./bridge";
 
 const tell = useTell();
 const fired = ref(false);
 
 const trigger = () => {
-    fired.value = true;
-    tell("PanicDemo");
+  fired.value = true;
+  tell("PanicDemo");
 };
 </script>
 
 <template>
-    <section>
-        <h3>Panic diagnostics</h3>
-        <p>
-            Triggers a double-borrow panic on purpose. Open the console: the blame
-            should land on the <code>read()</code> call in
-            <code>ahoi-wasm/src/lib.rs</code>.
-        </p>
-        <p>
-            <b>Note:</b> wasm panics abort the module — everything above stops
-            working afterwards. Reload the page to continue.
-        </p>
-        <button id="panic-demo" @click="trigger">
-            trigger panic (double borrow)
-        </button>
-        <span v-if="fired" id="panic-fired"> → check the console; reload to recover</span>
-    </section>
+  <section>
+    <h3>Panic diagnostics</h3>
+    <p>
+      Triggers a double-borrow panic on purpose. Open the console: the blame
+      should land on the <code>read()</code> call in
+      <code>ahoi-wasm/src/lib.rs</code>.
+    </p>
+    <p>
+      <b>Note:</b> wasm panics abort the module — everything above stops working
+      afterwards. Reload the page to continue.
+    </p>
+    <button id="panic-demo" @click="trigger">
+      trigger panic (double borrow)
+    </button>
+    <span v-if="fired" id="panic-fired">
+      → check the console; reload to recover</span
+    >
+  </section>
 </template>

@@ -171,7 +171,7 @@ npm i @acheul/ahoi-js
 ```
 
 ```ts
-// ahoi.ts — the only wiring an app needs
+// bridge.ts — the only wiring an app needs
 import wasmInit, {
   abi_version,
   clear,
@@ -206,12 +206,12 @@ export const { PierProvider, usePier } = createAhoi<
 
 ```tsx
 // Counter.tsx (SolidJS)
-import { usePier } from "./ahoi";
+import { usePier } from "./bridge";
 
 function Counter() {
-  const sphere = usePier();
-  const [count, setCount] = sphere.hail("Count"); // () => number
-  const doubled = sphere.readHail("Doubled"); // () => number
+  const pier = usePier();
+  const [count, setCount] = pier.hail("Count"); // () => number
+  const doubled = pier.readHail("Doubled"); // () => number
 
   return (
     <>
@@ -219,7 +219,7 @@ function Counter() {
         {count()} · {doubled()}
       </p>
       <button onClick={() => setCount(count() + 1)}>write</button>
-      <button onClick={() => sphere.tell("Increase")}>tell</button>
+      <button onClick={() => pier.tell("Increase")}>tell</button>
     </>
   );
 }
@@ -229,7 +229,7 @@ function Counter() {
 
 Keys are plain values (`"Count"`, `{ Item: 3 }`) — no constructors — and their
 return types resolve from the generated `Rets` maps, so `count()` is `number`
-and `sphere.tell("Increase")` is `number`.
+and `pier.tell("Increase")` is `number`.
 
 [ts-rs]: https://github.com/Aleph-Alpha/ts-rs
 [Tsify]: https://github.com/madonoharu/tsify

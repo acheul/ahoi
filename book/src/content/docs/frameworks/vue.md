@@ -24,7 +24,7 @@ apply without any wrapper.
 
 ```vue
 <script setup lang="ts">
-import { useHail, useReadHail, useTell } from "./ahoi";
+import { useHail, useReadHail, useTell } from "./bridge";
 
 const count = useHail("Count"); // WritableComputedRef<number>
 const doubled = useReadHail("Doubled"); // ComputedRef<number>

@@ -1,6 +1,6 @@
 <script lang="ts">
     // Owns its own nested pier; destroying this component clears its spheres.
-    import { providePier, useHail } from "./ahoi";
+    import { providePier, useHail } from "./bridge";
 
     providePier("Panel");
     const info = useHail("PanelInfo");

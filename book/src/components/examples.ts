@@ -42,10 +42,16 @@ export function readFile(path: string): string {
 }
 
 /**
- * Extracts every `// #region <name>` block from a file and joins them.
+ * Keeps every line a `// #region <name>` block covers, in file order.
  *
- * Regions repeat because one example's Rust is usually several separate items
- * (a struct, a key enum, its runner) rather than one contiguous run of lines.
+ * A region repeats because one example is usually several separate items — a
+ * struct, a key enum, its runner. It can also open and close *inside* an item,
+ * which is how the quick start slices two variants out of a nine-variant enum
+ * and still gets valid Rust: the excluded lines simply drop out, and the
+ * surrounding braces come along.
+ *
+ * Lines are concatenated rather than joined with blank lines, so the result
+ * keeps the spacing the source already has.
  */
 export function readRegion(path: string, name: string): string {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -55,24 +61,25 @@ export function readRegion(path: string, name: string): string {
   // Any *other* region's markers must not survive into the shown snippet.
   const anyMarker = /^\s*\/\/\s*#(?:end)?region\b/;
 
-  const blocks: string[] = [];
-  let current: string[] | null = null;
+  const kept: string[] = [];
+  let inside = false;
+  let seen = false;
 
   for (const line of readFile(path).split(/\r?\n/)) {
     if (start.test(line)) {
-      current = [];
+      inside = true;
+      seen = true;
     } else if (end.test(line)) {
-      if (current) blocks.push(current.join('\n').replace(/^\n+|\n+$/g, ''));
-      current = null;
-    } else if (current && !anyMarker.test(line)) {
-      current.push(line);
+      inside = false;
+    } else if (inside && !anyMarker.test(line)) {
+      kept.push(line);
     }
   }
 
-  if (blocks.length === 0) {
+  if (!seen) {
     throw new Error(`Region "${name}" not found in book/examples/${path}`);
   }
-  return dedent(blocks.join('\n\n'));
+  return dedent(kept.join('\n').replace(/^\n+|\n+$/g, ''));
 }
 
 function dedent(source: string): string {
@@ -108,14 +115,14 @@ export function basename(path: string): string {
 /**
  * Finds the component file for each framework under `examples/<name>/<fw>/`.
  *
- * Wiring (`ahoi.ts`) and the island plumbing (`island.tsx`, `mount.tsx`) are
+ * Wiring (`bridge.ts`) and the island plumbing (`island.tsx`, `mount.tsx`) are
  * infrastructure, not teaching material, so they are never shown.
  */
 export function frameworkFiles(
   name: string,
   file?: string
 ): Array<{ id: FrameworkId; label: string; path: string }> {
-  const ignored = /\/(?:ahoi\.ts|island\.tsx|mount\.tsx)$/;
+  const ignored = /\/(?:bridge\.ts|island\.tsx|mount\.tsx)$/;
   const found = [];
 
   for (const { id, label } of FRAMEWORKS) {
