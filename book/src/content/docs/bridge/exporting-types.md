@@ -44,6 +44,46 @@ export type Hail = "Count" | { Item: number };
 
 That is your key type. `Rets.ts` is the return map. You need both.
 
+## With Tsify
+
+[Tsify] works too, and it needs no export step. The declarations are embedded
+in the `.d.ts` that `wasm-pack build` writes.
+
+```toml title="Cargo.toml"
+tsify = { version = "0.5", default-features = false, features = ["js"] }
+```
+
+```rust
+#[derive(Rets, Tsify, Serialize, Deserialize)]
+pub enum Hail {
+    #[ret(i32)]
+    Count,
+    #[ret(Option<i32>)]
+    Item(usize),
+}
+```
+
+Import the key types from the wasm pkg itself:
+
+```ts
+import type { Hail } from "./pkg/my_wasm";
+```
+
+The derive alone is enough. Skip `#[tsify(into_wasm_abi)]` and
+`#[tsify(from_wasm_abi)]` — ahoi's bridge converts values itself, and tsify
+0.5 deprecates those attributes anyway.
+
+One detail changes: if a ret map references one of your data types, its
+import must point at the pkg, since there are no per-type binding files.
+
+```rust
+TsFile::new()
+    .import("Fruit", "../pkg/my_wasm")
+    .with::<Hail>()
+    .with::<Tell>()
+    .export("./bindings/Rets.ts");
+```
+
 ## Wiring them together
 
 The five generic parameters on `createAhoi` are, in order: the pier key, the
