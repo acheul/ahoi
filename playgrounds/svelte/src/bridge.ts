@@ -10,12 +10,12 @@ import wasmInit, {
     set_panic_hook,
     tell,
     write,
-} from "../../ahoi-wasm/pkg/ahoi_wasm";
+} from "../../ahoi-wasm-tsrs/pkg/ahoi_wasm_tsrs";
 import { createAhoi } from "@acheul/ahoi-js/svelte";
-import type { Pier } from "../../ahoi-wasm/bindings/Pier";
-import type { Hail } from "../../ahoi-wasm/bindings/Hail";
-import type { Tell } from "../../ahoi-wasm/bindings/Tell";
-import type { HailRets, TellRets } from "../../ahoi-wasm/bindings/Rets";
+import type { Pier } from "../../ahoi-wasm-tsrs/bindings/Pier";
+import type { Hail } from "../../ahoi-wasm-tsrs/bindings/Hail";
+import type { Tell } from "../../ahoi-wasm-tsrs/bindings/Tell";
+import type { HailRets, TellRets } from "../../ahoi-wasm-tsrs/bindings/Rets";
 
 // wasm state cannot hot-swap — force a full page reload when this module
 // (or the wasm pkg) changes during dev

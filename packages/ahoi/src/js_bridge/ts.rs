@@ -18,7 +18,7 @@
 //!     .import("Fruit", "./Fruit") // data types the maps reference
 //!     .with::<Hail>()
 //!     .with::<Tell>()
-//!     .export("./bindings/Keys.ts");
+//!     .export("./bindings/Rets.ts");
 //! ```
 
 /// A TS declaration contributed to the generated file.

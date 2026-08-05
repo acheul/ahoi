@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Each section exercises one bridge feature — see the table in
- * `playgrounds/ahoi-wasm/src/lib.rs`. Mirrors the solid/react playgrounds
+ * `playgrounds/ahoi-wasm-tsrs/src/lib.rs`. Mirrors the solid/react playgrounds
  * (same element ids).
  */
 import { ref } from "vue";

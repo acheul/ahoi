@@ -4,7 +4,7 @@
  * same value — the classic double-borrow bug.
  *
  * What to look for: the Rust panic in the console should point at the `read()`
- * line in `playgrounds/ahoi-wasm/src/lib.rs`, not at a line inside ahoi-core.
+ * line in `playgrounds/ahoi-wasm-tsrs/src/lib.rs`, not at a line inside ahoi-core.
  * Those locations only exist in a `--dev` wasm build; release builds compile
  * them out.
  */
@@ -26,7 +26,7 @@ const trigger = () => {
     <p>
       Triggers a double-borrow panic on purpose. Open the console: the blame
       should land on the <code>read()</code> call in
-      <code>ahoi-wasm/src/lib.rs</code>.
+      <code>ahoi-wasm-tsrs/src/lib.rs</code>.
     </p>
     <p>
       <b>Note:</b> wasm panics abort the module — everything above stops working

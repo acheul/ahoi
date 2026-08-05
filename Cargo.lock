@@ -66,6 +66,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "ahoi-wasm-tsain-todo"
+version = "0.1.1"
+dependencies = [
+ "ahoi",
+ "console_error_panic_hook",
+ "serde",
+ "tsain",
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "ahoi-wasm-tsify"
 version = "0.1.1"
 dependencies = [

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { useReadHail, useTell } from "./bridge";
-    import type { Fruit } from "../../ahoi-wasm/bindings/Fruit";
+    import type { Fruit } from "../../ahoi-wasm-tsrs/bindings/Fruit";
 
     const lastFruit = useReadHail("LastFruit"); // enum on the wire
     const fruitCounts = useReadHail("FruitCounts"); // JS Map on the wire
