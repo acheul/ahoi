@@ -9,9 +9,27 @@ Types describe what crosses the bridge. A **converter** does the crossing.
 
 Every key enum and every hail value passes through one.
 
-## The default
+## The ready-made ones
 
-The `serde-wasm-bindgen` feature gives you a ready-made converter.
+Two ship with the crate, behind features. Both work for anything that is
+`Serialize + DeserializeOwned`.
+
+| Feature | Converter | Wire type |
+| --- | --- | --- |
+| `serde-wasm-bindgen` | `SerdeWasmBindgenConverter` | `JsValue` |
+| `serde_json` | `SerdeJsonConverter` | `serde_json::Value` |
+
+**`serde-wasm-bindgen` is the one to reach for.** It builds native JS values
+directly, with no intermediate JSON.
+
+Pick `serde_json` when you would rather work in `serde_json::Value` on the Rust
+side — a type that already goes through JSON, or code you share with a non-wasm
+target. Note that an absent value arrives as `null` there, not `undefined`.
+
+## Using one
+
+Turn on the feature, then alias the converter. The rest of the book assumes
+`serde-wasm-bindgen`.
 
 ```toml
 ahoi = { version = "0.1", features = ["serde-wasm-bindgen"] }
@@ -21,8 +39,9 @@ ahoi = { version = "0.1", features = ["serde-wasm-bindgen"] }
 use ahoi::js_bridge::SerdeWasmBindgenConverter as Converter;
 ```
 
-It works for anything that is `Serialize + DeserializeOwned`, which is why the
-key enums derive both.
+Both converters need `Serialize + DeserializeOwned`, which is why the key enums
+derive both. Aliasing to `Converter` is also what keeps a switch to a one-line
+change.
 
 You name it once per macro:
 
