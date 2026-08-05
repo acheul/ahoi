@@ -97,7 +97,7 @@ fn run_tell(tell: Tell) -> JsValue {
     match tell {
         Tell::Noop => JsValue::undefined(),
         Tell::Bump(i) => {
-            *state.cells().get(i as usize).try_write().unwrap() += 1;
+            *state.cells().get(i as usize).write().unwrap() += 1;
             JsValue::undefined()
         }
         Tell::WriteAll => {

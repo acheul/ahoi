@@ -11,13 +11,16 @@ fn help_set_read_hail<
 ) -> X::HailValue {
     let parse_value = |value| X::__from_option_raw_value(value, OPT);
 
-    let initial_hail_value = parse_value(stock.try_peek());
+    let initial_hail_value = parse_value(stock.raw_peek().unwrap());
 
     let sphere_id = runtime::sphere::current_sphere_id().expect("set hail out of sphere");
 
     let _citer_id =
         runtime::insert::insert_hail_citer_runner_state((stock.value_id, stock.path), move || {
-            let hail_value = parse_value(stock.try_read());
+            let Ok(value) = stock.raw_read() else {
+                return;
+            };
+            let hail_value = parse_value(value);
             runtime::propagation::mark_hail(sphere_id, hail_value);
         });
 
@@ -55,7 +58,9 @@ pub fn set_hail<
 
     // write callback
     let callback: Callback<X::HailValue, ()> = Callback::new(move |hail_value: X::HailValue| {
-        let value = stock.try_write();
+        let Ok(value) = stock.raw_write() else {
+            return;
+        };
         let value = if OPT { value } else { Some(value.unwrap()) };
         if let Some(mut value) = value {
             let hail_value = X::into_raw_value(hail_value);

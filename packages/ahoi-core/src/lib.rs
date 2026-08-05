@@ -48,7 +48,7 @@ pub use utils::{
 };
 
 pub use states::{
-    pool::StateId,
+    pool::{BorrowError, StateId},
     runtime::propagation::{batch, batch_with_sphere},
     runtime::sphere::{
         SphereId, clear_sphere, current_sphere_id, make_sphere, make_top_sphere, provide_context,

@@ -3,6 +3,7 @@ use super::*;
 // Common trait for Pipes
 pub trait Pipeline<Out>: Clone {
     fn map_ref<'a>(&self, value: &'a dyn Any) -> Option<&'a Out>;
+
     fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Option<&'a mut Out>;
 }
 
@@ -35,22 +36,34 @@ impl<T> Clone for PooledPipe<T> {
 impl<T> Copy for PooledPipe<T> {}
 
 impl<T: 'static> Pipeline<T> for PooledPipe<T> {
+    /// * None 은 mapper 가 optional result 를 반환하는 경우에만 사용.
+    /// * BorrowError/downcast Error 는 발생하지 않아야 한다(unreachable)!
     fn map_ref<'a>(&self, value: &'a dyn Any) -> Option<&'a T> {
         match self.pooled_id {
-            None => value.downcast_ref::<T>(),
+            None => Some(value.downcast_ref::<T>().unwrap()),
             Some(id) => {
-                let state = states::pool::get_state(id)?;
-                let value = state.as_mapper()?.map_ref(value)?.downcast_ref::<T>()?;
+                let state = states::pool::get_state(id).unwrap();
+                let value = state
+                    .as_mapper()
+                    .unwrap()
+                    .map_ref(value)?
+                    .downcast_ref::<T>()
+                    .unwrap();
                 return Some(value);
             }
         }
     }
     fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Option<&'a mut T> {
         match self.pooled_id {
-            None => value.downcast_mut::<T>(),
+            None => Some(value.downcast_mut::<T>().unwrap()),
             Some(id) => {
-                let state = states::pool::get_state(id)?;
-                let value = state.as_mapper()?.map_mut(value)?.downcast_mut::<T>()?;
+                let state = states::pool::get_state(id).unwrap();
+                let value = state
+                    .as_mapper()
+                    .unwrap()
+                    .map_mut(value)?
+                    .downcast_mut::<T>()
+                    .unwrap();
                 return Some(value);
             }
         }

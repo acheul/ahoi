@@ -226,7 +226,7 @@ fn test_sphere_clear_removes_states() {
     let (sid, stock) = make_sphere(None, || Stock::new(7u32));
     assert_eq!(*stock.peek(), 7);
     clear_sphere(sid);
-    assert!(stock.try_peek().is_none());
+    assert!(stock.try_peek().is_err());
 }
 
 #[test]
@@ -241,8 +241,8 @@ fn test_sphere_clear_cascades_to_children() {
     // Clearing only the parent also tears down the child sphere.
     clear_sphere(pid);
 
-    assert!(parent_stock.try_peek().is_none());
-    assert!(child_stock.try_peek().is_none());
+    assert!(parent_stock.try_peek().is_err());
+    assert!(child_stock.try_peek().is_err());
     // No leak: every slot created by parent + child is freed.
     assert_eq!(crate::states::pool::slots_count(), baseline);
 }
@@ -258,9 +258,9 @@ fn test_sphere_clear_cascades_deeply() {
     // Clearing the root frees the whole subtree.
     clear_sphere(gid);
 
-    assert!(g.try_peek().is_none());
-    assert!(p.try_peek().is_none());
-    assert!(c.try_peek().is_none());
+    assert!(g.try_peek().is_err());
+    assert!(p.try_peek().is_err());
+    assert!(c.try_peek().is_err());
     assert_eq!(crate::states::pool::slots_count(), baseline);
 }
 
@@ -275,8 +275,8 @@ fn test_sphere_clear_is_idempotent_any_order() {
     // (and must not panic on the already-detached child).
     clear_sphere(cid);
     clear_sphere(pid);
-    assert!(p.try_peek().is_none());
-    assert!(c.try_peek().is_none());
+    assert!(p.try_peek().is_err());
+    assert!(c.try_peek().is_err());
 
     // Clearing an already-removed sphere is a no-op.
     clear_sphere(pid);
@@ -301,19 +301,19 @@ fn test_vec_derive_index() {
         let d1 = stock.get(1).pool();
         let d2 = stock.get(2).pool();
 
-        assert_eq!(*d0.try_peek().unwrap(), 10);
-        assert_eq!(*d1.try_peek().unwrap(), 20);
-        assert_eq!(*d2.try_peek().unwrap(), 30);
+        assert_eq!(*d0.peek().unwrap(), 10);
+        assert_eq!(*d1.peek().unwrap(), 20);
+        assert_eq!(*d2.peek().unwrap(), 30);
 
-        batch(|| *d1.try_write().unwrap() = 99);
+        batch(|| *d1.write().unwrap() = 99);
 
-        assert_eq!(*d0.try_peek().unwrap(), 10);
-        assert_eq!(*d1.try_peek().unwrap(), 99);
-        assert_eq!(*d2.try_peek().unwrap(), 30);
+        assert_eq!(*d0.peek().unwrap(), 10);
+        assert_eq!(*d1.peek().unwrap(), 99);
+        assert_eq!(*d2.peek().unwrap(), 30);
 
         // Out-of-bounds → None.
         let oob = stock.get(10).pool();
-        assert!(oob.try_peek().is_none());
+        assert!(oob.peek().is_none());
     });
 }
 
@@ -336,9 +336,9 @@ fn test_hashmap_derive_key() {
         let db = map.get("b".to_string()).pool();
         let missing = map.get("z".to_string()).pool();
 
-        assert_eq!(*da.try_peek().unwrap(), 1);
-        assert_eq!(*db.try_peek().unwrap(), 2);
-        assert!(missing.try_peek().is_none()); // absent key → None
+        assert_eq!(*da.peek().unwrap(), 1);
+        assert_eq!(*db.peek().unwrap(), 2);
+        assert!(missing.peek().is_none()); // absent key → None
 
         let ca = count_a.clone();
         let _ea = Effect::new(move || {
@@ -354,8 +354,8 @@ fn test_hashmap_derive_key() {
         assert_eq!(count_b.load(Ordering::SeqCst), 1);
 
         // Mutate value at key "a" only — key "b" subscriber must not re-run.
-        batch(|| *da.try_write().unwrap() = 99);
-        assert_eq!(*da.try_peek().unwrap(), 99);
+        batch(|| *da.write().unwrap() = 99);
+        assert_eq!(*da.peek().unwrap(), 99);
         assert_eq!(count_a.load(Ordering::SeqCst), 2);
         assert_eq!(count_b.load(Ordering::SeqCst), 1); // different key, untouched
 
@@ -363,7 +363,7 @@ fn test_hashmap_derive_key() {
         batch(|| {
             map.write().insert("z".to_string(), 7);
         });
-        assert_eq!(*missing.try_peek().unwrap(), 7);
+        assert_eq!(*missing.peek().unwrap(), 7);
     });
 }
 
@@ -378,11 +378,11 @@ fn test_hashbrown_map_derive_key() {
         let one = map.get(1u32).pool();
         let missing = map.get(9u32).pool();
 
-        assert_eq!(&*one.try_peek().unwrap(), "one");
-        assert!(missing.try_peek().is_none());
+        assert_eq!(&*one.peek().unwrap(), "one");
+        assert!(missing.peek().is_none());
 
-        batch(|| one.try_write().unwrap().push_str("-edited"));
-        assert_eq!(&*one.try_peek().unwrap(), "one-edited");
+        batch(|| one.write().unwrap().push_str("-edited"));
+        assert_eq!(&*one.peek().unwrap(), "one-edited");
     });
 }
 
@@ -499,11 +499,11 @@ fn test_macro_enum_accessor() {
     make_sphere(None, || {
         let stock = Stock::<Shape>::new(Shape::Circle(2.5));
 
-        assert_eq!(*stock.circle().try_peek().unwrap(), 2.5);
+        assert_eq!(*stock.circle().peek().unwrap(), 2.5);
 
         batch(|| *stock.write() = Shape::Dot);
 
-        assert!(stock.circle().try_peek().is_none());
+        assert!(stock.circle().peek().is_none());
     });
 }
 
@@ -512,12 +512,12 @@ fn test_macro_enum_generic() {
     make_sphere(None, || {
         let stock = Stock::<Loadable<i32>>::new(Loadable::Loading);
 
-        assert!(stock.loaded().try_peek().is_none()); // wrong variant
+        assert!(stock.loaded().peek().is_none()); // wrong variant
 
         batch(|| *stock.write() = Loadable::Loaded(42));
 
-        assert_eq!(*stock.loaded().try_peek().unwrap(), 42);
-        assert!(stock.failed().try_peek().is_none());
+        assert_eq!(*stock.loaded().peek().unwrap(), 42);
+        assert!(stock.failed().peek().is_none());
     });
 }
 
@@ -639,7 +639,7 @@ fn test_deep_derive_chain_selective_propagation() {
 
         // L4a: mutate slots[0].loaded → ancestors L2a/L3a + self fire.
         batch(|| {
-            *stock.slots().get(0usize).loaded().try_write().unwrap() = 99;
+            *stock.slots().get(0usize).loaded().write().unwrap() = 99;
         });
         assert_eq!(cnt_slots.load(Ordering::SeqCst), 2);
         assert_eq!(cnt_slot0.load(Ordering::SeqCst), 2);
@@ -652,7 +652,7 @@ fn test_deep_derive_chain_selective_propagation() {
                 .registry()
                 .get("alice".to_string())
                 .width()
-                .try_write()
+                .write()
                 .unwrap() = 800;
         });
         assert_eq!(cnt_reg.load(Ordering::SeqCst), 2);
@@ -756,12 +756,12 @@ fn test_derive_inside_closure_no_leak() {
         let baseline = crate::states::pool::slots_count();
 
         for i in 0..20 {
-            batch(|| *stock.inner().get(1).try_write().unwrap() = i);
+            batch(|| *stock.inner().get(1).write().unwrap() = i);
         }
 
         // Reactivity held across all re-runs ...
         assert_eq!(runs.load(Ordering::SeqCst), 21);
-        assert_eq!(*stock.inner().get(1).try_read().unwrap(), 19);
+        assert_eq!(*stock.inner().get(1).read().unwrap(), 19);
         // ... and not a single pool slot was added.
         assert_eq!(crate::states::pool::slots_count(), baseline);
     });
@@ -864,7 +864,7 @@ fn test_repetitively_derived_stock_reactivity() {
         }
 
         // Mutate the leaf through the fully-pooled chain (every level `.pool()`ed).
-        batch(|| *leaf0.try_write().unwrap() += 100);
+        batch(|| *leaf0.write().unwrap() += 100);
         assert_eq!(
             stock.peek().clone(),
             Vector(vec![Vector(vec![100i32, 1i32])])
@@ -878,7 +878,7 @@ fn test_repetitively_derived_stock_reactivity() {
         assert_eq!(c_leaf1.load(Ordering::SeqCst), 1, "leaf1 (sibling, silent)");
 
         // Mutating an intermediate level propagates down to both leaves.
-        batch(|| l3.try_write().unwrap().push(2i32));
+        batch(|| l3.write().unwrap().push(2i32));
         assert_eq!(c_l1.load(Ordering::SeqCst), 3);
         assert_eq!(c_l3.load(Ordering::SeqCst), 3);
         assert_eq!(
