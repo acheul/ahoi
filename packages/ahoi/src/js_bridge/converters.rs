@@ -4,6 +4,7 @@ use serde::{Serialize, de::DeserializeOwned};
 // "serde-wasm-bindgen"
 
 #[cfg(feature = "serde-wasm-bindgen")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde-wasm-bindgen")))]
 pub use serde_wasm_bindgen_converter::SerdeWasmBindgenConverter;
 
 #[cfg(feature = "serde-wasm-bindgen")]
@@ -29,6 +30,7 @@ mod serde_wasm_bindgen_converter {
 // "serde_json"
 
 #[cfg(feature = "serde_json")]
+#[cfg_attr(docsrs, doc(cfg(feature = "serde_json")))]
 pub use serde_json_converter::SerdeJsonConverter;
 
 #[cfg(feature = "serde_json")]
