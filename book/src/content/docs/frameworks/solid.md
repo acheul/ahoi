@@ -1,6 +1,6 @@
 ---
 title: Solid
-description: Using ahoi with SolidJS — one sphere object, signal accessors, automatic cleanup.
+description: Using ahoi with SolidJS — one object per pier, signal accessors, automatic cleanup.
 sidebar:
   order: 1
 ---
@@ -13,28 +13,36 @@ npm i @acheul/ahoi-js solid-js
 import { createAhoi } from "@acheul/ahoi-js/solid";
 
 export const { PierProvider, usePier } = createAhoi<
-  Pier, Hail, Tell, HailRets, TellRets
->({ /* wasm exports */ });
+  Pier,
+  Hail,
+  Tell,
+  HailRets,
+  TellRets
+>({
+  /* wasm exports */
+});
 ```
 
 ## One object per pier
 
-Solid is the only adapter that hands you a **sphere object** rather than
+Solid is the only adapter that hands you a **single object** rather than
 separate hooks. Ahoi's hails map straight onto Solid signals, so there is
 nothing to reconcile.
 
 ```tsx
 function Counter() {
-  const sphere = usePier();
+  const pier = usePier();
 
-  const [count, setCount] = sphere.hail("Count"); // () => number
-  const doubled = sphere.readHail("Doubled"); // () => number
+  const [count, setCount] = pier.hail("Count"); // () => number
+  const doubled = pier.readHail("Doubled"); // () => number
 
   return (
     <>
-      <p>{count()} · {doubled()}</p>
+      <p>
+        {count()} · {doubled()}
+      </p>
       <button onClick={() => setCount(count() + 1)}>+1</button>
-      <button onClick={() => sphere.tell("Increase")}>tell</button>
+      <button onClick={() => pier.tell("Increase")}>tell</button>
     </>
   );
 }
@@ -87,10 +95,12 @@ model and ahoi's are the same shape.
 ## Notes
 
 - `usePier()` throws if there is no provider above it.
-- The sphere object is stable. You can destructure it once and keep it.
+- The object `usePier()` returns is stable. You can destructure it once and
+  keep it. Its type is `PierSphere` — a pier is a sphere underneath.
 - Wasm cannot hot-reload. In Vite, force a full reload when your wiring module
   changes:
 
   ```ts
-  if (import.meta.hot) import.meta.hot.accept(() => import.meta.hot!.invalidate());
+  if (import.meta.hot)
+    import.meta.hot.accept(() => import.meta.hot!.invalidate());
   ```

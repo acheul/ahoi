@@ -1,4 +1,4 @@
-import { useHail, useReadHail } from "../../setup/react/ahoi";
+import { useHail, useReadHail } from "../../setup/react/bridge";
 
 export default function PathsDemo() {
     const [first, setFirst] = useHail({ Item: 0 }); // writable, path-derived

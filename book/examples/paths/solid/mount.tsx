@@ -2,9 +2,9 @@
  * Wraps the shown component in its pier. Not displayed in the book.
  *
  * Lives behind the lazy boundary in `island.tsx`, because importing
- * `setup/solid/ahoi` runs a top-level `await wasmInit()`.
+ * `setup/solid/bridge` runs a top-level `await wasmInit()`.
  */
-import { PierProvider } from "../../setup/solid/ahoi";
+import { PierProvider } from "../../setup/solid/bridge";
 import Paths from "./Paths";
 
 export default function Mount() {

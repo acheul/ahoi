@@ -3,14 +3,14 @@
  * `playgrounds/ahoi-wasm/src/lib.rs`.
  */
 import { For, Show, createSignal } from "solid-js";
-import { PierProvider, usePier } from "./ahoi";
+import { PierProvider, usePier } from "./bridge";
 import type { Fruit } from "../../ahoi-wasm/bindings/Fruit";
 
 function Counter() {
-    const sphere = usePier();
-    const [count, setCount] = sphere.hail("Count"); // writable
-    const doubled = sphere.readHail("Doubled"); // memo
-    const countX10 = sphere.readHail("CountX10"); // async resource
+    const pier = usePier();
+    const [count, setCount] = pier.hail("Count"); // writable
+    const doubled = pier.readHail("Doubled"); // memo
+    const countX10 = pier.readHail("CountX10"); // async resource
     const [returned, setReturned] = createSignal<number>();
 
     return (
@@ -24,16 +24,16 @@ function Counter() {
             <button id="write-count" onClick={() => setCount(count() + 1)}>
                 +1 (write hail)
             </button>
-            <button id="tell-increase" onClick={() => setReturned(sphere.tell("Increase"))}>
+            <button id="tell-increase" onClick={() => setReturned(pier.tell("Increase"))}>
                 +1 (tell Increase)
             </button>
-            <button id="add-count" onClick={() => sphere.tell({ AddCount: 5 })}>
+            <button id="add-count" onClick={() => pier.tell({ AddCount: 5 })}>
                 +5 (callback)
             </button>
-            <button id="start-ticker" onClick={() => sphere.tell({ StartTicker: 1 })}>
+            <button id="start-ticker" onClick={() => pier.tell({ StartTicker: 1 })}>
                 start ticker (+1/s)
             </button>
-            <button id="stop-ticker" onClick={() => sphere.tell("StopTicker")}>
+            <button id="stop-ticker" onClick={() => pier.tell("StopTicker")}>
                 stop ticker
             </button>
             <Show when={returned() !== undefined}>
@@ -44,9 +44,9 @@ function Counter() {
 }
 
 function Items() {
-    const sphere = usePier();
-    const items = sphere.readHail("Items");
-    const [item1, setItem1] = sphere.hail({ Item: 1 }); // writable path-derived
+    const pier = usePier();
+    const items = pier.readHail("Items");
+    const [item1, setItem1] = pier.hail({ Item: 1 }); // writable path-derived
     const [popped, setPopped] = createSignal<number>();
 
     return (
@@ -56,10 +56,10 @@ function Items() {
                 items: <b id="items">[{items().join(", ")}]</b> · items[1]:{" "}
                 <b id="item-1">{item1() ?? "-"}</b>
             </p>
-            <button id="push-item" onClick={() => sphere.tell({ PushItem: (items().length + 1) * 10 })}>
+            <button id="push-item" onClick={() => pier.tell({ PushItem: (items().length + 1) * 10 })}>
                 push
             </button>
-            <button id="pop-item" onClick={() => setPopped(sphere.tell("PopItem"))}>
+            <button id="pop-item" onClick={() => setPopped(pier.tell("PopItem"))}>
                 pop
             </button>
             <button id="write-item" onClick={() => setItem1((item1() ?? 0) + 1)}>
@@ -71,9 +71,9 @@ function Items() {
 }
 
 function Fruits() {
-    const sphere = usePier();
-    const lastFruit = sphere.readHail("LastFruit"); // enum on the wire
-    const fruitCounts = sphere.readHail("FruitCounts"); // JS Map on the wire
+    const pier = usePier();
+    const lastFruit = pier.readHail("LastFruit"); // enum on the wire
+    const fruitCounts = pier.readHail("FruitCounts"); // JS Map on the wire
 
     const label = (fruit: Fruit | undefined) =>
         fruit === undefined ? "-" : typeof fruit === "string" ? fruit : `Banana(${fruit.Banana})`;
@@ -89,10 +89,10 @@ function Fruits() {
                     </For>
                 </b>
             </p>
-            <button id="set-apple" onClick={() => sphere.tell({ SetFruit: "Apple" })}>
+            <button id="set-apple" onClick={() => pier.tell({ SetFruit: "Apple" })}>
                 Apple
             </button>
-            <button id="set-banana" onClick={() => sphere.tell({ SetFruit: { Banana: "yellow" } })}>
+            <button id="set-banana" onClick={() => pier.tell({ SetFruit: { Banana: "yellow" } })}>
                 Banana
             </button>
         </section>
@@ -109,7 +109,7 @@ function Fruits() {
  * them out.
  */
 function PanicDemo() {
-    const sphere = usePier();
+    const pier = usePier();
     const [fired, setFired] = createSignal(false);
 
     return (
@@ -128,7 +128,7 @@ function PanicDemo() {
                 id="panic-demo"
                 onClick={() => {
                     setFired(true);
-                    sphere.tell("PanicDemo");
+                    pier.tell("PanicDemo");
                 }}
             >
                 trigger panic (double borrow)
@@ -142,8 +142,8 @@ function PanicDemo() {
 
 /** Lives under its own nested pier; unmounting must clear its spheres. */
 function Panel() {
-    const sphere = usePier();
-    const [info, setInfo] = sphere.hail("PanelInfo");
+    const pier = usePier();
+    const [info, setInfo] = pier.hail("PanelInfo");
 
     return (
         <section>

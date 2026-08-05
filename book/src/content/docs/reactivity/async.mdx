@@ -5,17 +5,17 @@ sidebar:
   order: 4
 ---
 
-import Example from '../../../components/Example.astro';
-import ResourceIsland from '../../../../examples/resource/solid/island.tsx';
+import Example from "../../../components/Example.astro";
+import ResourceIsland from "../../../../examples/resource/solid/island.tsx";
 
 Three tools, and the choice is mostly about who starts the work and whether it
 can be cancelled.
 
-| | Runs | Started by | Cancellable |
-| --- | --- | --- | --- |
-| `Callback<A, R>` | synchronously | you call it | — |
-| `Action<A, R>` | async | you call it | yes |
-| `Resource<T>` | async | its dependencies | refetches |
+|                  | Runs          | Started by       | Cancellable |
+| ---------------- | ------------- | ---------------- | ----------- |
+| `Callback<A, R>` | synchronously | you call it      | —           |
+| `Action<A, R>`   | async         | you call it      | yes         |
+| `Resource<T>`    | async         | its dependencies | refetches   |
 
 ## Callback
 
@@ -110,7 +110,7 @@ Hail::Profile => resource.set_read_hail::<Converter>(),
 ```
 
 ```ts
-const profile = sphere.readHail("Profile"); // User | undefined
+const profile = pier.readHail("Profile"); // User | undefined
 ```
 
 :::note

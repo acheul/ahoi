@@ -8,8 +8,16 @@ sidebar:
 A sphere is the **unit of reactive lifetime**. Every stock, memo, effect,
 callback, action, and resource belongs to the sphere it was created in.
 
-If you are using the JS bridge, you get spheres through
-[piers](../../bridge/pier/) and hails. This page is what sits underneath them.
+If you are using the JS bridge, **you never create or clear one yourself**.
+Opening a [pier](../../bridge/pier/) creates a sphere, reading a hail creates a
+sphere, and unmounting the component clears them. The adapter does it.
+
+So read this page for the model, not for an API you have to call. What matters
+day to day is one sentence: **state lives as long as the scope it was created
+in**, and that scope is your provider.
+
+The rest of this page is the machinery underneath — useful if you are writing
+your own integration, or debugging why something outlived what you expected.
 
 ## Creating one
 
@@ -26,13 +34,17 @@ its id and whatever the closure returned.
 
 `make_top_sphere()` creates an empty sphere with no parent, for a root.
 
+This is what `PierProvider` calls for you.
+
 ## Clearing
 
 ```rust
 clear_sphere(id);
 ```
 
-That frees every state the sphere owns. You never free individual values.
+That frees every state the sphere owns. You never free individual values — and
+with an adapter, you do not call this either: it runs from the framework's own
+cleanup hook when your provider unmounts.
 
 Two properties make this safe to wire into a UI framework:
 

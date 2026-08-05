@@ -1,11 +1,11 @@
-import { usePier } from "../../setup/solid/ahoi";
+import { usePier } from "../../setup/solid/bridge";
 
 export default function PathsDemo() {
-    const sphere = usePier();
-    const [first, setFirst] = sphere.hail({ Item: 0 }); // writable, path-derived
-    const [second, setSecond] = sphere.hail({ Item: 1 });
-    const watch0 = sphere.readHail("Watch0Runs"); // effect watching items[0]
-    const watch1 = sphere.readHail("Watch1Runs"); // effect watching items[1]
+    const pier = usePier();
+    const [first, setFirst] = pier.hail({ Item: 0 }); // writable, path-derived
+    const [second, setSecond] = pier.hail({ Item: 1 });
+    const watch0 = pier.readHail("Watch0Runs"); // effect watching items[0]
+    const watch1 = pier.readHail("Watch1Runs"); // effect watching items[1]
 
     return (
         <div class="demo">

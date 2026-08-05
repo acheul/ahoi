@@ -16,13 +16,13 @@ npm i @acheul/ahoi-js
 Each adapter is a subpath of this package, and its framework is an **optional
 peer dependency** — you only install what you use.
 
-| Import | Provides |
-| --- | --- |
-| `@acheul/ahoi-js/solid` | `PierProvider`, `usePier()` → `.hail` / `.readHail` / `.tell` |
-| `@acheul/ahoi-js/react` | `PierProvider`, `useHail`, `useReadHail`, `useTell` |
-| `@acheul/ahoi-js/vue` | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
-| `@acheul/ahoi-js/svelte` | `providePier`, `useHail` (store), `useReadHail`, `useTell` |
-| `@acheul/ahoi-js` | `AhoiStorage` — the framework-agnostic core, for anything else |
+| Import                   | Provides                                                           |
+| ------------------------ | ------------------------------------------------------------------ |
+| `@acheul/ahoi-js/solid`  | `PierProvider`, `usePier()` → `.hail` / `.readHail` / `.tell`      |
+| `@acheul/ahoi-js/react`  | `PierProvider`, `useHail`, `useReadHail`, `useTell`                |
+| `@acheul/ahoi-js/vue`    | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
+| `@acheul/ahoi-js/svelte` | `providePier`, `useHail` (store), `useReadHail`, `useTell`         |
+| `@acheul/ahoi-js`        | `AhoiStorage` — the framework-agnostic core, for anything else     |
 
 Using **Preact**? Use `@acheul/ahoi-js/react` and alias `react`/`react-dom` to
 `preact/compat`, as with any React library.
@@ -32,8 +32,15 @@ Using **Preact**? Use `@acheul/ahoi-js/react` and alias `react`/`react-dom` to
 Wire the wasm exports once:
 
 ```ts
-// ahoi.ts
-import wasmInit, { abi_version, clear, hail, pier, tell, write } from "../pkg/my_app";
+// bridge.ts
+import wasmInit, {
+  abi_version,
+  clear,
+  hail,
+  pier,
+  tell,
+  write,
+} from "../pkg/my_app";
 import { createAhoi } from "@acheul/ahoi-js/solid";
 import type { Pier } from "./bindings/Pier";
 import type { Hail } from "./bindings/Hail";
@@ -42,23 +49,29 @@ import type { HailRets, TellRets } from "./bindings/Rets";
 
 await wasmInit();
 
-export const { PierProvider, usePier } = createAhoi<Pier, Hail, Tell, HailRets, TellRets>({
-    _enrol_pier: pier,
-    _enrol_hail: (p, k) => hail(p, k) as [number, any],
-    _clear_sphere: clear,
-    _write_hail: write,
-    _tell: tell,
-    _abi_version: abi_version,
+export const { PierProvider, usePier } = createAhoi<
+  Pier,
+  Hail,
+  Tell,
+  HailRets,
+  TellRets
+>({
+  _enrol_pier: pier,
+  _enrol_hail: (p, k) => hail(p, k) as [number, any],
+  _clear_sphere: clear,
+  _write_hail: write,
+  _tell: tell,
+  _abi_version: abi_version,
 });
 ```
 
 Then use it (SolidJS shown):
 
 ```tsx
-const sphere = usePier();
-const [count, setCount] = sphere.hail("Count"); // () => number
-const doubled = sphere.readHail("Doubled");     // () => number
-sphere.tell("Increase");                        // number
+const pier = usePier();
+const [count, setCount] = pier.hail("Count"); // () => number
+const doubled = pier.readHail("Doubled"); // () => number
+pier.tell("Increase"); // number
 ```
 
 Keys are plain wire values (`"Count"`, `{ Item: 3 }`) — no constructors. Their

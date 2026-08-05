@@ -87,7 +87,7 @@ optional peer dependency, so you only pull in what you use.
 This is the only setup file an app needs. It hands the six wasm exports to the
 adapter and gives you back the hooks.
 
-<Example name="setup" jsOnly file="ahoi.ts" />
+<Example name="setup" jsOnly file="bridge.ts" />
 
 The generic parameters are your key types and the generated ret maps. They are
 what make `useHail("Count")` a `number` instead of `unknown`.

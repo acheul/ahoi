@@ -12,7 +12,7 @@
  *
  * ```svelte
  * <script lang="ts">
- *   import { providePier, useHail, useReadHail, useTell } from "./ahoi";
+ *   import { providePier, useHail, useReadHail, useTell } from "./bridge";
  *
  *   providePier("Top");                    // this component and its children
  *   const count = useHail("Count");        // writable store

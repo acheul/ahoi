@@ -44,29 +44,29 @@ declare const job: import("../src/solid.js").SolidJob<Pier, Hail, Tell>;
 
 const { usePier, PierProvider } = createAhoi<Pier, Hail, Tell, HailRets, TellRets>(job);
 
-const sphere = usePier();
+const pier = usePier();
 
 // keys are plain wire values — no constructors needed
-const count = sphere.readHail("Count");
+const count = pier.readHail("Count");
 const _c: AssertEq<ReturnType<typeof count>, number> = true;
 
-const [item, setItem] = sphere.hail({ Item: 1 });
+const [item, setItem] = pier.hail({ Item: 1 });
 const _i: AssertEq<ReturnType<typeof item>, number | undefined> = true;
 const _is: AssertEq<Parameters<typeof setItem>[0], number | undefined> = true;
 
-const popped = sphere.tell("PopItem");
+const popped = pier.tell("PopItem");
 const _p: AssertEq<typeof popped, number | undefined> = true;
 
-const nothing = sphere.tell({ PushItem: 5 });
+const nothing = pier.tell({ PushItem: 5 });
 const _n: AssertEq<typeof nothing, undefined> = true;
 
 // cross-key / invalid keys are rejected structurally
 // @ts-expect-error - "PopItem" is a Tell variant, not a Hail variant
-sphere.readHail("PopItem");
+pier.readHail("PopItem");
 // @ts-expect-error - unknown variant
-sphere.tell("Nope");
+pier.tell("Nope");
 // @ts-expect-error - wrong payload type
-sphere.readHail({ Item: "three" });
+pier.readHail({ Item: "three" });
 
 // PierProvider accepts only Pier keys
 type ProviderProps = Parameters<typeof PierProvider>[0];

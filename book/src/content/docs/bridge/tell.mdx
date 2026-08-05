@@ -5,7 +5,7 @@ sidebar:
   order: 3
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 A tell is a **command**. JS asks Rust to do something, and Rust does it
 immediately.
@@ -17,11 +17,12 @@ Unlike a hail, a tell is not a subscription. Nothing is pushed back later.
 <Tabs syncKey="framework">
 <TabItem label="Solid">
 ```tsx
-const sphere = usePier();
+const pier = usePier();
 
-sphere.tell("Increase");
-sphere.tell({ PushItem: 7 });
-```
+pier.tell("Increase");
+pier.tell({ PushItem: 7 });
+
+````
 </TabItem>
 <TabItem label="React">
 ```tsx
@@ -29,7 +30,8 @@ const tell = useTell();
 
 tell("Increase");
 tell({ PushItem: 7 });
-```
+````
+
 </TabItem>
 <TabItem label="Vue">
 ```ts
@@ -37,7 +39,8 @@ const tell = useTell();
 
 tell("Increase");
 tell({ PushItem: 7 });
-```
+
+````
 </TabItem>
 <TabItem label="Svelte">
 ```ts
@@ -45,7 +48,8 @@ const tell = useTell();
 
 tell("Increase");
 tell({ PushItem: 7 });
-```
+````
+
 </TabItem>
 </Tabs>
 

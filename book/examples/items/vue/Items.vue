@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useHail, useReadHail, useTell } from "../../setup/vue/ahoi";
+import { useHail, useReadHail, useTell } from "../../setup/vue/bridge";
 
 const items = useReadHail("Items"); // ComputedRef<number[]>
 const first = useHail({ Item: 0 }); // path-derived, writable

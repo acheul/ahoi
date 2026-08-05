@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { useHail, useReadHail, useTell } from "./ahoi";
+    import { useHail, useReadHail, useTell } from "./bridge";
 
     const count = useHail("Count"); // writable
     const doubled = useReadHail("Doubled"); // memo

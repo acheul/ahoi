@@ -13,12 +13,14 @@ import { Code, Tabs, TabItem } from '@astrojs/starlight/components';
 import { basename, frameworkFiles, langOf, readFile, readRegion } from './examples';
 
 interface Props {
-  /** Example directory under `book/examples/`, e.g. `counter`. */
-  name: string;
+  /** Example directory under `book/examples/`. Not needed when `rustOnly`. */
+  name?: string;
   /** Region in `examples/rust/src/lib.rs`. Defaults to `name`. */
   region?: string;
   /** Drop the Rust panel for a JS-only example. */
   jsOnly?: boolean;
+  /** Drop the framework tabs — for a Rust definition a page needs to quote. */
+  rustOnly?: boolean;
   /** Path of the Rust file to slice, relative to `book/examples/`. */
   rustFile?: string;
   /** Show this exact filename in each framework directory instead of guessing. */
@@ -29,12 +31,16 @@ const {
   name,
   region = name,
   jsOnly = false,
+  rustOnly = false,
   rustFile = 'rust/src/lib.rs',
   file,
 } = Astro.props;
 
+if (!region) throw new Error('<Example> needs a `name` or an explicit `region`');
+if (!rustOnly && !name) throw new Error('<Example> needs a `name` unless `rustOnly`');
+
 const rust = jsOnly ? null : readRegion(rustFile, region);
-const files = frameworkFiles(name, file);
+const files = rustOnly ? [] : frameworkFiles(name!, file);
 const hasDemo = Astro.slots.has('demo');
 ---
 
@@ -47,17 +53,19 @@ const hasDemo = Astro.slots.has('demo');
     )
   }
 
-  <div class="example__panel example__panel--js">
-    <Tabs syncKey="framework">
-      {
-        files.map(({ label, path }) => (
-          <TabItem label={label}>
-            <Code code={readFile(path)} lang={langOf(path)} title={basename(path)} />
-          </TabItem>
-        ))
-      }
-    </Tabs>
-  </div>
+  {
+    files.length > 0 && (
+      <div class="example__panel example__panel--js">
+        <Tabs syncKey="framework">
+          {files.map(({ label, path }) => (
+            <TabItem label={label}>
+              <Code code={readFile(path)} lang={langOf(path)} title={basename(path)} />
+            </TabItem>
+          ))}
+        </Tabs>
+      </div>
+    )
+  }
 
   {
     hasDemo && (
@@ -84,6 +92,11 @@ const hasDemo = Astro.slots.has('demo');
   .example__panel--rust {
     --example-spine: #c06030;
     margin-bottom: 1.25rem;
+  }
+
+  /* Nothing follows it in `rustOnly` mode, so drop the gap. */
+  .example__panel--rust:last-child {
+    margin-bottom: 0;
   }
 
   .example__panel--js {

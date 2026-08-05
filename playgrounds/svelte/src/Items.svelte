@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { useHail, useReadHail, useTell } from "./ahoi";
+    import { useHail, useReadHail, useTell } from "./bridge";
 
     const items = useReadHail("Items");
     const item1 = useHail({ Item: 1 }); // writable path-derived

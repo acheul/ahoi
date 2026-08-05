@@ -1,11 +1,11 @@
-import { usePier } from "../../setup/solid/ahoi";
+import { usePier } from "../../setup/solid/bridge";
 
 export default function ResourceDemo() {
-    const sphere = usePier();
-    const count = sphere.readHail("Count");
-    const tenTimes = sphere.readHail("TenTimes"); // number | undefined
-    const loading = sphere.readHail("TenTimesLoading");
-    const running = sphere.readHail("TickerRunning"); // Action state
+    const pier = usePier();
+    const count = pier.readHail("Count");
+    const tenTimes = pier.readHail("TenTimes"); // number | undefined
+    const loading = pier.readHail("TenTimesLoading");
+    const running = pier.readHail("TickerRunning"); // Action state
 
     return (
         <div class="demo">
@@ -14,13 +14,13 @@ export default function ResourceDemo() {
                 <b id="ten-times">{tenTimes() ?? "—"}</b>{" "}
                 <span id="loading">{loading() ? "(fetching…)" : ""}</span>
             </p>
-            <button id="bump-1" onClick={() => sphere.tell({ Bump: 1 })}>
+            <button id="bump-1" onClick={() => pier.tell({ Bump: 1 })}>
                 +1
             </button>
-            <button id="start" onClick={() => sphere.tell({ StartTicker: 1 })}>
+            <button id="start" onClick={() => pier.tell({ StartTicker: 1 })}>
                 start ticker (+1/s)
             </button>
-            <button id="stop" onClick={() => sphere.tell("StopTicker")}>
+            <button id="stop" onClick={() => pier.tell("StopTicker")}>
                 stop
             </button>
             <span id="running">{running() ? " ticking…" : ""}</span>

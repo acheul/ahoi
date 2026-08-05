@@ -11,6 +11,7 @@ unwieldy.
 
 ## The extra type parameter
 
+From the example of [deriving-stocks](../../reactivity/deriving-stocks/),
 `state.count()` does not copy the value out. It hands you a handle that knows
 how to walk from the root to that field.
 
@@ -76,14 +77,15 @@ closure that pools on every run leaks one per run. Derive inline there instead:
 // in a memo or effect
 let count = state.count(); // chained, free
 ```
+
 :::
 
 ## Choosing
 
-| Situation | Use |
-| --- | --- |
-| Local variable, inside a runner | chained (the default) |
-| Struct field or context value | `.pool()` |
+| Situation                              | Use                       |
+| -------------------------------------- | ------------------------- |
+| Local variable, inside a runner        | chained (the default)     |
+| Struct field or context value          | `.pool()`                 |
 | Anywhere inside a closure that re-runs | chained — never pool here |
 
 If you are not sure, use the default. You will find out when the compiler asks
@@ -92,4 +94,4 @@ you to name a type.
 ## Next
 
 That is the Rust side. From here, the [framework
-guides](../../bridge/pier/) cover what each adapter does differently.
+guides](../../frameworks/solid/) cover what each adapter does differently.

@@ -1,9 +1,9 @@
-import { usePier } from "../../setup/solid/ahoi";
+import { usePier } from "../../setup/solid/bridge";
 
 export default function Items() {
-    const sphere = usePier();
-    const items = sphere.readHail("Items"); // () => number[]
-    const [first, setFirst] = sphere.hail({ Item: 0 }); // path-derived, writable
+    const pier = usePier();
+    const items = pier.readHail("Items"); // () => number[]
+    const [first, setFirst] = pier.hail({ Item: 0 }); // path-derived, writable
 
     return (
         <div class="demo">
@@ -13,10 +13,10 @@ export default function Items() {
             <p>
                 item 0: <b id="item0">{first() ?? "undefined"}</b>
             </p>
-            <button id="push" onClick={() => sphere.tell({ PushItem: items().length * 10 })}>
+            <button id="push" onClick={() => pier.tell({ PushItem: items().length * 10 })}>
                 push
             </button>
-            <button id="pop" onClick={() => sphere.tell("PopItem")}>
+            <button id="pop" onClick={() => pier.tell("PopItem")}>
                 pop
             </button>
             <button id="bump" onClick={() => setFirst((first() ?? 0) + 1)}>

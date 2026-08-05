@@ -21,10 +21,10 @@
  * });
  *
  * // <PierProvider pier="Top">...</PierProvider>
- * const sphere = usePier();
- * const count = sphere.readHail("Count");          // () => number
- * const item = sphere.readHail({ Item: 3 });       // () => number | undefined
- * const popped = sphere.tell("PopItem");           // boolean
+ * const pier = usePier();
+ * const count = pier.readHail("Count");            // () => number
+ * const item = pier.readHail({ Item: 3 });         // () => number | undefined
+ * const popped = pier.tell("PopItem");             // boolean
  * ```
  */
 

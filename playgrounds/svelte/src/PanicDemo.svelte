@@ -8,7 +8,7 @@
      * ahoi-core. Those locations only exist in a `--dev` wasm build; release
      * builds compile them out.
      */
-    import { useTell } from "./ahoi";
+    import { useTell } from "./bridge";
 
     const tell = useTell();
     let fired = $state(false);

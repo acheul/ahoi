@@ -93,7 +93,7 @@ Change the variant name in Rust instead of renaming it in serde.
 `HashMap<K, V>` arrives as a JavaScript **`Map`**, not a plain object.
 
 ```ts
-const counts = sphere.readHail("FruitCounts"); // Map<string, number>
+const counts = pier.readHail("FruitCounts"); // Map<string, number>
 
 counts.get("apple"); // right
 counts["apple"]; // undefined

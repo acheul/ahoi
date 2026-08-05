@@ -13,7 +13,11 @@
 - [x] panic location debug (high priority)
 - [ ] mut-borrow guard by path (low priority)
 
-- [ ] js \_hail_keys -> must distinguish differnet piers' hail keys! (high priority)
+- [x] js \_hail_keys -> must distinguish differnet piers' hail keys! (high priority)
+
+- [ ] tsify example
+
+- [ ] test examples run on published packages
 
 - [ ] support tsain feature
 

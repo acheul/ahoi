@@ -5,19 +5,19 @@ sidebar:
   order: 2
 ---
 
-import Example from '../../../components/Example.astro';
-import PathsIsland from '../../../../examples/paths/solid/island.tsx';
+import Example from "../../../components/Example.astro";
+import PathsIsland from "../../../../examples/paths/solid/island.tsx";
 
 `#[derive(Stock)]` generates one accessor per field, so you can drill into
 nested state and get a reactive handle on just that part.
 
-```rust
-#[derive(Stock)]
-struct State {
-    count: i32,
-    items: Vec<i32>,
-}
+This is the struct the book's examples drill into. It is the real one — the
+live demos compile against it — and the `Serialize` / `Deserialize` derives are
+there only because it also crosses the bridge.
 
+<Example rustOnly region="state" />
+
+```rust
 let state = Stock::new(State { count: 0, items: vec![] });
 
 let count = state.count(); // Stock<i32>
@@ -85,6 +85,8 @@ watches `items[1]`. Each counts how often it actually ran.
 
 Bump `items[0]` and only its watcher moves. The two paths share a `Vec`, a
 struct, and a root stock — and still do not wake each other up.
+
+## Extend with `#[stock]`
 
 `#[stock]` attaches methods to `Stock<YourType>` through an extension trait.
 
