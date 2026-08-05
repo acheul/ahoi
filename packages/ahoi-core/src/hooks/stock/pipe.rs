@@ -70,13 +70,6 @@ impl<T: 'static> Pipeline<T> for PooledPipe<T> {
     }
 }
 
-// Helper of Chained Pipe
-
-pub trait MapNext<T, S>: Clone {
-    fn as_ref<'a>(&self, value: &'a T) -> Option<&'a S>;
-    fn as_mut<'a>(&self, value: &'a mut T) -> Option<&'a mut S>;
-}
-
 /// A Chained Pipeline (Merge Prev Pipeline and Next Pipeline).
 ///
 /// Conditional Copy implemented.
@@ -102,7 +95,7 @@ impl<T: 'static, S: 'static, Prev: 'static, Next: 'static> Pipeline<S>
     for ChainedPipe<Prev, Next, T, S>
 where
     Prev: Pipeline<T>,
-    Next: MapNext<T, S>,
+    Next: MapNextOpt<T, S>,
 {
     fn map_ref<'a>(&self, value: &'a dyn Any) -> Option<&'a S> {
         let t_ref = self.prev.map_ref(value)?;
@@ -120,7 +113,7 @@ impl<T: 'static, U: 'static, Prev: 'static, Next: 'static> states::Mapper
     for ChainedPipe<Prev, Next, T, U>
 where
     Prev: Pipeline<T>,
-    Next: MapNext<T, U>,
+    Next: MapNextOpt<T, U>,
 {
     fn map_ref<'a>(&self, source: &'a dyn Any) -> Option<&'a dyn Any> {
         <Self as Pipeline<U>>::map_ref(self, source).map(|e| e as &dyn Any)
@@ -135,7 +128,7 @@ where
 impl<T: 'static, U: 'static, Prev: 'static, Next: 'static> ChainedPipe<Prev, Next, T, U>
 where
     Prev: Pipeline<T>,
-    Next: MapNext<T, U>,
+    Next: MapNextOpt<T, U>,
 {
     #[cfg_attr(debug_assertions, track_caller)]
     fn pool(self) -> PooledPipe<U> {
@@ -150,33 +143,22 @@ where
 // Named pooling helpers — same as the `Into` impls above, but the method name
 // makes the intent explicit and pins the target type, so callers don't need a
 // type annotation to disambiguate from the reflexive `Into` identity.
-impl<T: 'static, U: 'static, Prev: 'static, Next: 'static, const OPT: bool>
-    ReadStock<U, ChainedPipe<Prev, Next, T, U>, OPT>
-where
-    Prev: Pipeline<T>,
-    Next: MapNext<T, U>,
-{
+pub trait Poolable {
+    type PoolType;
+
     /// Materialize this chained read-stock into a pooled one: its pipeline is
     /// stored as a state, making the handle `Copy`. See [`Stock::pool`].
-    #[cfg_attr(debug_assertions, track_caller)]
-    pub fn pool(self) -> ReadStock<U, PooledPipe<U>, OPT> {
-        let pipeline = self.pipeline.pool();
-        return ReadStock {
-            value_id: self.value_id,
-            path: self.path,
-            pipeline,
-            ty: PhantomData,
-            associated_citer_id: None,
-        };
-    }
+    fn pool(self) -> Self::PoolType;
 }
 
-impl<T: 'static, U: 'static, Prev: 'static, Next: 'static, const OPT: bool>
-    Stock<U, ChainedPipe<Prev, Next, T, U>, OPT>
+impl<T: 'static, U: 'static, Prev: 'static, Next: 'static> Poolable
+    for OptReadStock<U, ChainedPipe<Prev, Next, T, U>>
 where
     Prev: Pipeline<T>,
-    Next: MapNext<T, U>,
+    Next: MapNextOpt<T, U>,
 {
+    type PoolType = OptReadStock<U, PooledPipe<U>>;
+
     /// Materialize this chained stock into a pooled one: its pipeline is stored
     /// as a state, so the handle becomes `Copy` and the `Pipe` generic collapses
     /// to `PooledPipe<U>` (handy for context values). Otherwise prefer the
@@ -186,12 +168,39 @@ where
     /// cleared, so do NOT call `.pool()` inside a reactive closure (it would leak
     /// one mapper per run) — derive inline there instead.
     #[cfg_attr(debug_assertions, track_caller)]
-    pub fn pool(self) -> Stock<U, PooledPipe<U>, OPT> {
-        Stock(self.0.pool())
+    fn pool(self) -> OptReadStock<U, PooledPipe<U>> {
+        let pipeline = self.pipeline.pool();
+        return OptReadStock {
+            value_id: self.value_id,
+            path: self.path,
+            pipeline,
+            ty: PhantomData,
+            associated_citer_id: None,
+        };
     }
 }
 
-// -----
+macro_rules! impl_poolable {
+    ($ty:ident) => {
+        impl<T: 'static, U: 'static, Prev: 'static, Next: 'static> Poolable
+            for $ty<U, ChainedPipe<Prev, Next, T, U>>
+        where
+            Prev: Pipeline<T>,
+            Next: MapNextOpt<T, U>,
+        {
+            type PoolType = $ty<U, PooledPipe<U>>;
+
+            #[cfg_attr(debug_assertions, track_caller)]
+            fn pool(self) -> $ty<U, PooledPipe<U>> {
+                $ty(self.0.pool())
+            }
+        }
+    };
+}
+
+impl_poolable!(OptStock);
+impl_poolable!(ReadStock);
+impl_poolable!(Stock);
 
 // Pooled ReadStock From Chained ReadStock Into
 //
@@ -199,27 +208,23 @@ where
 // attribute on these impls only helps for statically-resolved calls. When the
 // recorded creation site matters, prefer `.pool()` — it is an inherent method
 // and carries the caller reliably.
-impl<T: 'static, U: 'static, Prev: 'static, Next: 'static, const OPT: bool>
-    From<ReadStock<U, ChainedPipe<Prev, Next, T, U>, OPT>> for ReadStock<U, PooledPipe<U>, OPT>
-where
-    Prev: Pipeline<T>,
-    Next: MapNext<T, U>,
-{
-    #[cfg_attr(debug_assertions, track_caller)]
-    fn from(stock: ReadStock<U, ChainedPipe<Prev, Next, T, U>, OPT>) -> Self {
-        stock.pool()
-    }
+macro_rules! impl_pool_from {
+    ($ty:ident) => {
+        impl<T: 'static, U: 'static, Prev: 'static, Next: 'static>
+            From<$ty<U, ChainedPipe<Prev, Next, T, U>>> for $ty<U, PooledPipe<U>>
+        where
+            Prev: Pipeline<T>,
+            Next: MapNextOpt<T, U>,
+        {
+            #[cfg_attr(debug_assertions, track_caller)]
+            fn from(stock: $ty<U, ChainedPipe<Prev, Next, T, U>>) -> Self {
+                stock.pool()
+            }
+        }
+    };
 }
 
-// Pooled Stock From Chained Stock
-impl<T: 'static, U: 'static, Prev: 'static, Next: 'static, const OPT: bool>
-    From<Stock<U, ChainedPipe<Prev, Next, T, U>, OPT>> for Stock<U, PooledPipe<U>, OPT>
-where
-    Prev: Pipeline<T>,
-    Next: MapNext<T, U>,
-{
-    #[cfg_attr(debug_assertions, track_caller)]
-    fn from(stock: Stock<U, ChainedPipe<Prev, Next, T, U>, OPT>) -> Self {
-        stock.pool()
-    }
-}
+impl_pool_from!(OptReadStock);
+impl_pool_from!(OptStock);
+impl_pool_from!(ReadStock);
+impl_pool_from!(Stock);

@@ -1,23 +1,19 @@
 use super::*;
 
 #[cfg_attr(debug_assertions, track_caller)]
-fn help_set_read_hail<
-    X: HailConverter<T> + 'static,
-    T: 'static,
-    Pipe: Pipeline<T> + 'static,
-    const OPT: bool,
->(
-    stock: ReadStock<T, Pipe, OPT>,
+fn help_set_read_hail<X: HailConverter<T> + 'static, T: 'static, Pipe: Pipeline<T> + 'static>(
+    stock: OptReadStock<T, Pipe>,
+    is_optional: bool,
 ) -> X::HailValue {
-    let parse_value = |value| X::__from_option_raw_value(value, OPT);
+    let parse_value = move |value| X::__from_option_raw_value(value, is_optional);
 
-    let initial_hail_value = parse_value(stock.raw_peek().unwrap());
+    let initial_hail_value = parse_value(stock.try_peek().unwrap());
 
     let sphere_id = runtime::sphere::current_sphere_id().expect("set hail out of sphere");
 
     let _citer_id =
         runtime::insert::insert_hail_citer_runner_state((stock.value_id, stock.path), move || {
-            let Ok(value) = stock.raw_read() else {
+            let Ok(value) = stock.try_read() else {
                 return;
             };
             let hail_value = parse_value(value);
@@ -29,15 +25,15 @@ fn help_set_read_hail<
 }
 
 #[cfg_attr(debug_assertions, track_caller)]
-pub fn set_read_hail<
+pub(crate) fn set_read_hail<
     X: HailConverter<T> + 'static,
     T: 'static,
     Pipe: Pipeline<T> + 'static,
-    const OPT: bool,
 >(
-    stock: ReadStock<T, Pipe, OPT>,
+    stock: OptReadStock<T, Pipe>,
+    is_optional: bool,
 ) -> X::HailValue {
-    let initial_hail_value = help_set_read_hail::<X, T, Pipe, OPT>(stock);
+    let initial_hail_value = help_set_read_hail::<X, T, Pipe>(stock, is_optional);
 
     // mark hail sphered
     runtime::sphere::register_hail_to_current_sphere(None);
@@ -46,22 +42,26 @@ pub fn set_read_hail<
 }
 
 #[cfg_attr(debug_assertions, track_caller)]
-pub fn set_hail<
+pub(crate) fn set_hail<
     X: HailConverter<T> + 'static,
     T: 'static,
     Pipe: Pipeline<T> + Clone + 'static,
-    const OPT: bool,
 >(
-    stock: Stock<T, Pipe, OPT>,
+    stock: OptStock<T, Pipe>,
+    is_optional: bool,
 ) -> X::HailValue {
-    let initial_hail_value = help_set_read_hail::<X, T, Pipe, OPT>(stock.0.clone());
+    let initial_hail_value = help_set_read_hail::<X, T, Pipe>(stock.0.clone(), is_optional);
 
     // write callback
     let callback: Callback<X::HailValue, ()> = Callback::new(move |hail_value: X::HailValue| {
-        let Ok(value) = stock.raw_write() else {
+        let Ok(value) = stock.try_write() else {
             return;
         };
-        let value = if OPT { value } else { Some(value.unwrap()) };
+        let value = if is_optional {
+            value
+        } else {
+            Some(value.unwrap())
+        };
         if let Some(mut value) = value {
             let hail_value = X::into_raw_value(hail_value);
             *value = hail_value;
