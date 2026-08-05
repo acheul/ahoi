@@ -15,7 +15,7 @@
 
 - [x] js \_hail_keys -> must distinguish differnet piers' hail keys! (high priority)
 
-- [ ] tsify example
+- [x] tsify example
 
 - [ ] test examples run on published packages
 
