@@ -5,7 +5,7 @@ members = [
     "packages/ahoi-core",
     "packages/ahoi-stock-macro",
     "packages/ahoi-rets-macro",
-    "playgrounds/ahoi-wasm",
+    "playgrounds/ahoi-wasm-tsrs",
     "playgrounds/ahoi-wasm-tsify",
     "playgrounds/bench",
     "book/examples/rust"

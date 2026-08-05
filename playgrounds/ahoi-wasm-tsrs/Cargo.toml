@@ -1,5 +1,5 @@
 [package]
-name = "ahoi-wasm"
+name = "ahoi-wasm-tsrs"
 publish = false
 version.workspace = true
 edition.workspace = true

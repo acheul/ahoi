@@ -12,7 +12,7 @@ pnpm -C js build
 ## Panic diagnostics
 
 Every playground ends with a "Panic diagnostics" section that triggers a
-double-borrow on purpose (`Tell::PanicDemo`). It exists to show *where* a panic
+double-borrow on purpose (`Tell::PanicDemo`). It exists to show _where_ a panic
 is reported: because ahoi carries `#[track_caller]` from the public API down to
 the `RefCell` borrow, a `--dev` build blames the caller's own line —
 
@@ -30,7 +30,7 @@ Note that wasm panics abort the module, so the page must be reloaded afterwards.
 
 ```sh
 cargo test -p ahoi-wasm
-wasm-pack build playgrounds/ahoi-wasm --target web --dev
+wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/solid dev
 ```
 
@@ -64,7 +64,7 @@ Same features as the Solid playground (shares the `ahoi-wasm` crate and its `bin
 
 ```sh
 cargo test -p ahoi-wasm
-wasm-pack build playgrounds/ahoi-wasm --target web --dev
+wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/react dev
 ```
 
@@ -76,7 +76,7 @@ Same features again, through the `@acheul/ahoi-js/vue` adapter (`shallowRef` + `
 
 ```sh
 cargo test -p ahoi-wasm
-wasm-pack build playgrounds/ahoi-wasm --target web --dev
+wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/vue dev
 ```
 
@@ -88,7 +88,7 @@ Through the `@acheul/ahoi-js/svelte` adapter. Hails are **stores**, so `$count` 
 
 ```sh
 cargo test -p ahoi-wasm
-wasm-pack build playgrounds/ahoi-wasm --target web --dev
+wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/svelte dev
 ```
 
