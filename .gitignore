@@ -26,7 +26,6 @@ rustc-ice-*
 .obsidian
 .claude
 .vscode
-playgrounds/*/prints
 
 # Temporary
 playgrounds-tsain
