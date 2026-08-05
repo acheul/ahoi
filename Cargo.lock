@@ -12,6 +12,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
+ "tsain",
  "wasm-bindgen",
 ]
 
@@ -62,6 +63,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "ahoi-wasm-tsain-todo"
+version = "0.1.1"
+dependencies = [
+ "ahoi",
+ "console_error_panic_hook",
+ "serde",
+ "tsain",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -243,6 +255,15 @@ checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
 dependencies = [
  "equivalent",
  "hashbrown",
+]
+
+[[package]]
+name = "inventory"
+version = "0.3.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4f0c30c76f2f4ccee3fe55a2435f691ca00c0e4bd87abe4f4a851b1d4dac39b"
+dependencies = [
+ "rustversion",
 ]
 
 [[package]]
@@ -523,6 +544,48 @@ dependencies = [
  "syn 2.0.119",
  "termcolor",
 ]
+
+[[package]]
+name = "tsain"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25007cb8f8445feeed1571a62b107d24d512de5999b9b3d8eddf7c668c9b920d"
+dependencies = [
+ "tsain-core",
+]
+
+[[package]]
+name = "tsain-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c38445d6d5ea0636e68f34ddf29f4d86644db7f0774c14ae184c5cbdc2b3a81"
+dependencies = [
+ "inventory",
+ "js-sys",
+ "serde",
+ "serde-wasm-bindgen",
+ "tsain-macros",
+ "tsain-pattern",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "tsain-macros"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af62bb4b083190a2bee4bb5acdf15ced2f54bbef1d80a40c744c4fe8ca672c43"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+ "tsain-pattern",
+]
+
+[[package]]
+name = "tsain-pattern"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8db460095292f112c4e5c678b206ae0dd0e01f74736b6c2983273d6ae9eb9aa5"
 
 [[package]]
 name = "tsify"

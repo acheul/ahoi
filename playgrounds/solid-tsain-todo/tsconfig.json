@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "types": ["vite/client"]
   },
-  "include": ["src", "../ahoi-wasm-tsrs/bindings", "../ahoi-wasm-tsrs/pkg"]
+  "include": ["src", "../ahoi-wasm-tsain-todo/bindings", "../ahoi-wasm-tsain-todo/pkg"]
 }
