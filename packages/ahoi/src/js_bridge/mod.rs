@@ -6,9 +6,7 @@ use wasm_bindgen::prelude::*;
 pub mod ts;
 pub use ts::TsFile;
 
-#[cfg(feature = "serde-wasm-bindgen")]
-pub mod converters;
-#[cfg(feature = "serde-wasm-bindgen")]
+mod converters;
 pub use converters::*;
 
 /// Version of the wasm⇄JS bridge ABI (the `pier`/`hail`/`clear`/`write`/`tell`
