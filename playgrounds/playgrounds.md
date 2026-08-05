@@ -30,7 +30,7 @@ release builds; `scripts/check-wasm-release.sh` enforces that.
 
 Note that wasm panics abort the module, so the page must be reloaded afterwards.
 
-## Solid Js
+## Solid Js + Ts-Rs
 
 ```sh
 cargo test -p ahoi-wasm-tsrs
@@ -89,7 +89,7 @@ pnpm -C playgrounds/solid-tsain-todo dev
   only generation step in this setup.
 - Dev server: http://localhost:5179
 
-## React
+## React + Ts-Rs
 
 Same features as the Solid playground (shares the `ahoi-wasm-tsrs` crate and its `bindings/`), but through the `@acheul/ahoi-js/react` adapter. Runs under `<StrictMode>` on purpose — the adapter must survive its double-mount / discarded-render behavior.
 
@@ -101,7 +101,7 @@ pnpm -C playgrounds/react dev
 
 - Dev server: http://localhost:5175
 
-## Vue
+## Vue + Ts-Rs
 
 Same features again, through the `@acheul/ahoi-js/vue` adapter (`shallowRef` + `onScopeDispose`; `useHail` returns a writable ref, so `count++` and `v-model` just work).
 
@@ -113,7 +113,7 @@ pnpm -C playgrounds/vue dev
 
 - Dev server: http://localhost:5176
 
-## Svelte
+## Svelte + Ts-Rs
 
 Through the `@acheul/ahoi-js/svelte` adapter. Hails are **stores**, so `$count` / `bind:value={$info}` work as usual (Svelte 4 and 5). There is no provider component — `providePier("Top")` at the top of a component's `<script>` sets the pier for it and its children.
 

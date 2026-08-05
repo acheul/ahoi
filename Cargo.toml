@@ -5,11 +5,12 @@ members = [
     "packages/ahoi-core",
     "packages/ahoi-stock-macro",
     "packages/ahoi-rets-macro",
+    "book/examples/rust", 
     "playgrounds/ahoi-wasm-tsrs",
     "playgrounds/ahoi-wasm-tsify",
     "playgrounds/bench",
-    "book/examples/rust"
-, "playgrounds/ahoi-wasm-tsain-todo"]
+    "playgrounds/ahoi-wasm-tsain-todo"
+]
 exclude = []
 
 [workspace.package]
