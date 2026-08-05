@@ -11,16 +11,23 @@ Every key enum and every hail value passes through one.
 
 ## The ready-made ones
 
-Two ship with the crate, behind features. Both work for anything that is
+Three ship with the crate, behind features. All work for anything that is
 `Serialize + DeserializeOwned`.
 
 | Feature | Converter | Wire type |
 | --- | --- | --- |
 | `serde-wasm-bindgen` | `SerdeWasmBindgenConverter` | `JsValue` |
+| `tsain` | `TsainConverter` | `JsValue` |
 | `serde_json` | `SerdeJsonConverter` | `serde_json::Value` |
 
 **`serde-wasm-bindgen` is the one to reach for.** It builds native JS values
 directly, with no intermediate JSON.
+
+Pick `tsain` when you export types with
+[Tsain](../exporting-types/#with-tsain). Values cross as positional arrays —
+no field or variant names on the wire. That converts faster and keeps your
+names out of the emitted JS. The two halves must match: this converter expects
+the array shapes that Tsain's export describes.
 
 Pick `serde_json` when you would rather work in `serde_json::Value` on the Rust
 side — a type that already goes through JSON, or code you share with a non-wasm
@@ -39,9 +46,9 @@ ahoi = { version = "0.1", features = ["serde-wasm-bindgen"] }
 use ahoi::js_bridge::SerdeWasmBindgenConverter as Converter;
 ```
 
-Both converters need `Serialize + DeserializeOwned`, which is why the key enums
-derive both. Aliasing to `Converter` is also what keeps a switch to a one-line
-change.
+Every converter needs `Serialize + DeserializeOwned`, which is why the key
+enums derive both. Aliasing to `Converter` is also what keeps a switch to a
+one-line change.
 
 You name it once per macro:
 
@@ -72,6 +79,10 @@ Hail::Count => state.count().set_hail::<Converter>(),
 
 The `HashMap` one catches people out. You get a real `Map`, so read it with
 `.get(k)`, not `obj[k]`.
+
+`TsainConverter` differs on structs and enums: they cross as positional
+arrays, with no names. Its generated file ships the factories and getters
+that read them — see [Exporting types](../exporting-types/#with-tsain).
 
 ## Writing your own
 

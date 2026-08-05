@@ -14,13 +14,16 @@ details, and re-implementing one inside ahoi would only make you choose again.
 
 Two kinds of type cross the bridge, and they are handled by different tools.
 
-| What                                                      | Who handles it                       |
-| --------------------------------------------------------- | ------------------------------------ |
-| Your key and data types (`Pier`, `Hail`, `Tell`, `Fruit`) | Your exporter: [ts-rs], [Tsify], …   |
-| What each key **returns**                                 | Ahoi's [`#[derive(Rets)]`](../rets/) |
+| What                                                      | Who handles it                            |
+| --------------------------------------------------------- | ----------------------------------------- |
+| Your key and data types (`Pier`, `Hail`, `Tell`, `Fruit`) | Your exporter: [ts-rs], [Tsify], [Tsain], … |
+| What each key **returns**                                 | Ahoi's [`#[derive(Rets)]`](../rets/)      |
 
 No general-purpose converter can do the second one. It is not a property of a
 type, it is a property of a key.
+
+[Tsain] is the one exception — it covers both rows at once. See
+[With Tsain](#with-tsain) below.
 
 ## With ts-rs
 
@@ -84,6 +87,54 @@ TsFile::new()
     .export("./bindings/Rets.ts");
 ```
 
+## With Tsain
+
+[Tsain] is different in kind: it is a converter **and** an exporter in one.
+Values cross the wire as positional arrays, and the export step writes the
+matching TypeScript.
+
+The return type moves onto the key itself, as a brand:
+
+```rust
+#[derive(Tsain, Serialize, Deserialize)]
+pub enum Hail {
+    #[tsain(brand(ret = i32))]
+    Count,
+    #[tsain(brand(ret = Option<i32>))]
+    Item(usize),
+}
+```
+
+No `Rets` derive. No `TsFile`. One generator writes everything:
+
+```rust
+#[test]
+fn generate() {
+    tsain::TsScript::export("./bindings/Tsain.ts");
+}
+```
+
+The file holds the types plus factory functions and getters. You need them —
+a positional array has no field names to read:
+
+```ts
+import { HailCount_, HailItem_ } from "./bindings/Tsain";
+
+pier.hail(HailCount_()); // () => number
+pier.hail(HailItem_(3)); // () => number | undefined
+```
+
+Drop the ret-map generics from `createAhoi`; the brands carry the types:
+
+```ts
+createAhoi<Pier, Hail, Tell>({
+  /* wasm exports */
+});
+```
+
+Values must cross in the same array format, so pair this with the `tsain`
+crate feature and `TsainConverter` — see [Converter](../converter/).
+
 ## Wiring them together
 
 The five generic parameters on `createAhoi` are, in order: the pier key, the
@@ -112,7 +163,7 @@ The key types make `pier.hail("Cont")` a compile error. The ret maps make
 ## If your exporter brands keys
 
 Some setups attach the return type to the key itself rather than listing it in a
-map. Ahoi handles that too.
+map — [Tsain] above is one. Ahoi handles that too.
 
 The JS side resolves a key's return type in this order:
 
@@ -139,3 +190,4 @@ Values still have to physically cross the boundary. That is the
 
 [ts-rs]: https://github.com/Aleph-Alpha/ts-rs
 [Tsify]: https://github.com/madonoharu/tsify
+[Tsain]: https://crates.io/crates/tsain

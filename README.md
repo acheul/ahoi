@@ -138,8 +138,8 @@ fn run_tell(tell: Tell) -> JsValue {
 ### 2. Export the types
 
 Ahoi is **not** a Rust→TypeScript converter — use whichever you like
-([ts-rs], [Tsify], …) for your key and data types. Ahoi only adds the one thing
-no general-purpose converter knows: **what each key returns**.
+([ts-rs], [Tsify], [Tsain], …) for your key and data types. Ahoi only adds the
+one thing no general-purpose converter knows: **what each key returns**.
 
 ```rust
 // run with `cargo test` to (re)generate
@@ -157,6 +157,11 @@ fn generate() {
 export type HailRets = { Count: number; Doubled: number };
 export type TellRets = { Increase: number };
 ```
+
+Prefer one tool for everything? [Tsain] is a converter **and** an exporter:
+keys carry their return type as a `ret` brand
+(`#[tsain(brand(ret = i32))]`), so this whole step disappears — no `Rets`,
+no `TsFile`.
 
 Then build the wasm package:
 
@@ -233,6 +238,7 @@ and `pier.tell("Increase")` is `number`.
 
 [ts-rs]: https://github.com/Aleph-Alpha/ts-rs
 [Tsify]: https://github.com/madonoharu/tsify
+[Tsain]: https://github.com/acheul/tsain
 
 ---
 
@@ -331,8 +337,9 @@ Macros generate the wasm exports:
 - `wasm_bindgen_tell!(TellKey, run_tell, Converter)`
 
 A `HailConverter` defines how a Rust value crosses to/from a `JsValue`. The
-`serde-wasm-bindgen` feature provides `SerdeWasmBindgenConverter`; implement the
-trait yourself to use a different one.
+`serde-wasm-bindgen` feature provides `SerdeWasmBindgenConverter`, and the
+`tsain` feature provides `TsainConverter` ([Tsain]'s positional-array format);
+implement the trait yourself to use a different one.
 
 Dispatches are collected and sent to JS **in one batch** per propagation cycle,
 so a single write that touches many hails costs one crossing, not many.
@@ -366,8 +373,8 @@ their identifier, matching how every mainstream exporter names TS types. A
 generated compile-time assertion still catches typos.
 
 The JS side resolves a key's return type from that map by variant name — or, if
-your converter brands keys with a `ret` type directly, straight from the brand.
-Either way the bridge stays converter-agnostic.
+your converter brands keys with a `ret` type directly (as [Tsain] does),
+straight from the brand. Either way the bridge stays converter-agnostic.
 
 > Key enums assume serde's **default (externally-tagged)** representation.
 > Attributes that rename variants or change the enum representation are
@@ -384,6 +391,10 @@ map values on the wire, nested-pier cleanup), plus a benchmark app:
 - [`playgrounds/solid`](playgrounds/solid), [`playgrounds/react`](playgrounds/react),
   [`playgrounds/vue`](playgrounds/vue), [`playgrounds/svelte`](playgrounds/svelte)
 - [`playgrounds/ahoi-wasm-tsrs`](playgrounds/ahoi-wasm-tsrs) — the shared Rust side
+- [`playgrounds/solid-tsify`](playgrounds/solid-tsify) — the same bridge with
+  the [Tsify] exporter
+- [`playgrounds/solid-tsain-todo`](playgrounds/solid-tsain-todo) — a small todo
+  app on the [Tsain] converter + exporter
 - [`playgrounds/bench`](playgrounds/bench) — reactivity micro-benchmarks
   (doubles as the no-framework example)
 
