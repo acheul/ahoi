@@ -65,7 +65,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "ahoi-wasm"
+name = "ahoi-wasm-tsify"
+version = "0.1.1"
+dependencies = [
+ "ahoi",
+ "console_error_panic_hook",
+ "serde",
+ "serde-wasm-bindgen",
+ "tsify",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "ahoi-wasm-tsrs"
 version = "0.1.1"
 dependencies = [
  "ahoi",
@@ -75,18 +87,6 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "ts-rs",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "ahoi-wasm-tsify"
-version = "0.1.1"
-dependencies = [
- "ahoi",
- "console_error_panic_hook",
- "serde",
- "serde-wasm-bindgen",
- "tsify",
  "wasm-bindgen",
 ]
 
