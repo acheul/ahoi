@@ -19,6 +19,6 @@
 
 - [ ] test examples run on published packages
 
-- [ ] support tsain feature
+- [x] support tsain feature
 
 - [ ] bench result
