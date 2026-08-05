@@ -5,7 +5,7 @@
 - [x] return type macro
 - [x] other frameworks exmples than Solid (React, Vue, Svelte)
 
-- [ ] support other than serde-wasm-bindgen converter?
+- [x] support serde_json converter
 
 - [x] publish: crate & npm
 - [x] build a book
