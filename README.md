@@ -383,7 +383,7 @@ map values on the wire, nested-pier cleanup), plus a benchmark app:
 
 - [`playgrounds/solid`](playgrounds/solid), [`playgrounds/react`](playgrounds/react),
   [`playgrounds/vue`](playgrounds/vue), [`playgrounds/svelte`](playgrounds/svelte)
-- [`playgrounds/ahoi-wasm`](playgrounds/ahoi-wasm) — the shared Rust side
+- [`playgrounds/ahoi-wasm-tsrs`](playgrounds/ahoi-wasm-tsrs) — the shared Rust side
 - [`playgrounds/bench`](playgrounds/bench) — reactivity micro-benchmarks
   (doubles as the no-framework example)
 

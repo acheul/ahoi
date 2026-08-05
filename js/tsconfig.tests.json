@@ -4,5 +4,5 @@
     "noEmit": true,
     "rootDir": ".."
   },
-  "include": ["src", "tests", "../playgrounds/ahoi-wasm/bindings"]
+  "include": ["src", "tests", "../playgrounds/ahoi-wasm-tsrs/bindings"]
 }

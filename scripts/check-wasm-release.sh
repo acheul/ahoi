@@ -15,11 +15,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-echo "==> building ahoi-wasm (release, wasm32-unknown-unknown)"
-cargo build -p ahoi-wasm --target wasm32-unknown-unknown --release
+echo "==> building ahoi-wasm-tsrs (release, wasm32-unknown-unknown)"
+cargo build -p ahoi-wasm-tsrs --target wasm32-unknown-unknown --release
 
 WASM=$(cargo metadata --format-version 1 --no-deps \
-    | sed -n 's/.*"target_directory":"\([^"]*\)".*/\1/p')/wasm32-unknown-unknown/release/ahoi_wasm.wasm
+    | sed -n 's/.*"target_directory":"\([^"]*\)".*/\1/p')/wasm32-unknown-unknown/release/ahoi_wasm_tsrs.wasm
 
 if [ ! -f "$WASM" ]; then
     echo "FAIL: built wasm not found at $WASM" >&2

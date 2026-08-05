@@ -1,11 +1,11 @@
 /**
  * Each section exercises one bridge feature — see the table in
- * `playgrounds/ahoi-wasm/src/lib.rs`. Mirrors the solid playground
+ * `playgrounds/ahoi-wasm-tsrs/src/lib.rs`. Mirrors the solid playground
  * (same element ids), but hook-shaped.
  */
 import { useState } from "react";
 import { PierProvider, useHail, useReadHail, useTell } from "./bridge";
-import type { Fruit } from "../../ahoi-wasm/bindings/Fruit";
+import type { Fruit } from "../../ahoi-wasm-tsrs/bindings/Fruit";
 
 function Counter() {
     const [count, setCount] = useHail("Count"); // writable
@@ -105,7 +105,7 @@ function Fruits() {
  * same value — the classic double-borrow bug.
  *
  * What to look for: the Rust panic in the console should point at the `read()`
- * line in `playgrounds/ahoi-wasm/src/lib.rs`, not at a line inside ahoi-core.
+ * line in `playgrounds/ahoi-wasm-tsrs/src/lib.rs`, not at a line inside ahoi-core.
  * Those locations only exist in a `--dev` wasm build; release builds compile
  * them out.
  */
@@ -119,7 +119,7 @@ function PanicDemo() {
             <p>
                 Triggers a double-borrow panic on purpose. Open the console: the
                 blame should land on the <code>read()</code> call in{" "}
-                <code>ahoi-wasm/src/lib.rs</code>.
+                <code>ahoi-wasm-tsrs/src/lib.rs</code>.
             </p>
             <p>
                 <b>Note:</b> wasm panics abort the module — everything above stops

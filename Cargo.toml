@@ -9,7 +9,7 @@ members = [
     "playgrounds/ahoi-wasm-tsify",
     "playgrounds/bench",
     "book/examples/rust"
-]
+, "playgrounds/ahoi-wasm-tsain-todo"]
 exclude = []
 
 [workspace.package]

@@ -1,7 +1,7 @@
 <script lang="ts">
     /**
      * Each section exercises one bridge feature — see the table in
-     * `playgrounds/ahoi-wasm/src/lib.rs`. Mirrors the other playgrounds
+     * `playgrounds/ahoi-wasm-tsrs/src/lib.rs`. Mirrors the other playgrounds
      * (same element ids).
      *
      * Svelte has no provider component here: `providePier` sets the pier for

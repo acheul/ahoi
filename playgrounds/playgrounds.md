@@ -11,13 +11,17 @@ pnpm -C js build
 
 ## Panic diagnostics
 
-Every playground ends with a "Panic diagnostics" section that triggers a
-double-borrow on purpose (`Tell::PanicDemo`). It exists to show _where_ a panic
-is reported: because ahoi carries `#[track_caller]` from the public API down to
-the `RefCell` borrow, a `--dev` build blames the caller's own line —
+The four framework playgrounds (Solid, React, Vue, Svelte — all on the
+`ahoi-wasm-tsrs` crate) end with a "Panic diagnostics" section that triggers a
+double-borrow on purpose (`Tell::PanicDemo`). The exporter playgrounds (Tsify,
+Tsain) leave it out: they verify the type export, not the bridge internals.
+
+It exists to show _where_ a panic is reported: because ahoi carries
+`#[track_caller]` from the public API down to the `RefCell` borrow, a `--dev`
+build blames the caller's own line —
 
 ```
-panicked at playgrounds\ahoi-wasm\src\lib.rs:265:39:
+panicked at playgrounds\ahoi-wasm-tsrs\src\lib.rs:265:39:
 RefCell already mutably borrowed
 ```
 
@@ -29,12 +33,12 @@ Note that wasm panics abort the module, so the page must be reloaded afterwards.
 ## Solid Js
 
 ```sh
-cargo test -p ahoi-wasm
+cargo test -p ahoi-wasm-tsrs
 wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/solid dev
 ```
 
-- `cargo test -p ahoi-wasm` regenerates `bindings/` (ts-rs types + `Keys.ts` ret maps); only needed after changing the key enums.
+- `cargo test -p ahoi-wasm-tsrs` regenerates `bindings/` (ts-rs types + `Rets.ts` ret maps); only needed after changing the key enums.
 - Dev server: http://localhost:5173
 
 ## Solid Js + Tsify
@@ -58,12 +62,39 @@ pnpm -C playgrounds/solid-tsify dev
   types themselves come from the `wasm-pack build`.
 - Dev server: http://localhost:5178
 
-## React
+## Solid Js + Tsain (todo app)
 
-Same features as the Solid playground (shares the `ahoi-wasm` crate and its `bindings/`), but through the `@acheul/ahoi-js/react` adapter. Runs under `<StrictMode>` on purpose — the adapter must survive its double-mount / discarded-render behavior.
+One exporter for everything: the `ahoi-wasm-tsain-todo` crate uses
+[Tsain](https://crates.io/crates/tsain) for both the values on the wire
+(`TsainConverter`; tsain's positional-array format) and the type export
+(`#[derive(Tsain)]` → `bindings/Tsain.ts`, with the factory functions and
+getters JS needs to build and read that format). Ret types ride on the key
+variants as `#[tsain(brand(ret = ..))]` brands, so there is no
+`#[derive(Rets)]` and no `TsFile` step at all.
+
+Shaped as a small todo app rather than a feature matrix — this doubles as the
+"typical app" example: add/toggle/remove/clear todos, a filter enum
+round-tripping JS ⇄ Rust, an `OpenCount` memo, undo driven by
+`RemoveTodo`'s `Option<Todo>` return, and a collapsible profile section on a
+nested `User` pier (its `Motto` state resets on unmount; the `Top`-owned
+name survives).
 
 ```sh
-cargo test -p ahoi-wasm
+cargo test -p ahoi-wasm-tsain-todo
+wasm-pack build playgrounds/ahoi-wasm-tsain-todo --target web --dev
+pnpm -C playgrounds/solid-tsain-todo dev
+```
+
+- `cargo test -p ahoi-wasm-tsain-todo` regenerates `bindings/Tsain.ts` — the
+  only generation step in this setup.
+- Dev server: http://localhost:5179
+
+## React
+
+Same features as the Solid playground (shares the `ahoi-wasm-tsrs` crate and its `bindings/`), but through the `@acheul/ahoi-js/react` adapter. Runs under `<StrictMode>` on purpose — the adapter must survive its double-mount / discarded-render behavior.
+
+```sh
+cargo test -p ahoi-wasm-tsrs
 wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/react dev
 ```
@@ -75,7 +106,7 @@ pnpm -C playgrounds/react dev
 Same features again, through the `@acheul/ahoi-js/vue` adapter (`shallowRef` + `onScopeDispose`; `useHail` returns a writable ref, so `count++` and `v-model` just work).
 
 ```sh
-cargo test -p ahoi-wasm
+cargo test -p ahoi-wasm-tsrs
 wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/vue dev
 ```
@@ -87,7 +118,7 @@ pnpm -C playgrounds/vue dev
 Through the `@acheul/ahoi-js/svelte` adapter. Hails are **stores**, so `$count` / `bind:value={$info}` work as usual (Svelte 4 and 5). There is no provider component — `providePier("Top")` at the top of a component's `<script>` sets the pier for it and its children.
 
 ```sh
-cargo test -p ahoi-wasm
+cargo test -p ahoi-wasm-tsrs
 wasm-pack build playgrounds/ahoi-wasm-tsrs --target web --dev
 pnpm -C playgrounds/svelte dev
 ```

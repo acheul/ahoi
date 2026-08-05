@@ -1,0 +1,17 @@
+[package]
+name = "ahoi-wasm-tsain-todo"
+publish = false
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+ahoi = { workspace = true, features = ["tsain"] }
+tsain = { version = "0.1" }
+serde = { version = "1.0", features = ["derive"] }
+wasm-bindgen = { version = "0.2" }
+console_error_panic_hook = { version = "0.1" }
