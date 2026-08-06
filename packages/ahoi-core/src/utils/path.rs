@@ -20,10 +20,6 @@ impl Path {
         }
     }
 
-    pub(crate) const fn is_empty(&self) -> bool {
-        self.length == 0
-    }
-
     pub(crate) fn as_slice(&self) -> &[u64] {
         &self.path[..self.length]
     }
