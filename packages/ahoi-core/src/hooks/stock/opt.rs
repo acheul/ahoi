@@ -1,6 +1,8 @@
 use super::*;
 
-/// OptReadStock
+/// The read-only, may-be-absent stock handle: borrow methods return `Option` —
+/// `None` means the value is genuinely absent, which is not an error. See
+/// [`Stock`] for the full type table.
 pub struct OptReadStock<T, Pipe = PooledPipe<T>> {
     pub(crate) value_id: StateId,
     pub(crate) path: Path,
@@ -23,7 +25,9 @@ impl<T, Pipe: Clone> Clone for OptReadStock<T, Pipe> {
 
 impl<T, Pipe: Copy> Copy for OptReadStock<T, Pipe> {}
 
-/// OptStock
+/// The writable, may-be-absent stock handle. See [`OptReadStock`] for the
+/// `Option` semantics of the borrow methods, and [`Stock`] for the full type
+/// table.
 pub struct OptStock<T, Pipe = PooledPipe<T>>(pub(crate) OptReadStock<T, Pipe>);
 
 impl<T, Pipe: Clone> Clone for OptStock<T, Pipe> {
@@ -53,21 +57,31 @@ impl<T, Pipe> OptStock<T, Pipe> {
 
 // OptReadStock
 impl<T, Pipe: Pipeline<T>> OptReadStock<T, Pipe> {
-    /// `track_caller` here is not about the `Option` result — it is so a
-    /// `BorrowError` raised down in `pool::get_state` names the user's read.
-    #[cfg_attr(debug_assertions, track_caller)]
+    /// `Ok(None)` = value absent (optional derive missed); `Err` = state
+    /// disposed or borrow conflict — from the value state itself, or from a
+    /// pooled mapper down the pipeline.
     pub fn try_peek(&self) -> Result<Option<Ref<'static, T>>, BorrowError> {
         let state = states::pool::get_state(self.value_id)?;
+        // `filter_map`'s closure can only signal None, so a pipeline error is
+        // carried out through this capture slot.
+        let mut pipe_err = None;
         let value = Ref::filter_map(state, |state: &'_ states::State| {
             let src_value = state.as_value().unwrap().as_ref();
-            let value = self.pipeline.map_ref(src_value)?;
-            Some(value)
+            match self.pipeline.map_ref(src_value) {
+                Ok(value) => value,
+                Err(err) => {
+                    pipe_err = Some(err);
+                    None
+                }
+            }
         })
         .ok();
-        Ok(value)
+        match pipe_err {
+            Some(err) => Err(err),
+            None => Ok(value),
+        }
     }
 
-    #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_read(&self) -> Result<Option<Ref<'static, T>>, BorrowError> {
         // 1. pull: settle the producing citer first so the value is fresh.
         // * Must run before `try_peek` — the producer's runner writes this very
@@ -114,18 +128,30 @@ impl<T, Pipe: Pipeline<T>> OptReadStock<T, Pipe> {
 
 // OptStock
 impl<T, Pipe: Pipeline<T>> OptStock<T, Pipe> {
-    #[cfg_attr(debug_assertions, track_caller)]
     fn try_write_silent(&self) -> Result<Option<RefMut<'static, T>>, BorrowError> {
         let state = states::pool::get_mut_state(self.value_id)?;
+        // See `try_peek`: the capture slot carries a pipeline error out of the
+        // `filter_map` closure.
+        let mut pipe_err = None;
         let value = RefMut::filter_map(state, |state: &'_ mut states::State| {
             let src_value = state.as_mut_value().unwrap().as_mut();
-            let value = self.pipeline.map_mut(src_value)?;
-            Some(value)
+            match self.pipeline.map_mut(src_value) {
+                Ok(value) => value,
+                Err(err) => {
+                    pipe_err = Some(err);
+                    None
+                }
+            }
         })
         .ok();
-        Ok(value)
+        match pipe_err {
+            Some(err) => Err(err),
+            None => Ok(value),
+        }
     }
 
+    /// `track_caller` here is not for this function's own result — it is so
+    /// `propagation::mark_dirty`'s "Use batch" panic blames the user's write.
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_write(&self) -> Result<Option<RefMut<'static, T>>, BorrowError> {
         // 1. peek_mut value
@@ -134,7 +160,7 @@ impl<T, Pipe: Pipeline<T>> OptStock<T, Pipe> {
             x @ _ => return x,
         };
         // 2. mark dirty
-        // * Unlike "read_option", do not mark dirty if raw_write_silent returns None.
+        // * Unlike reads, do not mark dirty if try_write_silent returns Ok(None).
         // (To prevent spurious propagation)
         states::runtime::propagation::mark_dirty(self.value_id, self.path);
         return Ok(Some(value));
@@ -158,7 +184,7 @@ impl<T, Pipe: Pipeline<T>> OptStock<T, Pipe> {
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
-    pub fn set(self, value: T) -> Option<()>
+    pub fn set(&self, value: T) -> Option<()>
     where
         T: 'static,
     {

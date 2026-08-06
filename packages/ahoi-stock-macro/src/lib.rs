@@ -177,14 +177,27 @@ impl Ctx<'_> {
         }
     }
 
-    /// Impl generics with an unbounded `__Pipe`. Used by the field/variant
-    /// accessors, which only call `derive`/`try_derive`.
-    fn impl_generics_plain(&self) -> TokenStream2 {
+    /// Impl generics for the blanket accessor impl: a free `__Target` (any
+    /// stock type implementing `Derivable`), the type's own params (with
+    /// `'static` added), and an unbounded `__Pipe`.
+    fn impl_generics_blanket(&self) -> TokenStream2 {
         if self.has_generics {
             let ip = &self.impl_params;
-            quote! { <#ip, const __OPT: bool, __Pipe> }
+            quote! { <__Target, #ip, __Pipe> }
         } else {
-            quote! { <const __OPT: bool, __Pipe> }
+            quote! { <__Target, __Pipe> }
+        }
+    }
+
+    /// Trait generics: the type's own params plus `__Pipe`.
+    /// Returns `(declaration, usage)` brackets.
+    fn trait_generics(&self) -> (TokenStream2, TokenStream2) {
+        if self.has_generics {
+            let tp = &self.trait_params;
+            let tg = &self.type_generics;
+            (quote! { <#tp, __Pipe> }, quote! { <#tg, __Pipe> })
+        } else {
+            (quote! { <__Pipe> }, quote! { <__Pipe> })
         }
     }
 }
@@ -237,14 +250,32 @@ fn expand(input: DeriveInput) -> Result<TokenStream2, syn::Error> {
 
 fn expand_struct(ctx: &Ctx, fields: &Fields) -> Result<TokenStream2, syn::Error> {
     let ahoi = ctx.ahoi;
-    let name = ctx.name;
     let name_upper = &ctx.name_upper;
     let name_ty = ctx.name_ty();
-    let trait_name = format_ident!("{}StockExt", name);
+    let trait_name = format_ident!("{}StockExt", ctx.name);
 
     let mut consts = Vec::new();
     let mut trait_fns = Vec::new();
     let mut impl_fns = Vec::new();
+
+    // Non-optional accessors keep the target's capability row via `DeriveType`
+    // (Stock → Stock, ReadStock → ReadStock, Opt* → Opt*).
+    let mut push_accessor = |cname: &Ident, method: &Ident, fty: &syn::Type, accessor: TokenStream2| {
+        let ret = quote! {
+            <Self as #ahoi::Derivable<#name_ty, __Pipe>>::DeriveType<
+                #fty,
+                #ahoi::ChainedPipe<__Pipe, #ahoi::GetNext<#name_ty, #fty>, #name_ty, #fty>,
+            >
+        };
+        trait_fns.push(quote! {
+            fn #method(self) -> #ret;
+        });
+        impl_fns.push(quote! {
+            fn #method(self) -> #ret {
+                self.derive(#cname, #accessor)
+            }
+        });
+    };
 
     match fields {
         Fields::Named(named) => {
@@ -262,14 +293,9 @@ fn expand_struct(ctx: &Ctx, fields: &Fields) -> Result<TokenStream2, syn::Error>
                 );
 
                 consts.push(quote! { pub const #cname: u64 = #lit; });
-                trait_fns.push(quote! {
-                    fn #fname(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNext<#name_ty, #fty>, #name_ty, #fty>, __OPT>;
-                });
-                impl_fns.push(quote! {
-                    fn #fname(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNext<#name_ty, #fty>, #name_ty, #fty>, __OPT> {
-                        self.derive(#cname, #ahoi::GetNext::new(|x| &x.#fname, |x| &mut x.#fname))
-                    }
-                });
+                let accessor =
+                    quote! { #ahoi::GetNext::new(|x| &x.#fname, |x| &mut x.#fname) };
+                push_accessor(&cname, fname, fty, accessor);
             }
         }
         Fields::Unnamed(unnamed) => {
@@ -284,46 +310,30 @@ fn expand_struct(ctx: &Ctx, fields: &Fields) -> Result<TokenStream2, syn::Error>
                 let cname = format_ident!("{}_F{}_KEY", name_upper, idx);
 
                 consts.push(quote! { pub const #cname: u64 = #lit; });
-                trait_fns.push(quote! {
-                    fn #method(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNext<#name_ty, #fty>, #name_ty, #fty>, __OPT>;
-                });
-                impl_fns.push(quote! {
-                    fn #method(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNext<#name_ty, #fty>, #name_ty, #fty>, __OPT> {
-                        self.derive(#cname, #ahoi::GetNext::new(|x| &x.#idx_syn, |x| &mut x.#idx_syn))
-                    }
-                });
+                let accessor =
+                    quote! { #ahoi::GetNext::new(|x| &x.#idx_syn, |x| &mut x.#idx_syn) };
+                push_accessor(&cname, &method, fty, accessor);
             }
         }
         Fields::Unit => {}
     }
 
     let where_clause = ctx.where_clause();
-    let impl_generics = ctx.impl_generics_plain();
-
-    let (trait_generics, trait_use) = if ctx.has_generics {
-        let tp = &ctx.trait_params;
-        let tg = &ctx.type_generics;
-        (
-            quote! { <#tp, const __OPT: bool, __Pipe> },
-            quote! { <#tg, __OPT, __Pipe> },
-        )
-    } else {
-        (
-            quote! { <const __OPT: bool, __Pipe> },
-            quote! { <__OPT, __Pipe> },
-        )
-    };
+    let extra_where = &ctx.extra_where;
+    let impl_generics = ctx.impl_generics_blanket();
+    let (trait_generics, trait_use) = ctx.trait_generics();
 
     Ok(quote! {
         #(#consts)*
 
-        pub trait #trait_name #trait_generics #where_clause {
+        pub trait #trait_name #trait_generics: #ahoi::Derivable<#name_ty, __Pipe> #where_clause {
             #(#trait_fns)*
         }
 
-        impl #impl_generics #trait_name #trait_use
-            for #ahoi::Stock<#name_ty, __Pipe, __OPT>
-        #where_clause
+        impl #impl_generics #trait_name #trait_use for __Target
+        where
+            __Target: #ahoi::Derivable<#name_ty, __Pipe>,
+            #extra_where
         {
             #(#impl_fns)*
         }
@@ -345,6 +355,25 @@ fn expand_enum(
     let mut acc_trait_fns = Vec::new();
     let mut acc_impl_fns = Vec::new();
 
+    // Variant accessors are optional derives, so the return type is
+    // `DeriveOptType` — the `Opt*` counterpart of the target stock.
+    let mut push_accessor = |cname: &Ident, method: &Ident, fty: &syn::Type, accessor: TokenStream2| {
+        let ret = quote! {
+            <Self as #ahoi::Derivable<#name_ty, __Pipe>>::DeriveOptType<
+                #fty,
+                #ahoi::ChainedPipe<__Pipe, #ahoi::GetNextOpt<#name_ty, #fty>, #name_ty, #fty>,
+            >
+        };
+        acc_trait_fns.push(quote! {
+            fn #method(self) -> #ret;
+        });
+        acc_impl_fns.push(quote! {
+            fn #method(self) -> #ret {
+                self.derive_opt(#cname, #accessor)
+            }
+        });
+    };
+
     for (idx, variant) in variants.iter().enumerate() {
         if is_skipped(&variant.attrs) {
             continue;
@@ -358,70 +387,54 @@ fn expand_enum(
         let cname = format_ident!("{}_{}_KEY", name_upper, var_str.to_ascii_uppercase());
         consts.push(quote! { pub const #cname: u64 = #lit; });
 
-        // {variant}() accessor for single-field variants -> OPTIONAL derived Stock
+        // {variant}() accessor for single-field variants -> optional derived stock
         match &variant.fields {
             Fields::Unnamed(f) if f.unnamed.len() == 1 => {
                 let fty = &f.unnamed[0].ty;
                 let method = format_ident!("{}", snake);
-
-                acc_trait_fns.push(quote! {
-                    fn #method(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNextOpt<#name_ty, #fty>, #name_ty, #fty>, true>;
-                });
-                acc_impl_fns.push(quote! {
-                    fn #method(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNextOpt<#name_ty, #fty>, #name_ty, #fty>, true> {
-                        self.try_derive(#cname, #ahoi::GetNextOpt::new(
-                            |x| if let #name::#var_ident(v) = x { Some(v) } else { None },
-                            |x| if let #name::#var_ident(v) = x { Some(v) } else { None },
-                        ))
-                    }
-                });
+                let accessor = quote! {
+                    #ahoi::GetNextOpt::new(
+                        |x| if let #name::#var_ident(v) = x { Some(v) } else { None },
+                        |x| if let #name::#var_ident(v) = x { Some(v) } else { None },
+                    )
+                };
+                push_accessor(&cname, &method, fty, accessor);
             }
             Fields::Named(f) if f.named.len() == 1 => {
                 let field = f.named.first().unwrap();
                 let fty = &field.ty;
                 let fname = field.ident.as_ref().unwrap();
                 let method = format_ident!("{}", snake);
-
-                acc_trait_fns.push(quote! {
-                    fn #method(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNextOpt<#name_ty, #fty>, #name_ty, #fty>, true>;
-                });
-                acc_impl_fns.push(quote! {
-                    fn #method(self) -> #ahoi::Stock<#fty, #ahoi::ChainedPipe<__Pipe, #ahoi::GetNextOpt<#name_ty, #fty>, #name_ty, #fty>, true> {
-                        self.try_derive(#cname, #ahoi::GetNextOpt::new(
-                            |x| if let #name::#var_ident { #fname: v } = x { Some(v) } else { None },
-                            |x| if let #name::#var_ident { #fname: v } = x { Some(v) } else { None },
-                        ))
-                    }
-                });
+                let accessor = quote! {
+                    #ahoi::GetNextOpt::new(
+                        |x| if let #name::#var_ident { #fname: v } = x { Some(v) } else { None },
+                        |x| if let #name::#var_ident { #fname: v } = x { Some(v) } else { None },
+                    )
+                };
+                push_accessor(&cname, &method, fty, accessor);
             }
             _ => {}
         }
     }
 
     let where_clause = ctx.where_clause();
-    let acc_impl_generics = ctx.impl_generics_plain();
+    let extra_where = &ctx.extra_where;
+    let acc_impl_generics = ctx.impl_generics_blanket();
 
-    // Accessor trait carries only `__Pipe` (result OPTIONAL is always `true`),
-    // plus the type's own generics.
     let ext_block = if acc_trait_fns.is_empty() {
         quote! {}
     } else {
-        let (ext_trait_generics, ext_trait_use) = if ctx.has_generics {
-            let tp = &ctx.trait_params;
-            let tg = &ctx.type_generics;
-            (quote! { <#tp, __Pipe> }, quote! { <#tg, __Pipe> })
-        } else {
-            (quote! { <__Pipe> }, quote! { <__Pipe> })
-        };
+        let (ext_trait_generics, ext_trait_use) = ctx.trait_generics();
 
         quote! {
-            pub trait #trait_ext_name #ext_trait_generics #where_clause {
+            pub trait #trait_ext_name #ext_trait_generics: #ahoi::Derivable<#name_ty, __Pipe> #where_clause {
                 #(#acc_trait_fns)*
             }
 
-            impl #acc_impl_generics #trait_ext_name #ext_trait_use
-                for #ahoi::Stock<#name_ty, __Pipe, __OPT>
-            #where_clause
+            impl #acc_impl_generics #trait_ext_name #ext_trait_use for __Target
+            where
+                __Target: #ahoi::Derivable<#name_ty, __Pipe>,
+                #extra_where
             {
                 #(#acc_impl_fns)*
             }

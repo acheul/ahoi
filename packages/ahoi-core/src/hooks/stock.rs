@@ -11,45 +11,8 @@ pub use derive::*;
 
 // basic stock structs
 
-/// A handle to a reactive value — or a value derived from one — living in the
-/// state pool.
-///
-/// The two const flags are specialized by the type aliases below; in practice
-/// you work with those names rather than `Stock` directly:
-///
-/// | alias            | `MUT` | `OPT` | meaning                   |
-/// |------------------|:-----:|:-----:|---------------------------|
-/// | [`Stock`](type@Stock) | true  | false | writable, always present  |
-/// | [`RefStock`]     | false | false | read-only, always present |
-/// | [`OptStock`]     | true  | true  | writable, may be absent   |
-/// | [`RefOptStock`]  | false | true  | read-only, may be absent  |
-///
-/// - `MUT` gates the mutating API (`read_mut`, `peek_mut`, `set`, …).
-/// - `OPT` marks values that can be missing — a `Vec` index, a map key, an
-///   optional derive, or an enum-variant field. `OPT` stocks expose the `try_*`
-///   accessors instead of the panicking `peek`/`read`.
-/// - `P` is the getter pipeline mapping the root value to this stock's value.
-///   It defaults to [`PooledPipe`] once the stock is materialized via `.pool()`.
-///
-/// A `Stock` is cheap to copy: it is [`Copy`] when `P` is, and [`Clone`]
-/// otherwise.
-///
-/// #### Pooled vs. Chained
-/// - Pooled Stock has [PooledPipe] as its pipeline, while Chained has [ChainedMap].
-/// - An initially created Stock is always a pooled stock, while a derived stock
-///   created by [Stock::derive] or [Stock::derive_option] methods is a chained.
-/// - A chained stock can be pooled by [Stock::pool] method.
-///
-/// ##### What to use?
-/// - Pooled Stock hook is always Copy-able, and the generic `P` can be omitted
-///   for [PooledPipe]
-/// - Chained Stock's pipeline is usually very light and requires zero or very
-///   little cost.
-/// - It's ok (and better) to use Chained Stock without pooling.
-///   - However, for Context ([provide_context], [use_context]), Pooled Stock will
-///     be more convenient to use because it can omit `P` generic.
-
-// ReadStock
+/// The read-only, always-present stock handle: the borrow methods of [`Stock`]
+/// minus the writing ones. See [`Stock`] for the full type table.
 pub struct ReadStock<T, Pipe = PooledPipe<T>>(OptStock<T, Pipe>);
 
 impl<T, Pipe: Clone> Clone for ReadStock<T, Pipe> {
@@ -60,7 +23,48 @@ impl<T, Pipe: Clone> Clone for ReadStock<T, Pipe> {
 
 impl<T, Pipe: Copy> Copy for ReadStock<T, Pipe> {}
 
-/// Stock
+/// A handle to a reactive value — or a value derived from one — living in the
+/// state pool.
+///
+/// Four concrete types cover the capability × presence matrix:
+///
+/// | type             | writable | may be absent |
+/// |------------------|:--------:|:-------------:|
+/// | [`Stock`]        | yes      | no            |
+/// | [`ReadStock`]    | no       | no            |
+/// | [`OptStock`]     | yes      | yes           |
+/// | [`OptReadStock`] | no       | yes           |
+///
+/// - "May be absent" marks values that can be missing — a `Vec` index, a map
+///   key, an optional derive, or an enum-variant field. The `Opt*` types wrap
+///   their borrow results in `Option`: `None` means the value is genuinely
+///   absent, which is not an error.
+/// - Every borrow method (`read`, `peek`, `write`, `set`) has a `try_*` twin
+///   returning `Result<_, BorrowError>`: `Err(Disposed)` when the state has
+///   been cleared from the pool (e.g. an async callback outliving its sphere),
+///   `Err(BorrowConflict)` when a live guard conflicts. The non-`try` methods
+///   are the `try_*` twins with the error unwrapped — they panic instead.
+/// - `Pipe` is the getter pipeline mapping the root value to this stock's
+///   value. It defaults to [`PooledPipe`] once the stock is materialized via
+///   `.pool()`.
+///
+/// A stock handle is cheap to copy: it is [`Copy`] when `Pipe` is, and
+/// [`Clone`] otherwise.
+///
+/// #### Pooled vs. Chained
+/// - A Pooled stock has [`PooledPipe`] as its pipeline; a Chained one has
+///   [`ChainedPipe`].
+/// - An initially created stock is always pooled, while a derived stock created
+///   by the [`Derivable`] methods (`derive`, `derive_opt`) is chained.
+/// - A chained stock can be pooled by the [`Poolable::pool`] method.
+///
+/// ##### What to use?
+/// - A pooled stock handle is always `Copy`, and its `Pipe` generic can be
+///   omitted (it defaults to [`PooledPipe`]).
+/// - A chained stock's pipeline is usually very light — zero or near-zero cost.
+/// - It's fine (and better) to use a chained stock without pooling. However,
+///   for Context ([provide_context], [use_context]), a pooled stock is more
+///   convenient because it can omit the `Pipe` generic.
 pub struct Stock<T, Pipe = PooledPipe<T>>(pub(crate) ReadStock<T, Pipe>);
 
 impl<T, Pipe: Clone> Clone for Stock<T, Pipe> {
@@ -119,16 +123,22 @@ impl<T, Pipe> Stock<T, Pipe> {
     }
 }
 
+/// Panic message for the non-optional invariant: a non-`Opt` stock's pipeline
+/// must never miss. It can only trip when a hand-written derive accessor
+/// declared as non-optional actually returns `None`.
+const NON_OPT_INVARIANT: &str =
+    "non-optional stock resolved to an absent value — inconsistent derive accessor?";
+
 // Borrow methods (ReadStock)
 impl<T, Pipe: Pipeline<T>> ReadStock<T, Pipe> {
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_peek(&self) -> Result<Ref<'static, T>, BorrowError> {
-        Ok(self.0.0.try_peek()?.unwrap())
+        Ok(self.0.0.try_peek()?.expect(NON_OPT_INVARIANT))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_read(&self) -> Result<Ref<'static, T>, BorrowError> {
-        Ok(self.0.0.try_read()?.unwrap())
+        Ok(self.0.0.try_read()?.expect(NON_OPT_INVARIANT))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
@@ -165,7 +175,7 @@ impl<T, Pipe: Pipeline<T>> ReadStock<T, Pipe> {
 impl<T, Pipe: Pipeline<T>> Stock<T, Pipe> {
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_write(&self) -> Result<RefMut<'static, T>, BorrowError> {
-        Ok(self.0.0.try_write()?.unwrap())
+        Ok(self.0.0.try_write()?.expect(NON_OPT_INVARIANT))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]
@@ -178,7 +188,7 @@ impl<T, Pipe: Pipeline<T>> Stock<T, Pipe> {
     where
         T: 'static,
     {
-        Ok(self.0.0.try_set(value)?.unwrap())
+        Ok(self.0.0.try_set(value)?.expect(NON_OPT_INVARIANT))
     }
 
     #[cfg_attr(debug_assertions, track_caller)]

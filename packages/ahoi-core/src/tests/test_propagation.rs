@@ -176,3 +176,45 @@ fn test_multi_hop_diamond_propagation() {
         assert_eq!(*b.peek(), 65);
     });
 }
+
+#[test]
+fn test_derived_from_memo_carries_pull_link() {
+    // A stock derived from a memo's backing stock must carry the memo's
+    // `associated_citer_id`, so reading it mid-propagation pulls the memo
+    // fresh first (and `update_depth` keeps the ordering).
+    //
+    // Setup forces the effect's cite-rel on `src` to register BEFORE the
+    // memo's, so on a depth tie the effect would pop first: without the
+    // carried pull link its read of `derived` would observe the stale
+    // pre-batch memo value (a glitch: seen = [10, 50] instead of [50]).
+    use std::{cell::RefCell, rc::Rc, sync::Mutex};
+
+    let seen = Arc::new(Mutex::new(Vec::new()));
+    make_sphere(None, || {
+        let src = Stock::new(1i32);
+
+        // The effect is created first; `derived` is injected afterwards.
+        let slot: Rc<RefCell<Option<ReadStock<i32>>>> = Rc::new(RefCell::new(None));
+        let slot_ = slot.clone();
+        let seen_ = seen.clone();
+        let _effect = Effect::new(move || {
+            let _ = src.read(); // direct dep: marked as soon as `src` mutates
+            if let Some(derived) = &*slot_.borrow() {
+                seen_.lock().unwrap().push(*derived.read());
+            }
+        });
+
+        let memo = Memo::new(move || (*src.read() * 10, ()));
+        let derived = memo
+            .into_read_stock()
+            .derive(
+                0,
+                GetNext::new(|t: &(i32, ())| &t.0, |t: &mut (i32, ())| &mut t.0),
+            )
+            .pool();
+        slot.borrow_mut().replace(derived);
+
+        batch(|| *src.write() = 5);
+    });
+    assert_eq!(&*seen.lock().unwrap(), &[50]);
+}

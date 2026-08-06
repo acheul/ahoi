@@ -6,12 +6,9 @@ use super::*;
 pub(super) struct RunningCites(pub(super) IntIndexMap<StateId, IntMap<StateId, HashSet<Path>>>);
 
 pub(crate) fn mark_cited(value_id: StateId, path: Path, associated_citer_id: Option<StateId>) {
-    debug_assert!(if associated_citer_id.is_some() {
-        path.is_empty()
-    } else {
-        true
-    });
-
+    // Note: `associated_citer_id` may come with a non-empty path — a stock
+    // derived from a citer-associated stock (e.g. a memo field) carries the
+    // pull link along with its derive path.
     RUNTIME.with_borrow_mut(|runtime| {
         if let Some((citer_id, citeds)) = runtime.running_cites.0.last_mut() {
             let _ = citeds.entry(value_id).or_default().insert(path);

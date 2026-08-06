@@ -17,17 +17,6 @@ impl<T> MapNextOpt<Vec<T>, T> for GetNextKey {
     }
 }
 
-impl<T: 'static, Pipe> Stock<Vec<T>, Pipe> {
-    pub fn get(self, index: usize) -> OptStock<T, ChainedPipe<Pipe, GetNextKey, Vec<T>, T>> {
-        self.derive_opt(index as u64, GetNextKey { key: index })
-    }
-}
-impl<T: 'static, Pipe> OptStock<Vec<T>, Pipe> {
-    pub fn get(self, index: usize) -> OptStock<T, ChainedPipe<Pipe, GetNextKey, Vec<T>, T>> {
-        self.derive_opt(index as u64, GetNextKey { key: index })
-    }
-}
-
 // hashbrown HashMap Ext
 
 impl<K: Eq + Hash + Clone, V, S: BuildHasher> MapNextOpt<hashbrown::HashMap<K, V, S>, V>
@@ -38,27 +27,6 @@ impl<K: Eq + Hash + Clone, V, S: BuildHasher> MapNextOpt<hashbrown::HashMap<K, V
     }
     fn as_mut<'a>(&self, map: &'a mut hashbrown::HashMap<K, V, S>) -> Option<&'a mut V> {
         map.get_mut(&self.key)
-    }
-}
-
-impl<K: Eq + Hash + Clone + 'static, V: 'static, S: BuildHasher, Pipe>
-    Stock<hashbrown::HashMap<K, V, S>, Pipe>
-{
-    pub fn get(
-        self,
-        key: K,
-    ) -> OptStock<V, ChainedPipe<Pipe, GetNextKey<K>, hashbrown::HashMap<K, V, S>, V>> {
-        self.derive_opt(get_hash(&key), GetNextKey { key })
-    }
-}
-impl<K: Eq + Hash + Clone + 'static, V: 'static, S: BuildHasher, Pipe>
-    OptStock<hashbrown::HashMap<K, V, S>, Pipe>
-{
-    pub fn get(
-        self,
-        key: K,
-    ) -> OptStock<V, ChainedPipe<Pipe, GetNextKey<K>, hashbrown::HashMap<K, V, S>, V>> {
-        self.derive_opt(get_hash(&key), GetNextKey { key })
     }
 }
 
@@ -75,23 +43,43 @@ impl<K: Eq + Hash + Clone, V, S: BuildHasher> MapNextOpt<std::collections::HashM
     }
 }
 
-impl<K: Eq + Hash + Clone + 'static, V: 'static, S: BuildHasher, Pipe>
-    Stock<std::collections::HashMap<K, V, S>, Pipe>
-{
-    pub fn get(
-        self,
-        key: K,
-    ) -> OptStock<V, ChainedPipe<Pipe, GetNextKey<K>, std::collections::HashMap<K, V, S>, V>> {
-        self.derive_opt(get_hash(&key), GetNextKey { key })
-    }
+// `get` on each stock type: an optional derive, so writable stocks yield
+// OptStock and read-only ones yield OptReadStock.
+
+macro_rules! impl_collection_get {
+    ($ty:ident => $out:ident) => {
+        impl<T: 'static, Pipe> $ty<Vec<T>, Pipe> {
+            pub fn get(self, index: usize) -> $out<T, ChainedPipe<Pipe, GetNextKey, Vec<T>, T>> {
+                self.derive_opt(index as u64, GetNextKey { key: index })
+            }
+        }
+
+        impl<K: Eq + Hash + Clone + 'static, V: 'static, S: BuildHasher, Pipe>
+            $ty<hashbrown::HashMap<K, V, S>, Pipe>
+        {
+            pub fn get(
+                self,
+                key: K,
+            ) -> $out<V, ChainedPipe<Pipe, GetNextKey<K>, hashbrown::HashMap<K, V, S>, V>> {
+                self.derive_opt(get_hash(&key), GetNextKey { key })
+            }
+        }
+
+        impl<K: Eq + Hash + Clone + 'static, V: 'static, S: BuildHasher, Pipe>
+            $ty<std::collections::HashMap<K, V, S>, Pipe>
+        {
+            pub fn get(
+                self,
+                key: K,
+            ) -> $out<V, ChainedPipe<Pipe, GetNextKey<K>, std::collections::HashMap<K, V, S>, V>>
+            {
+                self.derive_opt(get_hash(&key), GetNextKey { key })
+            }
+        }
+    };
 }
-impl<K: Eq + Hash + Clone + 'static, V: 'static, S: BuildHasher, Pipe>
-    OptStock<std::collections::HashMap<K, V, S>, Pipe>
-{
-    pub fn get(
-        self,
-        key: K,
-    ) -> OptStock<V, ChainedPipe<Pipe, GetNextKey<K>, std::collections::HashMap<K, V, S>, V>> {
-        self.derive_opt(get_hash(&key), GetNextKey { key })
-    }
-}
+
+impl_collection_get!(Stock => OptStock);
+impl_collection_get!(OptStock => OptStock);
+impl_collection_get!(ReadStock => OptReadStock);
+impl_collection_get!(OptReadStock => OptReadStock);

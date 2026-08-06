@@ -1,10 +1,14 @@
 use super::*;
 
 // Common trait for Pipes
+/// * `Ok(None)` means the mapped value is absent (an optional derive missed).
+/// * `Err` carries a `BorrowError` from a *pooled* mapper state's own access:
+///   a pooled mapper can be disposed earlier than the value state it maps
+///   (e.g. pooled in a child sphere over a parent's value).
 pub trait Pipeline<Out>: Clone {
-    fn map_ref<'a>(&self, value: &'a dyn Any) -> Option<&'a Out>;
+    fn map_ref<'a>(&self, value: &'a dyn Any) -> Result<Option<&'a Out>, BorrowError>;
 
-    fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Option<&'a mut Out>;
+    fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Result<Option<&'a mut Out>, BorrowError>;
 }
 
 /// A Pooled Pipe. Copy implemented.
@@ -36,35 +40,31 @@ impl<T> Clone for PooledPipe<T> {
 impl<T> Copy for PooledPipe<T> {}
 
 impl<T: 'static> Pipeline<T> for PooledPipe<T> {
-    /// * None 은 mapper 가 optional result 를 반환하는 경우에만 사용.
-    /// * BorrowError/downcast Error 는 발생하지 않아야 한다(unreachable)!
-    fn map_ref<'a>(&self, value: &'a dyn Any) -> Option<&'a T> {
+    /// * `Err(Disposed)` is reachable: the pooled mapper state may be cleared
+    ///   before the value state it maps (see [`Pipeline`]).
+    fn map_ref<'a>(&self, value: &'a dyn Any) -> Result<Option<&'a T>, BorrowError> {
+        // * downcast / `as_mapper` failures are type invariants of macro-generated
+        //   code — those stay panics.
         match self.pooled_id {
-            None => Some(value.downcast_ref::<T>().unwrap()),
+            None => Ok(Some(value.downcast_ref::<T>().unwrap())),
             Some(id) => {
-                let state = states::pool::get_state(id).unwrap();
-                let value = state
-                    .as_mapper()
-                    .unwrap()
-                    .map_ref(value)?
-                    .downcast_ref::<T>()
-                    .unwrap();
-                return Some(value);
+                let state = states::pool::get_state(id)?;
+                let Some(mapped) = state.as_mapper().unwrap().map_ref(value)? else {
+                    return Ok(None);
+                };
+                Ok(Some(mapped.downcast_ref::<T>().unwrap()))
             }
         }
     }
-    fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Option<&'a mut T> {
+    fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Result<Option<&'a mut T>, BorrowError> {
         match self.pooled_id {
-            None => Some(value.downcast_mut::<T>().unwrap()),
+            None => Ok(Some(value.downcast_mut::<T>().unwrap())),
             Some(id) => {
-                let state = states::pool::get_state(id).unwrap();
-                let value = state
-                    .as_mapper()
-                    .unwrap()
-                    .map_mut(value)?
-                    .downcast_mut::<T>()
-                    .unwrap();
-                return Some(value);
+                let state = states::pool::get_state(id)?;
+                let Some(mapped) = state.as_mapper().unwrap().map_mut(value)? else {
+                    return Ok(None);
+                };
+                Ok(Some(mapped.downcast_mut::<T>().unwrap()))
             }
         }
     }
@@ -97,14 +97,18 @@ where
     Prev: Pipeline<T>,
     Next: MapNextOpt<T, S>,
 {
-    fn map_ref<'a>(&self, value: &'a dyn Any) -> Option<&'a S> {
-        let t_ref = self.prev.map_ref(value)?;
-        self.next.as_ref(t_ref)
+    fn map_ref<'a>(&self, value: &'a dyn Any) -> Result<Option<&'a S>, BorrowError> {
+        let Some(t_ref) = self.prev.map_ref(value)? else {
+            return Ok(None);
+        };
+        Ok(self.next.as_ref(t_ref))
     }
 
-    fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Option<&'a mut S> {
-        let t_mut = self.prev.map_mut(value)?;
-        self.next.as_mut(t_mut)
+    fn map_mut<'a>(&self, value: &'a mut dyn Any) -> Result<Option<&'a mut S>, BorrowError> {
+        let Some(t_mut) = self.prev.map_mut(value)? else {
+            return Ok(None);
+        };
+        Ok(self.next.as_mut(t_mut))
     }
 }
 
@@ -115,12 +119,12 @@ where
     Prev: Pipeline<T>,
     Next: MapNextOpt<T, U>,
 {
-    fn map_ref<'a>(&self, source: &'a dyn Any) -> Option<&'a dyn Any> {
-        <Self as Pipeline<U>>::map_ref(self, source).map(|e| e as &dyn Any)
+    fn map_ref<'a>(&self, source: &'a dyn Any) -> Result<Option<&'a dyn Any>, BorrowError> {
+        Ok(<Self as Pipeline<U>>::map_ref(self, source)?.map(|e| e as &dyn Any))
     }
 
-    fn map_mut<'a>(&self, source: &'a mut dyn Any) -> Option<&'a mut dyn Any> {
-        <Self as Pipeline<U>>::map_mut(self, source).map(|e| e as &mut dyn Any)
+    fn map_mut<'a>(&self, source: &'a mut dyn Any) -> Result<Option<&'a mut dyn Any>, BorrowError> {
+        Ok(<Self as Pipeline<U>>::map_mut(self, source)?.map(|e| e as &mut dyn Any))
     }
 }
 
@@ -175,7 +179,10 @@ where
             path: self.path,
             pipeline,
             ty: PhantomData,
-            associated_citer_id: None,
+            // Carried over — see `Derivable::derive_opt`: dropping the pull
+            // link here would silently break freshness of a pooled
+            // derived-from-memo stock.
+            associated_citer_id: self.associated_citer_id,
         };
     }
 }

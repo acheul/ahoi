@@ -59,20 +59,29 @@ where
 
 #[test]
 fn run_example_of_manual_extension() {
-    let ab = Stock::new(AB {
-        a: "A".to_string(),
-        b: vec![1, 2],
-    });
-    let _ = ab.update_a(&"hey");
-    let _ = ab.length_of_b(());
-    let _a = ab.a();
+    crate::make_sphere(None, || {
+        let ab = Stock::new(AB {
+            a: "A".to_string(),
+            b: vec![1, 2],
+        });
+        crate::batch(|| {
+            let _ = ab.update_a(&"hey");
+            let _ = ab.length_of_b(());
+        });
+        let _a = ab.a();
 
-    let abs = Stock::new(vec![AB {
-        a: "A".to_string(),
-        b: vec![1, 2],
-    }]);
-    let x = abs.get(0);
-    let _a = x.a();
+        let abs = Stock::new(vec![AB {
+            a: "A".to_string(),
+            b: vec![1, 2],
+        }]);
+        let x = abs.get(0);
+        let _a = x.a();
+
+        // read-only stocks derive too: ReadStock -> ReadStock, and an optional
+        // step (`get`) collapses to OptReadStock.
+        let ro: &ReadStock<AB<i32>> = &ab;
+        let _ro_a = ro.clone().a();
+    });
 }
 
 /**
@@ -147,17 +156,30 @@ pub const SHAPE_CIRCLE_KEY: u64 = 0u64;
 pub const SHAPE_LABEL_KEY: u64 = 3u64;
 
 pub trait ShapeStockExt<O, __Pipe>: Derivable<Shape<O>, __Pipe> {
-    fn circle(self) -> OptStock<O, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>>;
+    fn circle(
+        self,
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        O,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>,
+    >;
     fn label(
         self,
-    ) -> OptStock<String, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>>;
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        String,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>,
+    >;
 }
 
 impl<__Target, O: 'static, __Pipe> ShapeStockExt<O, __Pipe> for __Target
 where
     __Target: Derivable<Shape<O>, __Pipe>,
 {
-    fn circle(self) -> OptStock<O, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>> {
+    fn circle(
+        self,
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        O,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>,
+    > {
         self.derive_opt(
             SHAPE_CIRCLE_KEY,
             GetNextOpt::new(
@@ -180,7 +202,10 @@ where
     }
     fn label(
         self,
-    ) -> OptStock<String, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>> {
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        String,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>,
+    > {
         self.derive_opt(
             SHAPE_LABEL_KEY,
             GetNextOpt::new(

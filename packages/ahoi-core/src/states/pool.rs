@@ -95,10 +95,9 @@ pub enum BorrowError {
     BorrowConflict,
 }
 
-/// Get Ref guarded state. Return None if state not exists
-/// * `RefCell::borrow` is `#[track_caller]`, so keeping the attribute on this
-///   whole chain makes a `BorrowError` name the user's read instead of this line.
-#[cfg_attr(debug_assertions, track_caller)]
+/// Get Ref guarded state. Never panics:
+/// * `Err(Disposed)` — the id is no longer present in the pool.
+/// * `Err(BorrowConflict)` — a mut guard on this state is live.
 pub(crate) fn get_state(id: StateId) -> Result<Ref<'static, State>, BorrowError> {
     let Some(slot) = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))
     else {
@@ -107,9 +106,8 @@ pub(crate) fn get_state(id: StateId) -> Result<Ref<'static, State>, BorrowError>
     slot.0.try_borrow().map_err(|_| BorrowError::BorrowConflict)
 }
 
-/// Get RefMut guarded state. Return None if state not exists
-/// * See [`get_state`]: this is where `BorrowMutError` is raised.
-#[cfg_attr(debug_assertions, track_caller)]
+/// Get RefMut guarded state. Never panics — see [`get_state`];
+/// `Err(BorrowConflict)` here means any guard (shared or mut) is live.
 pub(crate) fn get_mut_state(id: StateId) -> Result<RefMut<'static, State>, BorrowError> {
     let Some(slot) = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))
     else {

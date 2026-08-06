@@ -30,8 +30,8 @@ mod tests;
 #[doc(hidden)]
 pub mod __macro_support {
     pub use crate::hooks::{
-        ChainedPipe, GetNext, GetNextOpt, MapNext, Memo, OptReadStock, OptStock, Pipeline,
-        ReadStock, Stock,
+        ChainedPipe, Derivable, GetNext, GetNextOpt, MapNext, MapNextOpt, Memo, OptReadStock,
+        OptStock, Pipeline, ReadStock, Stock,
     };
 }
 

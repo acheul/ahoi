@@ -116,7 +116,7 @@ where
 
 ## Enum
 
-- **`{Name}StockExt`** — `{variant}()` for variants with exactly one field; returns an OPTIONAL `StockStruct<FieldType, ChainedPipe<…>, true>`.
+- **`{Name}StockExt`** — `{variant}()` for variants with exactly one field; an optional derive, so it returns `DeriveOptType` — the `Opt*` counterpart of the target stock (`Stock`/`OptStock` → `OptStock`, `ReadStock`/`OptReadStock` → `OptReadStock`).
 
 Keys run `0..n`, one slot per variant regardless of whether an accessor is emitted.
 
@@ -137,17 +137,30 @@ pub const SHAPE_CIRCLE_KEY: u64 = 0u64;
 pub const SHAPE_LABEL_KEY: u64 = 3u64;
 
 pub trait ShapeStockExt<O, __Pipe>: Derivable<Shape<O>, __Pipe> {
-    fn circle(self) -> OptStock<O, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>>;
+    fn circle(
+        self,
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        O,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>,
+    >;
     fn label(
         self,
-    ) -> OptStock<String, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>>;
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        String,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>,
+    >;
 }
 
 impl<__Target, O: 'static, __Pipe> ShapeStockExt<O, __Pipe> for __Target
 where
     __Target: Derivable<Shape<O>, __Pipe>,
 {
-    fn circle(self) -> OptStock<O, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>> {
+    fn circle(
+        self,
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        O,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, O>, Shape<O>, O>,
+    > {
         self.derive_opt(
             SHAPE_CIRCLE_KEY,
             GetNextOpt::new(
@@ -170,7 +183,10 @@ where
     }
     fn label(
         self,
-    ) -> OptStock<String, ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>> {
+    ) -> <Self as Derivable<Shape<O>, __Pipe>>::DeriveOptType<
+        String,
+        ChainedPipe<__Pipe, GetNextOpt<Shape<O>, String>, Shape<O>, String>,
+    > {
         self.derive_opt(
             SHAPE_LABEL_KEY,
             GetNextOpt::new(
@@ -219,7 +235,7 @@ struct Tagged {
 ## CamelCase → snake_case
 
 Variant and field names are converted to snake_case for method names.
-`TriAngle` → `is_tri_angle()` / `tri_angle()`.
+`TriAngle` → `tri_angle()`.
 
 ---
 

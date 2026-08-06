@@ -3,6 +3,7 @@ use super::*;
 mod collections;
 
 #[cfg(test)]
+#[allow(unused)]
 mod extensions;
 
 // Helper of Chained Pipe
@@ -20,7 +21,13 @@ pub trait MapNextOpt<T, S>: Clone {
 // derive methods
 
 pub trait Derivable<T, Pipe> {
+    /// Derived-stock type of a non-optional accessor: keeps `Self`'s
+    /// capability row (Stock → Stock, ReadStock → ReadStock, Opt* → Opt*).
     type DeriveType<U, ChainedPipe>;
+
+    /// Derived-stock type of an optional accessor: absence is absorbing, so
+    /// this is always the `Opt*` counterpart of `Self`.
+    type DeriveOptType<U, ChainedPipe>;
 
     fn derive<U: 'static, Next: MapNext<T, U>>(
         self,
@@ -32,18 +39,19 @@ pub trait Derivable<T, Pipe> {
         self,
         path_key: u64,
         opt_next: Next,
-    ) -> OptStock<U, ChainedPipe<Pipe, Next, T, U>>;
+    ) -> Self::DeriveOptType<U, ChainedPipe<Pipe, Next, T, U>>;
 }
 
-// OptStock
-impl<T, Pipe> Derivable<T, Pipe> for OptStock<T, Pipe> {
-    type DeriveType<U, ChainedPipe> = OptStock<U, ChainedPipe>;
+// OptReadStock — the base builder; the other three impls wrap this one.
+impl<T, Pipe> Derivable<T, Pipe> for OptReadStock<T, Pipe> {
+    type DeriveType<U, ChainedPipe> = OptReadStock<U, ChainedPipe>;
+    type DeriveOptType<U, ChainedPipe> = OptReadStock<U, ChainedPipe>;
 
     fn derive<U: 'static, Next: MapNext<T, U>>(
         self,
         path_key: u64,
         next: Next,
-    ) -> OptStock<U, ChainedPipe<Pipe, Next, T, U>> {
+    ) -> OptReadStock<U, ChainedPipe<Pipe, Next, T, U>> {
         self.derive_opt(path_key, next)
     }
 
@@ -51,34 +59,39 @@ impl<T, Pipe> Derivable<T, Pipe> for OptStock<T, Pipe> {
         self,
         path_key: u64,
         opt_next: Next,
-    ) -> OptStock<U, ChainedPipe<Pipe, Next, T, U>> {
+    ) -> OptReadStock<U, ChainedPipe<Pipe, Next, T, U>> {
         let mut path = self.path;
         path.push(path_key);
 
-        OptStock(OptReadStock {
+        OptReadStock {
             value_id: self.value_id,
             path,
             pipeline: ChainedPipe {
-                prev: self.0.pipeline,
+                prev: self.pipeline,
                 next: opt_next,
                 phantom: PhantomData,
             },
             ty: PhantomData,
-            associated_citer_id: None,
-        })
+            // Carried over: a stock derived from a citer-associated stock
+            // (e.g. a memo's backing stock) must keep the pull link, or its
+            // reads would skip `ensure_citer_fresh` (stale-value glitches) and
+            // lose `update_depth` ordering.
+            associated_citer_id: self.associated_citer_id,
+        }
     }
 }
 
-// Stock
-impl<T, Pipe> Derivable<T, Pipe> for Stock<T, Pipe> {
-    type DeriveType<U, ChainedPipe> = Stock<U, ChainedPipe>;
+// OptStock
+impl<T, Pipe> Derivable<T, Pipe> for OptStock<T, Pipe> {
+    type DeriveType<U, ChainedPipe> = OptStock<U, ChainedPipe>;
+    type DeriveOptType<U, ChainedPipe> = OptStock<U, ChainedPipe>;
 
     fn derive<U: 'static, Next: MapNext<T, U>>(
         self,
         path_key: u64,
         next: Next,
-    ) -> Stock<U, ChainedPipe<Pipe, Next, T, U>> {
-        Stock(ReadStock(self.0.0.derive(path_key, next)))
+    ) -> OptStock<U, ChainedPipe<Pipe, Next, T, U>> {
+        OptStock(self.0.derive_opt(path_key, next))
     }
 
     fn derive_opt<U: 'static, Next: MapNextOpt<T, U>>(
@@ -86,20 +99,78 @@ impl<T, Pipe> Derivable<T, Pipe> for Stock<T, Pipe> {
         path_key: u64,
         opt_next: Next,
     ) -> OptStock<U, ChainedPipe<Pipe, Next, T, U>> {
+        OptStock(self.0.derive_opt(path_key, opt_next))
+    }
+}
+
+// ReadStock
+impl<T, Pipe> Derivable<T, Pipe> for ReadStock<T, Pipe> {
+    type DeriveType<U, ChainedPipe> = ReadStock<U, ChainedPipe>;
+    type DeriveOptType<U, ChainedPipe> = OptReadStock<U, ChainedPipe>;
+
+    fn derive<U: 'static, Next: MapNext<T, U>>(
+        self,
+        path_key: u64,
+        next: Next,
+    ) -> ReadStock<U, ChainedPipe<Pipe, Next, T, U>> {
+        ReadStock(OptStock(self.0.0.derive_opt(path_key, next)))
+    }
+
+    fn derive_opt<U: 'static, Next: MapNextOpt<T, U>>(
+        self,
+        path_key: u64,
+        opt_next: Next,
+    ) -> OptReadStock<U, ChainedPipe<Pipe, Next, T, U>> {
         self.0.0.derive_opt(path_key, opt_next)
     }
 }
 
-// flatten Stock<Option<T>> => OptStock<T>
+// Stock
+impl<T, Pipe> Derivable<T, Pipe> for Stock<T, Pipe> {
+    type DeriveType<U, ChainedPipe> = Stock<U, ChainedPipe>;
+    type DeriveOptType<U, ChainedPipe> = OptStock<U, ChainedPipe>;
 
-impl<T: 'static, Pipe> Stock<Option<T>, Pipe> {
-    pub fn flatten(self) -> OptStock<T, ChainedPipe<Pipe, GetNextOpt<Option<T>, T>, Option<T>, T>> {
-        // `flatten` uses u64::MAX as its path key. Real path keys are small,
-        // sequential field/variant indices assigned by the derive macro, so
-        // u64::MAX is unreachable in practice, making this key safe from collision.
-        self.derive_opt(u64::MAX, GetNextOpt::new(|x| x.as_ref(), |x| x.as_mut()))
+    fn derive<U: 'static, Next: MapNext<T, U>>(
+        self,
+        path_key: u64,
+        next: Next,
+    ) -> Stock<U, ChainedPipe<Pipe, Next, T, U>> {
+        Stock(ReadStock(OptStock(self.0.0.0.derive_opt(path_key, next))))
+    }
+
+    fn derive_opt<U: 'static, Next: MapNextOpt<T, U>>(
+        self,
+        path_key: u64,
+        opt_next: Next,
+    ) -> OptStock<U, ChainedPipe<Pipe, Next, T, U>> {
+        OptStock(self.0.0.0.derive_opt(path_key, opt_next))
     }
 }
+
+// flatten *Stock<Option<T>> => Opt*Stock<T>
+
+macro_rules! impl_flatten {
+    ($ty:ident => $out:ident) => {
+        impl<T: 'static, Pipe> $ty<Option<T>, Pipe> {
+            /// Collapse a stock of `Option<T>` into an optional stock of `T`.
+            ///
+            /// `flatten` uses `u64::MAX` as its path key. Real path keys are
+            /// small, sequential field/variant indices assigned by the derive
+            /// macro, so `u64::MAX` is unreachable in practice, making this key
+            /// safe from collision.
+            pub fn flatten(
+                self,
+            ) -> $out<T, ChainedPipe<Pipe, GetNextOpt<Option<T>, T>, Option<T>, T>> {
+                self.derive_opt(u64::MAX, GetNextOpt::new(|x| x.as_ref(), |x| x.as_mut()))
+            }
+        }
+    };
+}
+
+impl_flatten!(Stock => OptStock);
+impl_flatten!(OptStock => OptStock);
+impl_flatten!(ReadStock => OptReadStock);
+impl_flatten!(OptReadStock => OptReadStock);
 
 /// A simple MapNext impl struct
 pub struct GetNext<T, S> {
