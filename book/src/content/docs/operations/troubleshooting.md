@@ -153,10 +153,10 @@ The path does not exist — an index past the end, a missing map key, a field of
 an inactive enum variant.
 
 That is by design: writes to an absent path are ignored rather than panicking.
-Use the `try_` accessors when you need to know.
+The returned `Option` tells you when you need to know.
 
 ```rust
-if state.items().get(10).try_set(1).is_none() {
+if state.items().get(10).set(1).is_none() {
     // there is no item 10
 }
 ```

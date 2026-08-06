@@ -11,7 +11,7 @@ gets recomputed when it changes.
 Most JS frameworks split that job in two: a signal for a single value, and a
 store for a nested object you want to update field by field. **A stock is
 both.** `Stock<i32>` behaves like a signal. A stock of a struct lets you reach
-into one field and write just that, and only what read *that field* recomputes
+into one field and write just that, and only what read _that field_ recomputes
 — which is what [deriving stocks](../deriving-stocks/) is about.
 
 This page is the single-value half. Everything below works on any stock.
@@ -81,7 +81,9 @@ let doubled = {
 }; // guard dropped here
 ```
 
-Holding one too long panics with a message pointing at your line.
+Holding one too long panics with a message pointing at your line. The `try_`
+forms return an error instead — see [When an access can
+fail](#when-an-access-can-fail).
 :::
 
 ## Read-only views
@@ -97,12 +99,13 @@ Some derived values are not guaranteed to exist — an index past the end of a
 `Vec`, a missing map key, a field of an enum variant that is not currently
 active.
 
-Those are `OptStock<T>` and `OptReadStock<T>`. They do not have the plain
-`read()` / `write()` API at all — only the `try_` forms, which return an
-`Option`.
+Those are `OptStock<T>` and `OptReadStock<T>`. They have the same methods as
+their non-opt counterparts, but every result comes wrapped in an `Option`.
+`None` means the value is absent right now — a fact about the data, not an
+error.
 
 That is a compile error rather than a runtime surprise: if a value might be
-absent, the type stops you from reading it as though it were not.
+absent, the type makes you say what happens when it is.
 
 A `Vec` stock hands you one of these from `get`, without any derive:
 
@@ -111,25 +114,58 @@ let items = Stock::new(vec![10, 20]);
 
 let third = items.get(2); // OptStock<i32> — there is no index 2
 
-if let Some(v) = third.try_read() {
+if let Some(v) = third.read() {
     println!("{}", *v);
 }
 
-third.try_set(99); // None: nothing to write to
+third.set(99); // None: nothing to write to
 ```
 
 Writing to something that is not there does nothing. It does not panic.
 
-| Method | On a stock | On an opt stock |
-| --- | --- | --- |
-| `read()` / `peek()` | the value | **does not exist** |
-| `write()` / `set(v)` | writes | **does not exist** |
-| `try_read()` / `try_peek()` | `Option<Ref<T>>` | `Option<Ref<T>>` |
-| `try_write()` | `Option<RefMut<T>>` | `Option<RefMut<T>>` |
-| `try_set(v)` | `Option<()>` | `Option<()>` |
+| Method              | On a stock  | On an opt stock     |
+| ------------------- | ----------- | ------------------- |
+| `read()` / `peek()` | `Ref<T>`    | `Option<Ref<T>>`    |
+| `write()`           | `RefMut<T>` | `Option<RefMut<T>>` |
+| `set(v)`            | `()`        | `Option<()>`        |
 
-The `try_` forms exist on both, so code that does not care which kind it has
-can just use them throughout.
+## When an access can fail
+
+Every method above also has a `try_` twin that returns a `Result`:
+
+| Method                      | On a stock             | On an opt stock                |
+| --------------------------- | ---------------------- | ------------------------------ |
+| `try_read()` / `try_peek()` | `Result<Ref<T>, _>`    | `Result<Option<Ref<T>>, _>`    |
+| `try_write()`               | `Result<RefMut<T>, _>` | `Result<Option<RefMut<T>>, _>` |
+| `try_set(v)`                | `Result<(), _>`        | `Result<Option<()>, _>`        |
+
+The error is `BorrowError`, and there are exactly two:
+
+- **`Disposed`** — the sphere that owned the stock was cleared. The usual
+  source is async work finishing after its component unmounted.
+- **`BorrowConflict`** — a guard on the same value is still alive somewhere up
+  the call stack.
+
+The plain methods are the `try_` forms with the error unwrapped — they panic
+instead. That is usually what you want: a `BorrowConflict` is a bug in the
+code, not a condition to handle.
+
+Reach for `try_` where `Disposed` is a real possibility and you want to bail
+out quietly:
+
+```rust
+let save: Action<Data, ()> = Action::new(move |data| async move {
+    let result = api_save(data).await;
+    let Ok(mut status) = state.status().try_write() else {
+        return; // the sphere was cleared while we were waiting
+    };
+    *status = result;
+});
+```
+
+On an opt stock the two layers stay separate: the `Result` says whether the
+access could happen at all, and the `Option` inside says whether the value was
+there.
 
 ## Deriving a value
 

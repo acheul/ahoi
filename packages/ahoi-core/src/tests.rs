@@ -43,6 +43,70 @@ fn test_pool_double_borrow_panics() {
     });
 }
 
+// ── Borrow API errors ──────────────────────────────────────────────────────
+
+#[test]
+fn test_try_borrow_conflict_is_err_not_panic() {
+    make_sphere(None, || {
+        let stock = Stock::new(1i32);
+
+        // A live read guard: mut access errs, shared access is still fine.
+        let guard = stock.peek();
+        assert!(matches!(
+            stock.try_write(),
+            Err(BorrowError::BorrowConflict)
+        ));
+        assert!(stock.try_peek().is_ok());
+        drop(guard);
+
+        // A live write guard blocks both sides.
+        batch(|| {
+            let guard = stock.write();
+            assert!(matches!(stock.try_peek(), Err(BorrowError::BorrowConflict)));
+            assert!(matches!(
+                stock.try_write(),
+                Err(BorrowError::BorrowConflict)
+            ));
+            drop(guard);
+        });
+    });
+}
+
+#[test]
+fn test_opt_absent_is_ok_none_but_disposed_is_err() {
+    // For Opt* stocks, absence and disposal must stay distinguishable:
+    // a missing index is Ok(None) / None, a cleared sphere is Err(Disposed).
+    let (sid, stock) = make_sphere(None, || Stock::new(vec![1i32]));
+    let present = stock.get(0);
+    let absent = stock.get(5);
+
+    assert_eq!(present.read().as_deref(), Some(&1));
+    assert!(matches!(absent.try_read(), Ok(None)));
+    assert!(absent.read().is_none());
+
+    clear_sphere(sid);
+    assert!(matches!(present.try_read(), Err(BorrowError::Disposed)));
+    assert!(matches!(absent.try_read(), Err(BorrowError::Disposed)));
+}
+
+#[test]
+fn test_pooled_mapper_disposed_before_value_is_err() {
+    // A mapper pooled in a child sphere over a parent's value: clearing the
+    // child disposes the mapper while the value stays alive. A read through
+    // the stale handle must surface Err(Disposed) — not panic — because the
+    // error now propagates out of the pipeline itself.
+    let (pid, stock) = make_sphere(None, || Stock::new(vec![7i32]));
+    let (cid, derived) = make_sphere(Some(pid), || stock.get(0).pool());
+    assert_eq!(derived.read().as_deref(), Some(&7));
+
+    clear_sphere(cid);
+    assert!(matches!(derived.try_read(), Err(BorrowError::Disposed)));
+    // The parent's value itself is untouched.
+    assert_eq!(stock.peek()[0], 7);
+
+    clear_sphere(pid);
+}
+
 // ── Stock ──────────────────────────────────────────────────────────────────
 
 #[test]
