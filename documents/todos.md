@@ -1,13 +1,15 @@
 # TODOs
 
-## Version 0.1.1
+- [ ] test examples run on published packages
+- [ ] bench result
+- [ ] contribute guide
+- [ ] better version logs
 
-- [x] return type macro
-- [x] other frameworks exmples than Solid (React, Vue, Svelte)
-- [x] publish: crate & npm
-- [x] build a book
+---
 
-## Next Version
+## Version 0.2
+
+### v0.2.0
 
 - [x] panic location debug (high priority)
 - [x] js \_hail_keys -> must distinguish differnet piers' hail keys! (high priority)
@@ -21,5 +23,13 @@
 
 - [x] add `rets` feature. `tsain` does not pull it.
 
-- [ ] test examples run on published packages
-- [ ] bench result
+---
+
+## Version 0.1
+
+### v0.1.1
+
+- [x] return type macro
+- [x] other frameworks exmples than Solid (React, Vue, Svelte)
+- [x] publish: crate & npm
+- [x] build a book
