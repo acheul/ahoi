@@ -12,8 +12,13 @@ readme.workspace = true
 
 [features]
 js = ["dep:serde", "dep:wasm-bindgen", "dep:js-sys"]
-serde-wasm-bindgen = ["js", "dep:serde-wasm-bindgen"]
-serde_json = ["js", "dep:serde_json"]
+rets = ["js", "dep:ahoi-rets-macro"]
+# `serde-wasm-bindgen` and `serde_json` have no way of their own to export TS
+# types, so they pull in `rets` (and with it `TsDecl`). `tsain` handles type
+# export itself, so it deliberately does not. To use `#[derive(Rets)]` alongside
+# `tsain`, list `rets` explicitly.
+serde-wasm-bindgen = ["rets", "dep:serde-wasm-bindgen"]
+serde_json = ["rets", "dep:serde_json"]
 tsain = ["js", "dep:tsain"]
 
 [package.metadata.docs.rs]
@@ -22,7 +27,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 ahoi-core = { workspace = true }
-ahoi-rets-macro = { workspace = true }
+ahoi-rets-macro = { workspace = true, optional = true }
 wasm-bindgen = { version = "0.2.121", optional = true }
 js-sys = { version = "0.3.103", optional = true }
 serde = { version = "1.0", optional = true }

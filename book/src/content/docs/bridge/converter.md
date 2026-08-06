@@ -14,11 +14,11 @@ Every key enum and every hail value passes through one.
 Three ship with the crate, behind features. All work for anything that is
 `Serialize + DeserializeOwned`.
 
-| Feature | Converter | Wire type |
-| --- | --- | --- |
-| `serde-wasm-bindgen` | `SerdeWasmBindgenConverter` | `JsValue` |
-| `tsain` | `TsainConverter` | `JsValue` |
-| `serde_json` | `SerdeJsonConverter` | `serde_json::Value` |
+| Feature              | Converter                   | Wire type           |
+| -------------------- | --------------------------- | ------------------- |
+| `serde-wasm-bindgen` | `SerdeWasmBindgenConverter` | `JsValue`           |
+| `tsain`              | `TsainConverter`            | `JsValue`           |
+| `serde_json`         | `SerdeJsonConverter`        | `serde_json::Value` |
 
 **`serde-wasm-bindgen` is the one to reach for.** It builds native JS values
 directly, with no intermediate JSON.
@@ -28,6 +28,9 @@ Pick `tsain` when you export types with
 no field or variant names on the wire. That converts faster and keeps your
 names out of the emitted JS. The two halves must match: this converter expects
 the array shapes that Tsain's export describes.
+
+Note that the `tsain` feature does not turn on `rets`. The other two do. Add `rets` to
+your feature list if you use `#[derive(Rets)]` with `tsain`.
 
 Pick `serde_json` when you would rather work in `serde_json::Value` on the Rust
 side — a type that already goes through JSON, or code you share with a non-wasm
@@ -68,14 +71,14 @@ Hail::Count => state.count().set_hail::<Converter>(),
 
 `serde-wasm-bindgen` maps Rust values to their natural JS shapes.
 
-| Rust | JavaScript |
-| --- | --- |
-| `i32`, `f64` | `number` |
-| `String` | `string` |
-| `Vec<T>` | `Array` |
-| `HashMap<K, V>` | `Map` — not a plain object |
-| `Option<T>` — absent | `undefined` |
-| enum variant | `"Name"` or `{ Name: value }` |
+| Rust                 | JavaScript                    |
+| -------------------- | ----------------------------- |
+| `i32`, `f64`         | `number`                      |
+| `String`             | `string`                      |
+| `Vec<T>`             | `Array`                       |
+| `HashMap<K, V>`      | `Map` — not a plain object    |
+| `Option<T>` — absent | `undefined`                   |
+| enum variant         | `"Name"` or `{ Name: value }` |
 
 The `HashMap` one catches people out. You get a real `Map`, so read it with
 `.get(k)`, not `obj[k]`.

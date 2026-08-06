@@ -19,5 +19,7 @@
 - [x] borrow api: distinguish BorrowError and None (breaking change)
 - [x] serparate OptStock from Stock (breaking change)
 
+- [x] add `rets` feature. `tsain` does not pull it.
+
 - [ ] test examples run on published packages
 - [ ] bench result

@@ -6,8 +6,8 @@ pub use ahoi_core::{self, *};
 #[cfg_attr(docsrs, doc(cfg(feature = "js")))]
 pub mod js_bridge;
 
-#[cfg(feature = "js")]
-#[cfg_attr(docsrs, doc(cfg(feature = "js")))]
+#[cfg(feature = "rets")]
+#[cfg_attr(docsrs, doc(cfg(feature = "rets")))]
 pub use ahoi_rets_macro::Rets;
 
 // Extends ahoi-core's macro-support surface (glob-imported above) with the

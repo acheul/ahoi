@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "ahoi"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ahoi-core",
  "ahoi-rets-macro",
@@ -18,7 +18,7 @@ dependencies = [
 
 [[package]]
 name = "ahoi-book-examples"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ahoi",
  "console_error_panic_hook",
@@ -31,7 +31,7 @@ dependencies = [
 
 [[package]]
 name = "ahoi-core"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ahoi-stock-macro",
  "futures-channel",
@@ -47,7 +47,7 @@ dependencies = [
 
 [[package]]
 name = "ahoi-rets-macro"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -57,7 +57,7 @@ dependencies = [
 
 [[package]]
 name = "ahoi-stock-macro"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -67,7 +67,7 @@ dependencies = [
 
 [[package]]
 name = "ahoi-wasm-tsain-todo"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ahoi",
  "console_error_panic_hook",
@@ -78,7 +78,7 @@ dependencies = [
 
 [[package]]
 name = "ahoi-wasm-tsify"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ahoi",
  "console_error_panic_hook",
@@ -90,7 +90,7 @@ dependencies = [
 
 [[package]]
 name = "ahoi-wasm-tsrs"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ahoi",
  "console_error_panic_hook",
@@ -110,7 +110,7 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "bench-wasm"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "ahoi",
  "console_error_panic_hook",
