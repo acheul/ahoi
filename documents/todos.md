@@ -1,24 +1,23 @@
 # TODOs
 
-## Version 0.1
+## Version 0.1.1
 
 - [x] return type macro
 - [x] other frameworks exmples than Solid (React, Vue, Svelte)
-
-- [x] support serde_json converter
-
 - [x] publish: crate & npm
 - [x] build a book
 
-- [x] panic location debug (high priority)
-- [ ] mut-borrow guard by path (low priority)
+## Next Version
 
+- [x] panic location debug (high priority)
 - [x] js \_hail_keys -> must distinguish differnet piers' hail keys! (high priority)
 
 - [x] tsify example
-
-- [ ] test examples run on published packages
-
+- [x] support serde_json converter
 - [x] support tsain feature
 
+- [x] borrow api: distinguish BorrowError and None (breaking change)
+- [x] serparate OptStock from Stock (breaking change)
+
+- [ ] test examples run on published packages
 - [ ] bench result
