@@ -30,8 +30,8 @@ mod tests;
 #[doc(hidden)]
 pub mod __macro_support {
     pub use crate::hooks::{
-        ChainedPipe, GetNext, GetNextOpt, MapNext, Memo, OptReadStock, OptStock, Pipeline,
-        ReadStock, Stock,
+        ChainedPipe, Derivable, GetNext, GetNextOpt, MapNext, MapNextOpt, Memo, OptReadStock,
+        OptStock, Pipeline, ReadStock, Stock,
     };
 }
 
@@ -48,7 +48,7 @@ pub use utils::{
 };
 
 pub use states::{
-    pool::StateId,
+    pool::{BorrowError, StateId},
     runtime::propagation::{batch, batch_with_sphere},
     runtime::sphere::{
         SphereId, clear_sphere, current_sphere_id, make_sphere, make_top_sphere, provide_context,

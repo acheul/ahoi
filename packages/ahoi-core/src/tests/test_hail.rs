@@ -63,14 +63,14 @@ fn test_hail_structural() {
         // Structural shift: item1 ends up at value 0, hail fires once.
         batch(|| {
             items.write().push(4u32);
-            *item1.try_write().unwrap() = 10;
+            *item1.write().unwrap() = 10;
             items.write().insert(0, 100u32);
         });
 
         // item2 write does not touch item1's path; item1 → 20.
         batch(|| {
-            *item2.try_write().unwrap() = 10;
-            *item1.try_write().unwrap() = 20;
+            *item2.write().unwrap() = 10;
+            *item1.write().unwrap() = 20;
         });
         assert_eq!(*log.lock().unwrap(), vec![Some(0u32), Some(20u32)]);
 

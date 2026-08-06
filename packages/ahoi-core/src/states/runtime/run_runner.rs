@@ -6,12 +6,12 @@ pub(crate) fn run_citer_with<R>(citer_id: StateId, run: impl FnOnce() -> R) -> R
 
 /// This will panic if the runner has recursive dependency.
 pub(crate) fn run_citer(id: StateId) -> Option<()> {
-    let state = pool::get_state(id)?;
-    match state.as_runner()? {
-        Runner::Citer {
+    let state = pool::get_state(id).ok()?;
+    match state.as_runner() {
+        Some(Runner::Citer {
             runner: run,
             is_hail_sender,
-        } => {
+        }) => {
             let res = if *is_hail_sender {
                 // not using cite for hail-citer
                 runtime::propagation::batch(|| run())
@@ -21,19 +21,19 @@ pub(crate) fn run_citer(id: StateId) -> Option<()> {
             };
             Some(res)
         }
-        _ => None,
+        _ => unreachable!(),
     }
 }
 
 /// This will panic if the runner has recursive dependency.
 pub(crate) fn run_executer<A: 'static, R: 'static>(id: StateId, args: A) -> Option<R> {
-    let state = pool::get_state(id)?;
-    match state.as_runner()? {
-        Runner::Executer(run) => {
+    let state = pool::get_state(id).ok()?;
+    match state.as_runner() {
+        Some(Runner::Executer(run)) => {
             // run in batch
             let res = runtime::propagation::batch(|| run(Box::new(args)));
             Some(*res.downcast::<R>().unwrap())
         }
-        _ => None,
+        _ => unreachable!(),
     }
 }

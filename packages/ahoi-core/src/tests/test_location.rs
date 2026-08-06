@@ -46,11 +46,11 @@ fn test_origin_of_sync_constructors_is_user_code() {
         let _pooled: OptStock<u32> = stock.get(2usize).into();
 
         // citer runner + its associated backing stock
-        let _memo = Memo::new(move || *item.try_read().unwrap());
+        let _memo = Memo::new(move || *item.read().unwrap());
 
         // the combinator form, which reaches `Memo::new` one hop deeper
         let _memo2 = stock.memo(|v| v.len());
-        let _memo3 = item.try_memo(|v| v.copied());
+        let _memo3 = item.memo(|v| v.copied());
 
         // executer runner
         let _cb = Callback::new(|x: i32| x * 2);
@@ -109,7 +109,7 @@ fn test_locations_are_freed_with_their_states() {
     let (pid, _) = make_sphere(None, || {
         let stock = Stock::new(vec![0u32, 1u32]);
         let pooled = stock.get(0usize).pool();
-        let _memo = Memo::new(move || *pooled.try_read().unwrap());
+        let _memo = Memo::new(move || *pooled.read().unwrap());
         let _cb = Callback::new(|x: u32| x);
     });
     let (_cid, _) = make_sphere(Some(pid), || Stock::new(9u32));

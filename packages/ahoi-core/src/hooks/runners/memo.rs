@@ -76,13 +76,13 @@ impl<T: 'static> Memo<T> {
 
 // Into ReadStock<T>
 impl<T> Memo<T> {
-    pub fn into_ref_stock(self) -> ReadStock<T> {
+    pub fn into_read_stock(self) -> ReadStock<T> {
         self.stock
     }
 }
 
 impl<T> Into<ReadStock<T>> for Memo<T> {
     fn into(self) -> ReadStock<T> {
-        self.into_ref_stock()
+        self.into_read_stock()
     }
 }

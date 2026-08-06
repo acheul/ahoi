@@ -86,23 +86,36 @@ pub(crate) fn remove_state(id: StateId) -> Option<State> {
     })
 }
 
-/// Get Ref guarded state. Return None if state not exists
-/// * `RefCell::borrow` is `#[track_caller]`, so keeping the attribute on this
-///   whole chain makes a `BorrowError` name the user's read instead of this line.
-#[cfg_attr(debug_assertions, track_caller)]
-pub(crate) fn get_state(id: StateId) -> Option<Ref<'static, State>> {
-    let slot = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))?;
-    let state = slot.0.borrow();
-    Some(state)
+/// Borrowing-states Error type
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum BorrowError {
+    /// State is disposed from pool (not present in pool)
+    Disposed,
+    /// Conflict of borrow guard
+    BorrowConflict,
 }
 
-/// Get RefMut guarded state. Return None if state not exists
-/// * See [`get_state`]: this is where `BorrowMutError` is raised.
-#[cfg_attr(debug_assertions, track_caller)]
-pub(crate) fn get_mut_state(id: StateId) -> Option<RefMut<'static, State>> {
-    let slot = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))?;
-    let state = slot.0.borrow_mut();
-    Some(state)
+/// Get Ref guarded state. Never panics:
+/// * `Err(Disposed)` — the id is no longer present in the pool.
+/// * `Err(BorrowConflict)` — a mut guard on this state is live.
+pub(crate) fn get_state(id: StateId) -> Result<Ref<'static, State>, BorrowError> {
+    let Some(slot) = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))
+    else {
+        return Err(BorrowError::Disposed);
+    };
+    slot.0.try_borrow().map_err(|_| BorrowError::BorrowConflict)
+}
+
+/// Get RefMut guarded state. Never panics — see [`get_state`];
+/// `Err(BorrowConflict)` here means any guard (shared or mut) is live.
+pub(crate) fn get_mut_state(id: StateId) -> Result<RefMut<'static, State>, BorrowError> {
+    let Some(slot) = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))
+    else {
+        return Err(BorrowError::Disposed);
+    };
+    slot.0
+        .try_borrow_mut()
+        .map_err(|_| BorrowError::BorrowConflict)
 }
 
 /// Number of live slots in the pool (test-only; used to assert no state leaks).

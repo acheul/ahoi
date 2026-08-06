@@ -64,7 +64,13 @@ impl Runner {
 }
 
 /// Abstract Mapper Trait
+/// * `Err` carries a `BorrowError` from a pooled mapper's own state access
+///   (e.g. the mapper was disposed before the value it maps); `Ok(None)` means
+///   the mapped value is absent (optional derive).
 pub(crate) trait Mapper {
-    fn map_ref<'a>(&self, source: &'a dyn Any) -> Option<&'a dyn Any>;
-    fn map_mut<'a>(&self, source: &'a mut dyn Any) -> Option<&'a mut dyn Any>;
+    fn map_ref<'a>(&self, source: &'a dyn Any) -> Result<Option<&'a dyn Any>, pool::BorrowError>;
+    fn map_mut<'a>(
+        &self,
+        source: &'a mut dyn Any,
+    ) -> Result<Option<&'a mut dyn Any>, pool::BorrowError>;
 }

@@ -1,24 +1,21 @@
-# ahoi-stock-macro
+//! Prototypes to illustrate `#[derive(Stock)]` & `[stock]` extensions
+use super::*;
 
-`#[derive(Stock)]` and `#[stock]` proc macros for the `ahoi` crate.
-
----
-
-## Struct
-
-### Named fields
-
-```rust
+/**
+ * Struct, Named fields
+```rust, no_run
 #[derive(Stock)]
 pub struct AB<T> {
     a: String,
     b: Vec<T>,
 }
 ```
+ */
+pub struct AB<T> {
+    a: String,
+    b: Vec<T>,
+}
 
-Generated:
-
-```rust
 pub const AB_A_KEY: u64 = 0u64;
 pub const AB_B_KEY: u64 = 1u64;
 
@@ -59,18 +56,43 @@ where
         self.derive(AB_B_KEY, GetNext::new(|x| &x.b, |x| &mut x.b))
     }
 }
-```
 
-### Tuple struct — unnamed fields use `f{n}`
+#[test]
+fn run_example_of_manual_extension() {
+    crate::make_sphere(None, || {
+        let ab = Stock::new(AB {
+            a: "A".to_string(),
+            b: vec![1, 2],
+        });
+        crate::batch(|| {
+            let _ = ab.update_a(&"hey");
+            let _ = ab.length_of_b(());
+        });
+        let _a = ab.a();
 
-```rust
+        let abs = Stock::new(vec![AB {
+            a: "A".to_string(),
+            b: vec![1, 2],
+        }]);
+        let x = abs.get(0);
+        let _a = x.a();
+
+        // read-only stocks derive too: ReadStock -> ReadStock, and an optional
+        // step (`get`) collapses to OptReadStock.
+        let ro: &ReadStock<AB<i32>> = &ab;
+        let _ro_a = ro.clone().a();
+    });
+}
+
+/**
+ * Struct, Unnamed fields
+```rust, no_run
 #[derive(Stock)]
 pub struct CD(String, Vec<u32>);
 ```
+ */
+pub struct CD(String, Vec<u32>);
 
-Generated:
-
-```rust
 pub const CD_F0_KEY: u64 = 0u64;
 pub const CD_F1_KEY: u64 = 1u64;
 
@@ -110,17 +132,10 @@ where
         self.derive(CD_F1_KEY, GetNext::new(|x| &x.1, |x| &mut x.1))
     }
 }
-```
 
----
-
-## Enum
-
-- **`{Name}StockExt`** — `{variant}()` for variants with exactly one field; an optional derive, so it returns `DeriveOptType` — the `Opt*` counterpart of the target stock (`Stock`/`OptStock` → `OptStock`, `ReadStock`/`OptReadStock` → `OptReadStock`).
-
-Keys run `0..n`, one slot per variant regardless of whether an accessor is emitted.
-
-```rust
+/**
+ * Enum
+```rust, no_run
 #[derive(Stock)]
 pub enum Shape<O> {
     Circle(O),               // circle()
@@ -129,10 +144,14 @@ pub enum Shape<O> {
     Label(String),           // label()
 }
 ```
+ */
+pub enum Shape<O> {
+    Circle(O), // circle()
+    Rect { w: f64, h: f64 },
+    Dot,
+    Label(String), // label()
+}
 
-Generated:
-
-```rust
 pub const SHAPE_CIRCLE_KEY: u64 = 0u64;
 pub const SHAPE_LABEL_KEY: u64 = 3u64;
 
@@ -208,47 +227,10 @@ where
         )
     }
 }
-```
 
----
-
-## Skipping fields / variants
-
-`#[stock(skip)]` suppresses const and method generation. The index slot is still
-consumed, keeping subsequent keys stable.
-
-```rust
-#[derive(Stock)]
-struct Tagged {
-    name: String,
-    #[stock(skip)]  // no TAGGED_META_KEY or .meta() generated
-    _meta: u64,
-    value: u32,     // gets key 2
-}
-
-// TAGGED_NAME_KEY  = 0
-// TAGGED_VALUE_KEY = 2  (gap at 1 for _meta)
-```
-
----
-
-## CamelCase → snake_case
-
-Variant and field names are converted to snake_case for method names.
-`TriAngle` → `tri_angle()`.
-
----
-
-# `#[stock]` macro
-
-```rust
-#[derive(Stock)]
-struct AB<T> {
-    a: String,
-    b: Vec<T>,
-}
-
-
+/**
+ * # `#[stock]` extension
+```rust, no_run
 #[stock]
 impl<T: 'static, Pipe: Pipeline<AB<T>> + Clone + 'static> Stock<AB<T>, Pipe> {
     fn update_a(&self, new_a: &str) -> usize {
@@ -262,10 +244,7 @@ impl<T: 'static, Pipe: Pipeline<AB<T>> + Clone + 'static> Stock<AB<T>, Pipe> {
     }
 }
 ```
-
-- Above code should be expanded into something like this:
-
-```rust
+ */
 pub trait ABStockExt2<T: 'static> {
     fn update_a(&self, new_a: &str) -> usize;
 
@@ -283,7 +262,3 @@ impl<T: 'static, Pipe: Pipeline<AB<T>> + Clone + 'static> ABStockExt2<T> for Sto
         self.b().write().pop()
     }
 }
-```
-
-- More details
-  - `#[stock(ABStockExtCustom)]`: trait 이름 설정 가능. 설정 안 할 경우 {type}StockExt2
