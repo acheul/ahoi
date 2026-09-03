@@ -252,7 +252,7 @@ fn run_tell(tell: Tell) -> JsValue {
             let _ = ticker.cancel();
             JsValue::undefined()
         }
-        // Deliberate panic — the classic double-borrow bug in signal libraries:
+        // Deliberate panic, the classic double-borrow bug in signal libraries:
         // a write guard is still alive when the same value is read again.
         //
         // The point of the demo is *where* the panic is reported. ahoi carries

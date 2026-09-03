@@ -117,7 +117,7 @@ let new_count = {
 };
 ```
 
-`write()` returns a guard. While it is alive, that value cannot be read again —
+`write()` returns a guard. While it is alive, that value cannot be read again,
 including by the propagation your write triggers. Keep the guard in a small
 scope and drop it before you do anything else.
 

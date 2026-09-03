@@ -20,7 +20,7 @@ impl TaskHandle {
         // `mem::forget(self)`: that would also leak the `AbortHandle`'s `Arc`,
         // keeping its shared abort-state allocation alive forever. Instead, take
         // the `AbortHandle` out and drop it normally (it has no custom `Drop`, so
-        // this only decrements the `Arc` — no abort is triggered).
+        // this only decrements the `Arc`; no abort is triggered).
         let md = std::mem::ManuallyDrop::new(self);
         // SAFETY: `md` is never used or dropped again; we move the field out and
         // let it drop, bypassing `TaskHandle`'s abort-on-drop.

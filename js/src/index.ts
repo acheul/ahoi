@@ -46,7 +46,7 @@ export type KeyRet<X, Rets, Fallback> =
     : Fallback;
 
 /**
- * Return type of a Hail key. Falls back to `unknown` — the value exists, it
+ * Return type of a Hail key. Falls back to `unknown`: the value exists, it
  * is just untyped.
  */
 export type HailRet<X, Rets = {}> = KeyRet<X, Rets, unknown>;
@@ -108,7 +108,7 @@ function keyOf(key: unknown): string {
         }
     }
 
-    // Anything else — a struct payload, say. Object property order is not
+    // Anything else: a struct payload, say. Object property order is not
     // meaningful but `JSON.stringify` preserves it, so sort on the way out:
     // two callers spelling the same key differently must not fork the cache.
     return JSON.stringify(key, (_, value) =>
@@ -281,9 +281,9 @@ export class AhoiStorage<PierKey, HailKey> {
 /**
  * Installs the `__AHOI__` global the wasm side dispatches hails into
  * (`js_namespace = "__AHOI__"`) and binds `ahoi` as its target. Called by the
- * [`AhoiStorage`] constructor — not part of the public API.
+ * [`AhoiStorage`] constructor (not part of the public API).
  *
- * The sink is created once; binding again only swaps the storage behind it —
+ * The sink is created once; binding again only swaps the storage behind it,
  * so re-running setup code (dev-server HMR, tests) must not throw. The swap
  * slot lives on the global (not in module scope) because HMR re-evaluates
  * modules: the old sink closure must still reach the newest storage.

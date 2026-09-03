@@ -58,7 +58,7 @@ TypeScript directly:
 Custom,
 ```
 
-Whatever you put in the string is emitted as-is. This is the escape hatch — use
+Whatever you put in the string is emitted as-is. This is the escape hatch: use
 it when you need it, not by default.
 
 ## Generating the file

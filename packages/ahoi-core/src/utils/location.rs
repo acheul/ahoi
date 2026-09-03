@@ -3,7 +3,7 @@
 //! In debug builds a [`Location`] wraps a `&'static core::panic::Location`; in
 //! release it is a ZST and `Location::caller()` is *not* `#[track_caller]`, so
 //! no call site ever has to materialize a `Location` constant. That is what
-//! keeps source paths out of the release binary — see `documents/todos.md`.
+//! keeps source paths out of the release binary. See `documents/todos.md`.
 //!
 //! Rules for callers:
 //! - Every function between user code and `Location::caller()` must carry
@@ -77,7 +77,7 @@ pub(crate) fn do_panic_at(_origin: Option<Location>, msg: core::fmt::Arguments<'
 /// Panic with a message, appending a recorded [`Location`] when one is known.
 ///
 /// `#[track_caller]` does not cross closure boundaries, and a bare `panic!`
-/// always reports its own source position — so any panic raised inside a
+/// always reports its own source position, so any panic raised inside a
 /// `RUNTIME.with_borrow*(|runtime| ...)` closure has to carry its origin
 /// explicitly. Capture it *outside* the closure with `Location::caller()`, or
 /// look up a state's creation site with `Runtime::location_of`, then pass it

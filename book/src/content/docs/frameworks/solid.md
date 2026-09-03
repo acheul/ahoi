@@ -1,6 +1,6 @@
 ---
 title: Solid
-description: Using ahoi with SolidJS — one object per pier, signal accessors, automatic cleanup.
+description: "Using ahoi with SolidJS: one object per pier, signal accessors, automatic cleanup."
 sidebar:
   order: 1
 ---
@@ -48,7 +48,7 @@ function Counter() {
 }
 ```
 
-Values are **accessors** — call them. That is ordinary Solid, and it means a
+Values are **accessors**: call them. That is ordinary Solid, and it means a
 hail can be passed around without losing reactivity.
 
 ## The provider
@@ -89,14 +89,14 @@ Because a hail is a signal, only the expressions that actually read it update.
 <p>{other()}</p>   {/* does not */}
 ```
 
-No component re-runs. This is the closest fit of the four adapters — Solid's
+No component re-runs. This is the closest fit of the four adapters: Solid's
 model and ahoi's are the same shape.
 
 ## Notes
 
 - `usePier()` throws if there is no provider above it.
 - The object `usePier()` returns is stable. You can destructure it once and
-  keep it. Its type is `PierSphere` — a pier is a sphere underneath.
+  keep it. Its type is `PierSphere`: a pier is a sphere underneath.
 - Wasm cannot hot-reload. In Vite, force a full reload when your wiring module
   changes:
 

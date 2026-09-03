@@ -4,7 +4,7 @@
 //! Every state records where user code created it, so panics raised deep in the
 //! runtime can blame a real source line. That only works if *every* function
 //! between the user's call and `Location::caller()` carries
-//! `#[cfg_attr(debug_assertions, track_caller)]` — miss one and the recorded
+//! `#[cfg_attr(debug_assertions, track_caller)]`: miss one and the recorded
 //! location silently becomes an ahoi-core file instead. These tests catch that.
 //!
 //! Debug-only: the registry does not exist in release builds.
@@ -20,7 +20,7 @@ use crate::states::runtime::{location_files, locations_count};
 #[track_caller]
 fn assert_all_origins_are_local() {
     let files = location_files();
-    assert!(!files.is_empty(), "no locations recorded — nothing tested");
+    assert!(!files.is_empty(), "no locations recorded: nothing tested");
     for f in files {
         assert_eq!(
             f,
@@ -42,7 +42,7 @@ fn test_origin_of_sync_constructors_is_user_code() {
         let item = stock.get(1usize).pool();
 
         // mapper state, via `Into` (best-effort: `Into::into` is not
-        // `#[track_caller]` upstream — see `hooks::stock::pipe`)
+        // `#[track_caller]` upstream; see `hooks::stock::pipe`)
         let _pooled: OptStock<u32> = stock.get(2usize).into();
 
         // citer runner + its associated backing stock
@@ -118,7 +118,7 @@ fn test_locations_are_freed_with_their_states() {
 
     clear_sphere(pid);
 
-    // The registry must shrink exactly like the pool does — otherwise it grows
+    // The registry must shrink exactly like the pool does; otherwise it grows
     // without bound over a long-running debug session.
     assert_eq!(crate::states::pool::slots_count(), baseline_slots);
     assert_eq!(locations_count(), baseline_locations);

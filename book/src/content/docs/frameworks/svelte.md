@@ -1,6 +1,6 @@
 ---
 title: Svelte
-description: Using ahoi with Svelte — stores rather than runes, and no provider component.
+description: "Using ahoi with Svelte: stores rather than runes, and no provider component."
 sidebar:
   order: 4
 ---
@@ -63,7 +63,7 @@ Call `providePier` at the top of the component that owns the scope:
 
 Child components then use `useHail` and friends as normal.
 
-The same component can both provide and use a pier — `setContext` followed by
+The same component can both provide and use a pier; `setContext` followed by
 `getContext` in one script block works:
 
 ```svelte
@@ -79,7 +79,7 @@ The same component can both provide and use a pier — `setContext` followed by
 `providePier`, `useHail`, `useReadHail`, and `useTell` all use `setContext`,
 `getContext`, or `onDestroy`.
 
-That means they must be called **during component initialisation** — at the top
+That means they must be called **during component initialisation**: at the top
 level of `<script>`, not inside an event handler, a callback, or after an
 `await`.
 :::

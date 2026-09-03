@@ -15,7 +15,7 @@ mod stock_attr;
 /// so the generated code can root itself in whichever crate the consumer
 /// actually depends on. We probe `ahoi` first (the public facade), then
 /// `ahoi-core`. For each, we handle:
-/// - the macro is expanded inside that crate itself (`crate`) — e.g. the
+/// - the macro is expanded inside that crate itself (`crate`), e.g. the
 ///   `ahoi-core` tests resolve to `crate`,
 /// - the dependency exists, possibly renamed in the downstream `Cargo.toml`
 ///   (`::<name>`).
@@ -356,7 +356,7 @@ fn expand_enum(
     let mut acc_impl_fns = Vec::new();
 
     // Variant accessors are optional derives, so the return type is
-    // `DeriveOptType` — the `Opt*` counterpart of the target stock.
+    // `DeriveOptType`: the `Opt*` counterpart of the target stock.
     let mut push_accessor = |cname: &Ident, method: &Ident, fty: &syn::Type, accessor: TokenStream2| {
         let ret = quote! {
             <Self as #ahoi::Derivable<#name_ty, __Pipe>>::DeriveOptType<

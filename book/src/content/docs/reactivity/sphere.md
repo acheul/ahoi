@@ -16,7 +16,7 @@ So read this page for the model, not for an API you have to call. What matters
 day to day is one sentence: **state lives as long as the scope it was created
 in**, and that scope is your provider.
 
-The rest of this page is the machinery underneath — useful if you are writing
+The rest of this page is the machinery underneath: useful if you are writing
 your own integration, or debugging why something outlived what you expected.
 
 ## Creating one
@@ -42,7 +42,7 @@ This is what `PierProvider` calls for you.
 clear_sphere(id);
 ```
 
-That frees every state the sphere owns. You never free individual values — and
+That frees every state the sphere owns. You never free individual values, and
 with an adapter, you do not call this either: it runs from the framework's own
 cleanup hook when your provider unmounts.
 
@@ -98,7 +98,7 @@ adapter.
 ## Batching across a sphere
 
 `batch` groups writes into one propagation. `batch_with_sphere` does the same
-while entering a specific sphere first — useful when you are writing state from
+while entering a specific sphere first: useful when you are writing state from
 outside any runner.
 
 ```rust

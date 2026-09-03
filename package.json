@@ -8,5 +8,8 @@
     "dev:solid": "pnpm -C playgrounds/solid dev",
     "dev:book": "pnpm -C book dev",
     "build:book": "pnpm -C book build"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }

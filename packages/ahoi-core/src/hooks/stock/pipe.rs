@@ -44,7 +44,7 @@ impl<T: 'static> Pipeline<T> for PooledPipe<T> {
     ///   before the value state it maps (see [`Pipeline`]).
     fn map_ref<'a>(&self, value: &'a dyn Any) -> Result<Option<&'a T>, BorrowError> {
         // * downcast / `as_mapper` failures are type invariants of macro-generated
-        //   code — those stay panics.
+        //   code: those stay panics.
         match self.pooled_id {
             None => Ok(Some(value.downcast_ref::<T>().unwrap())),
             Some(id) => {
@@ -144,7 +144,7 @@ where
     }
 }
 
-// Named pooling helpers — same as the `Into` impls above, but the method name
+// Named pooling helpers: same as the `Into` impls above, but the method name
 // makes the intent explicit and pins the target type, so callers don't need a
 // type annotation to disambiguate from the reflexive `Into` identity.
 pub trait Poolable {
@@ -166,11 +166,11 @@ where
     /// Materialize this chained stock into a pooled one: its pipeline is stored
     /// as a state, so the handle becomes `Copy` and the `Pipe` generic collapses
     /// to `PooledPipe<U>` (handy for context values). Otherwise prefer the
-    /// chained form — it costs zero pool state.
+    /// chained form: it costs zero pool state.
     ///
     /// Note: pooling allocates a mapper state that lives until the sphere is
     /// cleared, so do NOT call `.pool()` inside a reactive closure (it would leak
-    /// one mapper per run) — derive inline there instead.
+    /// one mapper per run); derive inline there instead.
     #[cfg_attr(debug_assertions, track_caller)]
     fn pool(self) -> OptReadStock<U, PooledPipe<U>> {
         let pipeline = self.pipeline.pool();
@@ -179,7 +179,7 @@ where
             path: self.path,
             pipeline,
             ty: PhantomData,
-            // Carried over — see `Derivable::derive_opt`: dropping the pull
+            // Carried over. See `Derivable::derive_opt`: dropping the pull
             // link here would silently break freshness of a pooled
             // derived-from-memo stock.
             associated_citer_id: self.associated_citer_id,
@@ -213,7 +213,7 @@ impl_poolable!(Stock);
 //
 // NOTE: `From::from` is not declared `#[track_caller]` upstream, so the
 // attribute on these impls only helps for statically-resolved calls. When the
-// recorded creation site matters, prefer `.pool()` — it is an inherent method
+// recorded creation site matters, prefer `.pool()`: it is an inherent method
 // and carries the caller reliably.
 macro_rules! impl_pool_from {
     ($ty:ident) => {

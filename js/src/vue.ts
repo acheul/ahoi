@@ -3,7 +3,7 @@
  *
  * `shallowRef` is the signal the storage's `hat` writes into (values arrive
  * from Rust already whole, so there is nothing to track deeply), and
- * `onScopeDispose` releases hails — it fires for components *and* plain
+ * `onScopeDispose` releases hails: it fires for components *and* plain
  * `effectScope`s, so composables work outside components too.
  *
  * ```vue
@@ -23,7 +23,7 @@
  * ```
  *
  * `<PierProvider :pier="..">` enrols its pier during `setup`, so children see
- * the sphere on their first render. The `pier` prop is read once at setup —
+ * the sphere on their first render. The `pier` prop is read once at setup;
  * to switch piers, re-mount the provider (e.g. with a `:key`).
  */
 

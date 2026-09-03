@@ -96,8 +96,8 @@ pub enum BorrowError {
 }
 
 /// Get Ref guarded state. Never panics:
-/// * `Err(Disposed)` — the id is no longer present in the pool.
-/// * `Err(BorrowConflict)` — a mut guard on this state is live.
+/// * `Err(Disposed)`: the id is no longer present in the pool.
+/// * `Err(BorrowConflict)`: a mut guard on this state is live.
 pub(crate) fn get_state(id: StateId) -> Result<Ref<'static, State>, BorrowError> {
     let Some(slot) = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))
     else {
@@ -106,7 +106,7 @@ pub(crate) fn get_state(id: StateId) -> Result<Ref<'static, State>, BorrowError>
     slot.0.try_borrow().map_err(|_| BorrowError::BorrowConflict)
 }
 
-/// Get RefMut guarded state. Never panics — see [`get_state`];
+/// Get RefMut guarded state. Never panics. See [`get_state`];
 /// `Err(BorrowConflict)` here means any guard (shared or mut) is live.
 pub(crate) fn get_mut_state(id: StateId) -> Result<RefMut<'static, State>, BorrowError> {
     let Some(slot) = POOL.with_borrow(|pool| unsafe { &*pool.slots }.get(id.0).map(|b| b.as_ref()))

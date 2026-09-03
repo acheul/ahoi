@@ -1,6 +1,6 @@
 ---
 title: React
-description: Using ahoi with React — plain values, useSyncExternalStore underneath, StrictMode safe.
+description: "Using ahoi with React: plain values, useSyncExternalStore underneath, StrictMode safe."
 sidebar:
   order: 2
 ---
@@ -52,7 +52,7 @@ it, exactly like `useState`.
 One detail worth knowing: the provider enrols its pier in an **effect**, not
 during render, and renders children only once the sphere exists.
 
-So children do not mount on the very first pass. That is deliberate — enrolling
+So children do not mount on the very first pass. That is deliberate: enrolling
 during render would be a side effect in render, which React does not allow you
 to do safely.
 

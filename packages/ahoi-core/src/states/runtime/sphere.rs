@@ -101,7 +101,7 @@ pub(crate) fn get_hail_writer_id(sphere_id: SphereId) -> Option<StateId> {
 #[cfg_attr(debug_assertions, track_caller)]
 pub fn make_sphere<R>(par_sphere_id: Option<SphereId>, run: impl FnOnce() -> R) -> (SphereId, R) {
     // Both panics below fire inside the closure, which `#[track_caller]` cannot
-    // reach — capture the caller here instead.
+    // reach; capture the caller here instead.
     let origin = Location::caller();
 
     // set building_sphere
@@ -158,13 +158,13 @@ pub fn make_top_sphere() -> SphereId {
 /// ## Cascades to children; order-independent
 ///
 /// Clearing a sphere also clears its child spheres recursively, so the whole
-/// subtree is freed in one call — the host does **not** need to clear children
+/// subtree is freed in one call: the host does **not** need to clear children
 /// before parents. Each sphere is tracked under its parent (`child_spheres`)
 /// at creation, which is what makes the cascade possible.
 ///
 /// Clearing is idempotent: clearing an already-removed sphere is a no-op. So a
 /// host can register a `clear_sphere` per component (e.g. in each SolidJS
-/// `onCleanup`) and stay correct regardless of order — whether a child clears
+/// `onCleanup`) and stay correct regardless of order: whether a child clears
 /// itself first, or a parent's cascade reaches it first, the later call simply
 /// finds nothing to do.
 pub fn clear_sphere(sphere_id: SphereId) {
@@ -177,7 +177,7 @@ impl Runtime {
     /// `par_is_cleared` says whether this sphere's parent has already been removed
     /// (true when reached via a parent's cascade). When false, the sphere detaches
     /// itself from its still-present parent's `child_spheres`; when true that step
-    /// is skipped, since the parent — and its `child_spheres` set — is already gone.
+    /// is skipped, since the parent (and its `child_spheres` set) is already gone.
     fn clear_sphere(&mut self, par_is_cleared: bool, sphere_id: SphereId) -> Option<()> {
         let Sphere {
             par_sphere,

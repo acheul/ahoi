@@ -1,13 +1,13 @@
 //! Ret-map file generation for the JS bridge.
 //!
-//! ahoi does not convert your types to TypeScript — pick any exporter (ts-rs,
+//! ahoi does not convert your types to TypeScript: pick any exporter (ts-rs,
 //! Tsify, Tsain, hand-written `.d.ts`). ahoi only describes what key variants
 //! *return*: `#[derive(Rets)]` renders a `{Enum}Rets` map, and this module
 //! writes those maps to a file.
 //!
-//! - [`TsDecl`]: a TS declaration contributed to the generated file —
+//! - [`TsDecl`]: a TS declaration contributed to the generated file,
 //!   implemented by `#[derive(Rets)]` for key enums.
-//! - [`TsFile`]: collects declarations and writes a `.ts` file — typically
+//! - [`TsFile`]: collects declarations and writes a `.ts` file, typically
 //!   from a `#[test] fn generate()` in the wasm crate.
 //!
 //! ```rust, ignore
@@ -40,7 +40,7 @@ impl TsFile {
         Self::default()
     }
 
-    /// Adds `import type { names } from "from";` — for data types the ret
+    /// Adds `import type { names } from "from";` for data types the ret
     /// maps reference, wherever your exporter emitted them
     /// (e.g. `.import("Fruit", "./Fruit")` for a ts-rs binding).
     pub fn import(mut self, names: &str, from: &str) -> Self {

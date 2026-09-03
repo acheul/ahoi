@@ -6,7 +6,7 @@ use super::*;
 pub(super) struct RunningCites(pub(super) IntIndexMap<StateId, IntMap<StateId, HashSet<Path>>>);
 
 pub(crate) fn mark_cited(value_id: StateId, path: Path, associated_citer_id: Option<StateId>) {
-    // Note: `associated_citer_id` may come with a non-empty path — a stock
+    // Note: `associated_citer_id` may come with a non-empty path. A stock
     // derived from a citer-associated stock (e.g. a memo field) carries the
     // pull link along with its derive path.
     RUNTIME.with_borrow_mut(|runtime| {
@@ -30,7 +30,7 @@ fn raw_cite<R>(citer_id: StateId, run: impl FnOnce() -> R, replace_or_accumulate
     // 1) Set running Cite
     RUNTIME.with_borrow_mut(|runtime| {
         // A cycle is detected deep inside propagation, so the caller here is
-        // runtime code, not user code — blame the citer's creation site instead.
+        // runtime code, not user code: blame the citer's creation site instead.
         let origin = runtime.location_of(&citer_id);
 
         match runtime.running_cites.0.entry(citer_id) {

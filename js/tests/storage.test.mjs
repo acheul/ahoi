@@ -2,7 +2,7 @@
  * Runtime tests for the framework-agnostic core.
  *
  * Runs against `dist/`, so it exercises what actually ships. `tests/inference.ts`
- * covers the type layer; this covers behaviour the type layer cannot see —
+ * covers the type layer; this covers behaviour the type layer cannot see:
  * chiefly that the hail cache is scoped per pier, which decides whether two
  * providers on one page share state by accident.
  */

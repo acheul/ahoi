@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-Adapters ship for Solid, React, Vue, and Svelte. That list is settled — those
+Adapters ship for Solid, React, Vue, and Svelte. That list is settled: those
 four cover the two integration shapes a reactive bridge can have, and each extra
 adapter costs a peer dependency and a playground to keep honest.
 
@@ -65,12 +65,12 @@ better tested.
 
 ## Writing a new adapter
 
-If you do build one, the pattern to follow is in the four existing adapters —
+If you do build one, the pattern to follow is in the four existing adapters;
 they are small, and each is a single file:
 
-- `js/src/solid.ts` — signal injection, the simplest shape
-- `js/src/react.ts` — external store, for frameworks without a signal primitive
-- `js/src/vue.ts` — ref-based, with scope-aware cleanup
-- `js/src/svelte.ts` — stores, and context without a provider component
+- `js/src/solid.ts`: signal injection, the simplest shape
+- `js/src/react.ts`: external store, for frameworks without a signal primitive
+- `js/src/vue.ts`: ref-based, with scope-aware cleanup
+- `js/src/svelte.ts`: stores, and context without a provider component
 
 Start from whichever matches how your framework handles external state.

@@ -201,7 +201,7 @@ fn test_hail_on_non_pooled_derive() {
 
     let (sid, stock) = make_sphere(None, || {
         let stock = Stock::new(Duo { a: 0, b: 0 });
-        // No pooling — hail registered straight on the derived `a` stock.
+        // No pooling: hail registered straight on the derived `a` stock.
         stock.a().set_hail::<Opt>();
         stock
     });

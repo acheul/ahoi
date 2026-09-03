@@ -23,7 +23,7 @@ impl<T, Pipe: Clone> Clone for ReadStock<T, Pipe> {
 
 impl<T, Pipe: Copy> Copy for ReadStock<T, Pipe> {}
 
-/// A handle to a reactive value — or a value derived from one — living in the
+/// A handle to a reactive value (or a value derived from one) living in the
 /// state pool.
 ///
 /// Four concrete types cover the capability × presence matrix:
@@ -35,7 +35,7 @@ impl<T, Pipe: Copy> Copy for ReadStock<T, Pipe> {}
 /// | [`OptStock`]     | yes      | yes           |
 /// | [`OptReadStock`] | no       | yes           |
 ///
-/// - "May be absent" marks values that can be missing — a `Vec` index, a map
+/// - "May be absent" marks values that can be missing: a `Vec` index, a map
 ///   key, an optional derive, or an enum-variant field. The `Opt*` types wrap
 ///   their borrow results in `Option`: `None` means the value is genuinely
 ///   absent, which is not an error.
@@ -43,7 +43,7 @@ impl<T, Pipe: Copy> Copy for ReadStock<T, Pipe> {}
 ///   returning `Result<_, BorrowError>`: `Err(Disposed)` when the state has
 ///   been cleared from the pool (e.g. an async callback outliving its sphere),
 ///   `Err(BorrowConflict)` when a live guard conflicts. The non-`try` methods
-///   are the `try_*` twins with the error unwrapped — they panic instead.
+///   are the `try_*` twins with the error unwrapped; they panic instead.
 /// - `Pipe` is the getter pipeline mapping the root value to this stock's
 ///   value. It defaults to [`PooledPipe`] once the stock is materialized via
 ///   `.pool()`.
@@ -61,7 +61,7 @@ impl<T, Pipe: Copy> Copy for ReadStock<T, Pipe> {}
 /// ##### What to use?
 /// - A pooled stock handle is always `Copy`, and its `Pipe` generic can be
 ///   omitted (it defaults to [`PooledPipe`]).
-/// - A chained stock's pipeline is usually very light — zero or near-zero cost.
+/// - A chained stock's pipeline is usually very light: zero or near-zero cost.
 /// - It's fine (and better) to use a chained stock without pooling. However,
 ///   for Context ([provide_context], [use_context]), a pooled stock is more
 ///   convenient because it can omit the `Pipe` generic.
@@ -127,7 +127,7 @@ impl<T, Pipe> Stock<T, Pipe> {
 /// must never miss. It can only trip when a hand-written derive accessor
 /// declared as non-optional actually returns `None`.
 const NON_OPT_INVARIANT: &str =
-    "non-optional stock resolved to an absent value — inconsistent derive accessor?";
+    "non-optional stock resolved to an absent value: inconsistent derive accessor?";
 
 // Borrow methods (ReadStock)
 impl<T, Pipe: Pipeline<T>> ReadStock<T, Pipe> {

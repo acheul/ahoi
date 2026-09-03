@@ -5,7 +5,7 @@
 //!
 //! - **values** on the wire → `TsainConverter` (tsain's positional-array serde)
 //! - key/data **types** → `#[derive(Tsain)]`, exported to `bindings/Tsain.ts`
-//!   by the `generate` test — together with the factory functions and getters
+//!   by the `generate` test, together with the factory functions and getters
 //!   JS needs to build and read the array format
 //! - key **return types** → `#[tsain(brand(ret = ..))]` on the key variants;
 //!   the JS adapter resolves `HailRet`/`TellRet` from that `ret` brand, so
@@ -38,7 +38,7 @@ pub fn set_panic_hook() {
 
 // run this test to (re)generate `bindings/Tsain.ts`: every Tsain-derived type
 // below, plus its factory functions and getters. This is the only generation
-// step — ret types travel as brands on the key variants themselves.
+// step: ret types travel as brands on the key variants themselves.
 #[test]
 fn generate() {
     tsain::TsScript::export("./bindings/Tsain.ts");

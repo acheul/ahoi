@@ -23,7 +23,7 @@ fn test_chain_propagation() {
 #[test]
 fn test_diamond_propagation() {
     // B cites both S and A's stock. After S changes, A must run before B so
-    // B sees A's fresh value — and B must run exactly once per batch.
+    // B sees A's fresh value, and B must run exactly once per batch.
     let b_runs = Arc::new(AtomicU32::new(0));
     make_sphere(None, || {
         let s = Stock::new(1i32);

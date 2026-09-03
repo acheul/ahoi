@@ -42,7 +42,7 @@ pub trait Derivable<T, Pipe> {
     ) -> Self::DeriveOptType<U, ChainedPipe<Pipe, Next, T, U>>;
 }
 
-// OptReadStock — the base builder; the other three impls wrap this one.
+// OptReadStock: the base builder; the other three impls wrap this one.
 impl<T, Pipe> Derivable<T, Pipe> for OptReadStock<T, Pipe> {
     type DeriveType<U, ChainedPipe> = OptReadStock<U, ChainedPipe>;
     type DeriveOptType<U, ChainedPipe> = OptReadStock<U, ChainedPipe>;

@@ -1,6 +1,6 @@
 # @acheul/ahoi-js
 
-JS bridge for [**ahoi**](https://github.com/acheul/ahoi) — a fine-grained
+JS bridge for [**ahoi**](https://github.com/acheul/ahoi), a fine-grained
 reactive state engine written in Rust. Rust owns the state and reactivity;
 your JS framework owns rendering.
 
@@ -14,7 +14,7 @@ npm i @acheul/ahoi-js
 ## Adapters
 
 Each adapter is a subpath of this package, and its framework is an **optional
-peer dependency** — you only install what you use.
+peer dependency**: you only install what you use.
 
 | Import                   | Provides                                                           |
 | ------------------------ | ------------------------------------------------------------------ |
@@ -22,7 +22,7 @@ peer dependency** — you only install what you use.
 | `@acheul/ahoi-js/react`  | `PierProvider`, `useHail`, `useReadHail`, `useTell`                |
 | `@acheul/ahoi-js/vue`    | `PierProvider`, `useHail` (writable ref), `useReadHail`, `useTell` |
 | `@acheul/ahoi-js/svelte` | `providePier`, `useHail` (store), `useReadHail`, `useTell`         |
-| `@acheul/ahoi-js`        | `AhoiStorage` — the framework-agnostic core, for anything else     |
+| `@acheul/ahoi-js`        | `AhoiStorage`, the framework-agnostic core for anything else       |
 
 Using **Preact**? Use `@acheul/ahoi-js/react` and alias `react`/`react-dom` to
 `preact/compat`, as with any React library.
@@ -74,7 +74,7 @@ const doubled = pier.readHail("Doubled"); // () => number
 pier.tell("Increase"); // number
 ```
 
-Keys are plain wire values (`"Count"`, `{ Item: 3 }`) — no constructors. Their
+Keys are plain wire values (`"Count"`, `{ Item: 3 }`, no constructors). Their
 return types come from the `Rets` maps that `#[derive(Rets)]` generates on the
 Rust side, so results are typed without ahoi having to be a TypeScript
 converter: export your key and data types with whatever you prefer (ts-rs,

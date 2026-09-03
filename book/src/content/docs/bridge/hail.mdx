@@ -20,10 +20,10 @@ Two constructors, and the choice decides what JS gets.
 fn run_hail(key: Hail) -> JsValue {
     let state = use_context::<Stock<State>>().unwrap();
     match key {
-        // read-write — JS gets a value and a setter
+        // read-write: JS gets a value and a setter
         Hail::Count => state.count().set_hail::<Converter>(),
 
-        // read-only — JS gets a value
+        // read-only: JS gets a value
         Hail::Doubled => state.count().memo(|c| *c * 2).set_read_hail::<Converter>(),
     }
 }
@@ -39,7 +39,7 @@ read.
 | `Memo<T>`      | `set_read_hail` |
 | `Resource<T>`  | `set_read_hail` |
 
-Like `run_pier`, `run_hail` runs once per key — when a component first asks for
+Like `run_pier`, `run_hail` runs once per key: when a component first asks for
 it. After that the value is pushed.
 
 ## Reading it
@@ -109,11 +109,11 @@ pier.readHail("Items"); // number[]
 pier.readHail({ Item: 3 }); // number | undefined
 ```
 
-That is plain serde. No constructors, no wrapper objects — the key is the value
+That is plain serde. No constructors, no wrapper objects. The key is the value
 you write.
 
 These two keys read an `items: Vec<i32>` field on the app's state, reached with
-`state.items()`. Those accessors come from `#[derive(Stock)]` — see [deriving
+`state.items()`. Those accessors come from `#[derive(Stock)]`. See [deriving
 stocks](../../reactivity/deriving-stocks/) when you get to the Rust side.
 
 ## Values that may be absent
@@ -137,7 +137,7 @@ Writing to an absent path is simply ignored. It does not panic.
 
 ## Try it
 
-`Items` is a plain list. `Item(0)` is derived from it — writable, and
+`Items` is a plain list. `Item(0)` is derived from it: writable, and
 `undefined` once the list is empty.
 
 Push and pop go through [tells](../tell/); the `+1` button writes straight into
@@ -156,7 +156,7 @@ Ahoi tracks which value each hail actually read. When you write, only the hails
 that depend on that value are recomputed.
 
 Derivation is **path-selective**. Writing `items[0]` notifies subscribers of
-that path and of its ancestors — but not of `items[1]`.
+that path and of its ancestors, but not of `items[1]`.
 
 ## One dispatch per change
 

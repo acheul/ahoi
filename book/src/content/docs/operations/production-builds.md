@@ -46,7 +46,7 @@ the binary.
 
 ## Panics abort the module
 
-A wasm panic tears down the module. The page has to be **reloaded** — there is
+A wasm panic tears down the module. The page has to be **reloaded**. There is
 no recovering the state.
 
 So a panic in development is not a message you can dismiss. Fix it, reload,
@@ -88,6 +88,6 @@ Note this is about the wasm side only. Your components hot-reload normally.
 `wasm-pack --release` runs `wasm-opt` for you.
 
 The bulk of a small ahoi module is the reactivity runtime plus whatever your own
-code pulls in. Serialisation is usually the biggest lever you control — a
+code pulls in. Serialisation is usually the biggest lever you control: a
 converter that moves less data across the boundary makes a smaller and faster
 module than one that moves whole structs.

@@ -24,7 +24,7 @@ Three ship with the crate, behind features. All work for anything that is
 directly, with no intermediate JSON.
 
 Pick `tsain` when you export types with
-[Tsain](../exporting-types/#with-tsain). Values cross as positional arrays —
+[Tsain](../exporting-types/#with-tsain). Values cross as positional arrays:
 no field or variant names on the wire. That converts faster and keeps your
 names out of the emitted JS. The two halves must match: this converter expects
 the array shapes that Tsain's export describes.
@@ -33,7 +33,7 @@ Note that the `tsain` feature does not turn on `rets`. The other two do. Add `re
 your feature list if you use `#[derive(Rets)]` with `tsain`.
 
 Pick `serde_json` when you would rather work in `serde_json::Value` on the Rust
-side — a type that already goes through JSON, or code you share with a non-wasm
+side: a type that already goes through JSON, or code you share with a non-wasm
 target. Note that an absent value arrives as `null` there, not `undefined`.
 
 ## Using one
@@ -76,8 +76,8 @@ Hail::Count => state.count().set_hail::<Converter>(),
 | `i32`, `f64`         | `number`                      |
 | `String`             | `string`                      |
 | `Vec<T>`             | `Array`                       |
-| `HashMap<K, V>`      | `Map` — not a plain object    |
-| `Option<T>` — absent | `undefined`                   |
+| `HashMap<K, V>`      | `Map`, not a plain object     |
+| absent `Option<T>`   | `undefined`                   |
 | enum variant         | `"Name"` or `{ Name: value }` |
 
 The `HashMap` one catches people out. You get a real `Map`, so read it with
@@ -85,7 +85,7 @@ The `HashMap` one catches people out. You get a real `Map`, so read it with
 
 `TsainConverter` differs on structs and enums: they cross as positional
 arrays, with no names. Its generated file ships the factories and getters
-that read them — see [Exporting types](../exporting-types/#with-tsain).
+that read them. See [Exporting types](../exporting-types/#with-tsain).
 
 ## Writing your own
 
@@ -103,7 +103,7 @@ pub trait HailConverter<T>: Sized {
 }
 ```
 
-`HailValue` is the wire type — `JsValue` for the wasm bridge. `NONE` is what an
+`HailValue` is the wire type: `JsValue` for the wasm bridge. `NONE` is what an
 `OptStock` sends when the value is not there.
 
 Implement it when you want a different serialisation format, or tighter control
@@ -124,7 +124,7 @@ impl<T: MyTrait> HailConverter<T> for MyConverter {
 Then use `MyConverter` in place of the default. Nothing else changes.
 
 :::note
-Conversion is not allowed to fail. There is no `Result` — a value that cannot
+Conversion is not allowed to fail. There is no `Result`. A value that cannot
 cross is a bug in your converter, not a runtime condition to handle.
 :::
 
@@ -135,7 +135,7 @@ bridge starts.
 
 A mismatch fails immediately with a clear message, instead of surfacing later as
 a confusing runtime error. If you see it, your crate and npm package versions
-have drifted apart — update both.
+have drifted apart. Update both.
 
 ## Next
 

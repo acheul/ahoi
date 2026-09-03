@@ -93,7 +93,7 @@ fn test_opt_absent_is_ok_none_but_disposed_is_err() {
 fn test_pooled_mapper_disposed_before_value_is_err() {
     // A mapper pooled in a child sphere over a parent's value: clearing the
     // child disposes the mapper while the value stays alive. A read through
-    // the stale handle must surface Err(Disposed) — not panic — because the
+    // the stale handle must surface Err(Disposed), not panic, because the
     // error now propagates out of the pipeline itself.
     let (pid, stock) = make_sphere(None, || Stock::new(vec![7i32]));
     let (cid, derived) = make_sphere(Some(pid), || stock.get(0).pool());
@@ -417,7 +417,7 @@ fn test_hashmap_derive_key() {
         assert_eq!(count_a.load(Ordering::SeqCst), 1);
         assert_eq!(count_b.load(Ordering::SeqCst), 1);
 
-        // Mutate value at key "a" only — key "b" subscriber must not re-run.
+        // Mutate value at key "a" only: key "b" subscriber must not re-run.
         batch(|| *da.write().unwrap() = 99);
         assert_eq!(*da.peek().unwrap(), 99);
         assert_eq!(count_a.load(Ordering::SeqCst), 2);
@@ -794,7 +794,7 @@ fn test_derived_stock_reactive_via_prefix_path() {
 #[test]
 fn test_derive_inside_closure_no_leak() {
     // Idiom: capture only the (Copy) root stock and derive *inside* the reactive
-    // closure — no pooling. `derive` allocates no pool state, so re-running the
+    // closure: no pooling. `derive` allocates no pool state, so re-running the
     // closure many times keeps reactivity correct WITHOUT growing the pool
     // (whereas `.pool()` inside a closure would leak a getter state per run).
     #[derive(Stock)]

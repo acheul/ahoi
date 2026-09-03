@@ -1,6 +1,6 @@
 ---
 title: What is Ahoi?
-description: The mental model behind Ahoi — Rust owns the state, your JS framework renders it.
+description: "The mental model behind Ahoi: Rust owns the state, your JS framework renders it."
 sidebar:
   order: 1
 ---
@@ -49,7 +49,7 @@ forever.
 your UI components which JS actually fits better.
 
 **Ahoi** moves the line up instead. Components stay in JavaScript; everything
-below them is Rust. The line is still there — but the bridge maintains it, and
+below them is Rust. The line is still there, but the bridge maintains it, and
 that is the entire job of a hail.
 
 ## Three things cross the bridge

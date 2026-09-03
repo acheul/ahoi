@@ -1,5 +1,5 @@
 /**
- * Type-level tests: ret resolution must work converter-agnostically —
+ * Type-level tests: ret resolution must work converter-agnostically;
  * key types here come from ts-rs output (structural, externally-tagged),
  * ret maps from `#[derive(Rets)]`, and Tsain-style `ret`-branded keys
  * must resolve from their brand. Checked by `pnpm run test` (tsc only).
@@ -46,7 +46,7 @@ const { usePier, PierProvider } = createAhoi<Pier, Hail, Tell, HailRets, TellRet
 
 const pier = usePier();
 
-// keys are plain wire values — no constructors needed
+// keys are plain wire values: no constructors needed
 const count = pier.readHail("Count");
 const _c: AssertEq<ReturnType<typeof count>, number> = true;
 

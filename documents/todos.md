@@ -4,6 +4,7 @@
 - [ ] bench result
 - [ ] contribute guide
 - [ ] better version logs
+- [ ] i18n
 
 ---
 

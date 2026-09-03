@@ -8,7 +8,7 @@
  *
  * Method: per sample, run K ops and divide (dodges the ~100µs timer
  * resolution); warmup samples are discarded; stats over S samples.
- * Every scenario also asserts how many hail dispatches it expects per op —
+ * Every scenario also asserts how many hail dispatches it expects per op:
  * a "fast" regression that silently stops propagating shows up as ✗.
  */
 import wasmInit, { abi_version, clear, hail, pier, set_panic_hook, tell, write } from "./pkg/bench_wasm";

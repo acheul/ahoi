@@ -27,10 +27,10 @@ RefCell already mutably borrowed
 A write guard was still alive when the same value was read again.
 
 ```rust
-// wrong — the guard lives to the end of the statement
+// wrong: the guard lives to the end of the statement
 state.count().set(*state.count().read() + 1);
 
-// right — the guard is dropped before anything else runs
+// right: the guard is dropped before anything else runs
 let next = {
     let mut c = state.count().write();
     *c += 1;
@@ -41,7 +41,7 @@ let next = {
 In a debug build the line number is **yours**, not one inside ahoi. Release
 builds compile that tracking out, so diagnose this with `--dev`.
 
-Remember a wasm panic aborts the module — reload the page after fixing.
+Remember a wasm panic aborts the module: reload the page after fixing.
 
 ## Hails get an initial value but never update
 
@@ -75,7 +75,7 @@ if (import.meta.hot) import.meta.hot.accept(() => import.meta.hot!.invalidate())
 
 ## Types are stale after changing a key enum
 
-Run `cargo test`. That is what regenerates `bindings/` — both your exporter's
+Run `cargo test`. That is what regenerates `bindings/`: both your exporter's
 types and ahoi's ret maps.
 
 Nothing else triggers it, and `wasm-pack build` will happily build against the
@@ -104,7 +104,7 @@ counts["apple"]; // undefined
 There is no `PierProvider` above the component, or in Svelte no `providePier`
 was called in an ancestor.
 
-In React, remember the provider renders children only after its sphere exists —
+In React, remember the provider renders children only after its sphere exists;
 a component rendered outside the provider will not find one.
 
 ## Vue: changing the pier prop does nothing
@@ -149,7 +149,7 @@ A missing `HailRets` falls back to `unknown` for hails, and a missing
 
 ## Writing to a derived value does nothing
 
-The path does not exist — an index past the end, a missing map key, a field of
+The path does not exist: an index past the end, a missing map key, a field of
 an inactive enum variant.
 
 That is by design: writes to an absent path are ignored rather than panicking.

@@ -6,7 +6,7 @@ sidebar:
 ---
 
 Most people never touch this page. You come here when you try to **store** a
-derived stock — in a struct field or in context — and the type turns out to be
+derived stock (in a struct field or in context) and the type turns out to be
 unwieldy.
 
 ## The extra type parameter
@@ -27,7 +27,7 @@ Stock<i32, ChainedPipe<...>, false>
 Every derivation step adds a layer. `state.items().get(0)` has a deeper
 pipeline than `state.count()`.
 
-For local use this is invisible — inference handles it:
+For local use this is invisible; inference handles it:
 
 ```rust
 let count = state.count();
@@ -68,7 +68,7 @@ provide_context(Count(state.count().pool()));
 ```
 
 :::caution
-Do not call `.pool()` inside a reactive closure — a memo, effect, or runner.
+Do not call `.pool()` inside a reactive closure: a memo, effect, or runner.
 
 Pooling allocates a mapper state that lives until the sphere is cleared, so a
 closure that pools on every run leaks one per run. Derive inline there instead:
@@ -86,7 +86,7 @@ let count = state.count(); // chained, free
 | -------------------------------------- | ------------------------- |
 | Local variable, inside a runner        | chained (the default)     |
 | Struct field or context value          | `.pool()`                 |
-| Anywhere inside a closure that re-runs | chained — never pool here |
+| Anywhere inside a closure that re-runs | chained, never pool here  |
 
 If you are not sure, use the default. You will find out when the compiler asks
 you to name a type.

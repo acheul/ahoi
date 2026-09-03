@@ -1,6 +1,6 @@
 ---
 title: Vue
-description: Using ahoi with Vue — writable refs that work with v-model, and one gotcha about switching piers.
+description: "Using ahoi with Vue: writable refs that work with v-model, and one gotcha about switching piers."
 sidebar:
   order: 3
 ---
@@ -41,7 +41,7 @@ const tell = useTell();
 Writing to the ref writes back to Rust. In a template that is `count++`; in
 script it is `count.value++`.
 
-`v-model="count"` works too — it is a normal writable ref:
+`v-model="count"` works too; it is a normal writable ref:
 
 ```vue
 <input v-model.number="count" />

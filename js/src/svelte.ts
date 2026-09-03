@@ -3,7 +3,7 @@
  *
  * Hails are exposed as **stores**, not runes: `$count` auto-subscription works
  * in both versions (runes mode included), and it keeps this adapter plain
- * TypeScript — runes would force the library itself into `.svelte.ts` files
+ * TypeScript: runes would force the library itself into `.svelte.ts` files
  * and a Svelte compilation step.
  *
  * Piers use Svelte's function-style context instead of a provider component
@@ -46,7 +46,7 @@ export interface SvelteJob<PierKey, HailKey, TellKey> extends Job<PierKey, HailK
 /**
  * The storage hands back the *same* accessor for a key that is already
  * enrolled, so the store that fans a value out to many components rides along
- * on the accessor itself — no adapter-side cache or refcount needed.
+ * on the accessor itself: no adapter-side cache or refcount needed.
  */
 type StoreCarrier<T> = (() => T) & { _store: Writable<T> };
 
@@ -89,7 +89,7 @@ export function createAhoi<PierKey, HailKey, TellKey, HailRets = {}, TellRets = 
     const usePierId = (): SphereId => {
         const id = getContext<SphereId | undefined>(PIER);
         if (id === undefined) {
-            throw new Error("[ahoi] used without a pier — call providePier() first");
+            throw new Error("[ahoi] used without a pier: call providePier() first");
         }
         return id;
     };

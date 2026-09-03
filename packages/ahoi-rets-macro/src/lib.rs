@@ -1,4 +1,4 @@
-//! `#[derive(Rets)]` — ret-map generation for ahoi's JS bridge.
+//! `#[derive(Rets)]`: ret-map generation for ahoi's JS bridge.
 //!
 //! ahoi does **not** convert your types to TypeScript; use whatever exporter
 //! you like (ts-rs, Tsify, Tsain, hand-written `.d.ts`, ...). What ahoi needs
@@ -32,7 +32,7 @@
 //!
 //! The JS bridge resolves a key's return type against this map by variant name
 //! (or, for converters like Tsain that brand keys with `ret` directly, from
-//! the brand — see `KeyRet` in the npm package).
+//! the brand; see `KeyRet` in the npm package).
 //!
 //! ## Type rendering
 //!
@@ -41,7 +41,7 @@
 //! are recognized; any other path type is rendered by its identifier
 //! (`Fruit` → `Fruit`, `Foo<i32>` → `Foo<number>`), which matches how
 //! mainstream exporters name TS types. No trait impls or extra derives are
-//! required on referenced data types — but each referenced type is still
+//! required on referenced data types, but each referenced type is still
 //! asserted to *exist* at compile time, so typos don't slip into the TS
 //! output. Type aliases render by their (unresolved) name; if the TS-side
 //! name differs, use `#[ret(ts = "...")]`.
@@ -223,7 +223,7 @@ fn ts_of_path(p: &syn::TypePath) -> syn::Result<String> {
             format!("Map<{}, {}>", ts_of(arg(0)?)?, ts_of(arg(1)?)?)
         }
         "Box" | "Rc" | "Arc" | "Cell" | "RefCell" | "Cow" => ts_of(arg(0)?)?,
-        // any other type renders by its identifier — the name every
+        // any other type renders by its identifier: the name every
         // mainstream exporter (ts-rs, Tsify, Tsain) gives the TS type
         _ => {
             if args.is_empty() {

@@ -11,8 +11,8 @@ gets recomputed when it changes.
 Most JS frameworks split that job in two: a signal for a single value, and a
 store for a nested object you want to update field by field. **A stock is
 both.** `Stock<i32>` behaves like a signal. A stock of a struct lets you reach
-into one field and write just that, and only what read _that field_ recomputes
-— which is what [deriving stocks](../deriving-stocks/) is about.
+into one field and write just that, and only what read _that field_ recomputes,
+which is what [deriving stocks](../deriving-stocks/) is about.
 
 This page is the single-value half. Everything below works on any stock.
 
@@ -82,7 +82,7 @@ let doubled = {
 ```
 
 Holding one too long panics with a message pointing at your line. The `try_`
-forms return an error instead — see [When an access can
+forms return an error instead. See [When an access can
 fail](#when-an-access-can-fail).
 :::
 
@@ -95,13 +95,13 @@ Use it to hand out a value that others should observe but not change.
 
 ## Values that might not be there
 
-Some derived values are not guaranteed to exist — an index past the end of a
+Some derived values are not guaranteed to exist: an index past the end of a
 `Vec`, a missing map key, a field of an enum variant that is not currently
 active.
 
 Those are `OptStock<T>` and `OptReadStock<T>`. They have the same methods as
 their non-opt counterparts, but every result comes wrapped in an `Option`.
-`None` means the value is absent right now — a fact about the data, not an
+`None` means the value is absent right now: a fact about the data, not an
 error.
 
 That is a compile error rather than a runtime surprise: if a value might be
@@ -112,7 +112,7 @@ A `Vec` stock hands you one of these from `get`, without any derive:
 ```rust
 let items = Stock::new(vec![10, 20]);
 
-let third = items.get(2); // OptStock<i32> — there is no index 2
+let third = items.get(2); // OptStock<i32>: there is no index 2
 
 if let Some(v) = third.read() {
     println!("{}", *v);
@@ -141,12 +141,12 @@ Every method above also has a `try_` twin that returns a `Result`:
 
 The error is `BorrowError`, and there are exactly two:
 
-- **`Disposed`** — the sphere that owned the stock was cleared. The usual
+- **`Disposed`**: the sphere that owned the stock was cleared. The usual
   source is async work finishing after its component unmounted.
-- **`BorrowConflict`** — a guard on the same value is still alive somewhere up
+- **`BorrowConflict`**: a guard on the same value is still alive somewhere up
   the call stack.
 
-The plain methods are the `try_` forms with the error unwrapped — they panic
+The plain methods are the `try_` forms with the error unwrapped; they panic
 instead. That is usually what you want: a `BorrowConflict` is a bug in the
 code, not a condition to handle.
 

@@ -173,7 +173,7 @@ fn flush_marks(runtime: &mut Runtime) {
                 if mutated_node.is_propagatable_to(path) {
                     for citer_id in citer_ids {
                         // A citer currently mid-run observes fresh values through
-                        // its own pulls — don't (re)mark it for this write.
+                        // its own pulls. Don't (re)mark it for this write.
                         if running_cites.0.contains_key(citer_id) {
                             continue;
                         }
@@ -188,7 +188,7 @@ fn flush_marks(runtime: &mut Runtime) {
 /// Make `citer_id`'s associated stocks fresh: if it is marked in the running
 /// propagation, settle it (recursively settling its producers first) before
 /// the caller reads its value.
-/// * No-op outside the propagation phase — reads in the batch body see
+/// * No-op outside the propagation phase: reads in the batch body see
 ///   pre-batch values by design.
 pub(crate) fn ensure_citer_fresh(citer_id: StateId) {
     let marked = RUNTIME.with_borrow_mut(|runtime| {
@@ -212,9 +212,9 @@ enum SettleAction {
 }
 
 /// Settle one marked citer (the "settle" phase):
-/// * `dirty` — a cited value actually changed: run.
-/// * `check` — possibly stale: settle its producers first; if one of them
-///   actually wrote, this citer got re-marked `dirty` — run then. Otherwise
+/// * `dirty`: a cited value actually changed. Run.
+/// * `check`: possibly stale. Settle its producers first; if one of them
+///   actually wrote, this citer got re-marked `dirty`, so run then. Otherwise
 ///   nothing changed: skip without running.
 fn settle_citer(citer_id: StateId) {
     let action = RUNTIME.with_borrow_mut(|runtime| {
@@ -292,9 +292,9 @@ struct CiterQueue {
     /// depth-ordered schedule. Purely a heuristic: popping shallow citers first
     /// keeps pull recursion rare/shallow, but freshness never depends on it.
     heap: BinaryHeap<Item>,
-    /// a cited value actually changed — must run
+    /// a cited value actually changed: must run
     dirty: IntSet<StateId>,
-    /// transitively downstream of a dirty citer — possibly stale
+    /// transitively downstream of a dirty citer: possibly stale
     check: IntSet<StateId>,
     /// citers already run in this top-level batch (cycle guard)
     ran: IntSet<StateId>,
@@ -304,7 +304,7 @@ impl CiterQueue {
     fn mark_dirty(&mut self, citer_id: StateId, cite_rels: &CiteRels) {
         // Cycle guard: each citer runs at most once per top-level batch. With
         // pull-on-read, ordering violations self-heal, so a citer re-dirtied
-        // after it already ran is a genuine cite cycle — drop it so the batch
+        // after it already ran is a genuine cite cycle: drop it so the batch
         // terminates.
         if self.ran.contains(&citer_id) {
             debug_assert!(false, "cite cycle detected");

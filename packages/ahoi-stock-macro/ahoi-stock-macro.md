@@ -61,7 +61,7 @@ where
 }
 ```
 
-### Tuple struct — unnamed fields use `f{n}`
+### Tuple struct: unnamed fields use `f{n}`
 
 ```rust
 #[derive(Stock)]
@@ -116,7 +116,7 @@ where
 
 ## Enum
 
-- **`{Name}StockExt`** — `{variant}()` for variants with exactly one field; an optional derive, so it returns `DeriveOptType` — the `Opt*` counterpart of the target stock (`Stock`/`OptStock` → `OptStock`, `ReadStock`/`OptReadStock` → `OptReadStock`).
+- **`{Name}StockExt`**: `{variant}()` for variants with exactly one field; an optional derive, so it returns `DeriveOptType`, the `Opt*` counterpart of the target stock (`Stock`/`OptStock` → `OptStock`, `ReadStock`/`OptReadStock` → `OptReadStock`).
 
 Keys run `0..n`, one slot per variant regardless of whether an accessor is emitted.
 

@@ -22,7 +22,7 @@ Two kinds of type cross the bridge, and they are handled by different tools.
 No general-purpose converter can do the second one. It is not a property of a
 type, it is a property of a key.
 
-[Tsain] is the one exception — it covers both rows at once. See
+[Tsain] is the one exception: it covers both rows at once. See
 [With Tsain](#with-tsain) below.
 
 ## With ts-rs
@@ -73,7 +73,7 @@ import type { Hail } from "./pkg/my_wasm";
 ```
 
 The derive alone is enough. Skip `#[tsify(into_wasm_abi)]` and
-`#[tsify(from_wasm_abi)]` — ahoi's bridge converts values itself, and tsify
+`#[tsify(from_wasm_abi)]`: ahoi's bridge converts values itself, and tsify
 0.5 deprecates those attributes anyway.
 
 One detail changes: if a ret map references one of your data types, its
@@ -114,7 +114,7 @@ fn generate() {
 }
 ```
 
-The file holds the types plus factory functions and getters. You need them —
+The file holds the types plus factory functions and getters. You need them;
 a positional array has no field names to read:
 
 ```ts
@@ -133,7 +133,7 @@ createAhoi<Pier, Hail, Tell>({
 ```
 
 Values must cross in the same array format, so pair this with the `tsain`
-crate feature and `TsainConverter` — see [Converter](../converter/).
+crate feature and `TsainConverter`. See [Converter](../converter/).
 
 ## Wiring them together
 
@@ -163,13 +163,13 @@ The key types make `pier.hail("Cont")` a compile error. The ret maps make
 ## If your exporter brands keys
 
 Some setups attach the return type to the key itself rather than listing it in a
-map — [Tsain] above is one. Ahoi handles that too.
+map. [Tsain] above is one. Ahoi handles that too.
 
 The JS side resolves a key's return type in this order:
 
 1. a `ret` brand on the key, if your converter produced one
 2. the variant name, looked up in the `Rets` map
-3. a fallback — `unknown` for a hail, `undefined` for a tell
+3. a fallback: `unknown` for a hail, `undefined` for a tell
 
 So the bridge stays converter-agnostic. Use whichever style your exporter
 produces.

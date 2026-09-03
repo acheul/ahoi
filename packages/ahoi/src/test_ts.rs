@@ -3,7 +3,7 @@
 use crate::Rets;
 use crate::js_bridge::ts::{TsDecl, TsFile};
 
-// referenced data types need NO derives — they render by identifier and are
+// referenced data types need NO derives: they render by identifier and are
 // only asserted to exist
 #[allow(dead_code)]
 enum Fruit {

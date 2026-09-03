@@ -13,7 +13,7 @@
 //! - **values** on the wire → `SerdeWasmBindgenConverter`, untouched: the
 //!   bridge ABI passes `JsValue`s, so Tsify's wasm-abi machinery is not used
 //!
-//! The keys are a subset of `ahoi-wasm`'s — just enough to cover the TS
+//! The keys are a subset of `ahoi-wasm`'s, just enough to cover the TS
 //! declaration shapes an exporter must get right:
 //!
 //! | key                | declaration shape it verifies                  |
@@ -39,7 +39,7 @@ pub fn set_panic_hook() {
 }
 
 // run this test to (re)generate the ret maps for the JS side.
-// `Fruit` is imported from the wasm pkg's `.d.ts`, where Tsify put it —
+// `Fruit` is imported from the wasm pkg's `.d.ts`, where Tsify put it;
 // there is no `bindings/Fruit.ts` in this setup.
 #[test]
 fn generate() {

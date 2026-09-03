@@ -1,6 +1,6 @@
 use super::*;
 
-/// The read-only, may-be-absent stock handle: borrow methods return `Option` —
+/// The read-only, may-be-absent stock handle: borrow methods return `Option`;
 /// `None` means the value is genuinely absent, which is not an error. See
 /// [`Stock`] for the full type table.
 pub struct OptReadStock<T, Pipe = PooledPipe<T>> {
@@ -58,7 +58,7 @@ impl<T, Pipe> OptStock<T, Pipe> {
 // OptReadStock
 impl<T, Pipe: Pipeline<T>> OptReadStock<T, Pipe> {
     /// `Ok(None)` = value absent (optional derive missed); `Err` = state
-    /// disposed or borrow conflict — from the value state itself, or from a
+    /// disposed or borrow conflict: from the value state itself, or from a
     /// pooled mapper down the pipeline.
     pub fn try_peek(&self) -> Result<Option<Ref<'static, T>>, BorrowError> {
         let state = states::pool::get_state(self.value_id)?;
@@ -84,14 +84,14 @@ impl<T, Pipe: Pipeline<T>> OptReadStock<T, Pipe> {
 
     pub fn try_read(&self) -> Result<Option<Ref<'static, T>>, BorrowError> {
         // 1. pull: settle the producing citer first so the value is fresh.
-        // * Must run before `try_peek` — the producer's runner writes this very
+        // * Must run before `try_peek`: the producer's runner writes this very
         //   value slot, so no borrow of it may be held while it runs.
         if let Some(associated_citer_id) = self.associated_citer_id {
             states::runtime::propagation::ensure_citer_fresh(associated_citer_id);
         }
         // 2. peek value
         let value = self.try_peek();
-        // 3. mark cited — always, even when value is None.
+        // 3. mark cited: always, even when value is None.
         states::runtime::citation::mark_cited(self.value_id, self.path, self.associated_citer_id);
         return value;
     }
@@ -150,7 +150,7 @@ impl<T, Pipe: Pipeline<T>> OptStock<T, Pipe> {
         }
     }
 
-    /// `track_caller` here is not for this function's own result — it is so
+    /// `track_caller` here is not for this function's own result; it is so
     /// `propagation::mark_dirty`'s "Use batch" panic blames the user's write.
     #[cfg_attr(debug_assertions, track_caller)]
     pub fn try_write(&self) -> Result<Option<RefMut<'static, T>>, BorrowError> {
