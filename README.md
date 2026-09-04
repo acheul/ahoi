@@ -144,7 +144,7 @@ The **[Book](https://acheul.github.io/ahoi/)** covers everything in depth:
 
 ---
 
-## Examples
+## Playground Examples
 
 Four playgrounds share one wasm crate, each exercising the same bridge features
 (writable hails, memos, path-derived writes, async `Resource`/`Action`, enum and
@@ -161,6 +161,12 @@ map values on the wire, nested-pier cleanup), plus a benchmark app:
   (doubles as the no-framework example)
 
 See [`playgrounds/playgrounds.md`](playgrounds/playgrounds.md) for how to run them.
+
+---
+
+## Awesome Examples
+
+* [Ahoi-Palette](https://acheul.github.io/ahoi-palette/): Rust handles a language model to turn words into a palette, and SolidJS renders it.
 
 ---
 
