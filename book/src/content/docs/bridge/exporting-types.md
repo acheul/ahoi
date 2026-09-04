@@ -135,6 +135,50 @@ createAhoi<Pier, Hail, Tell>({
 Values must cross in the same array format, so pair this with the `tsain`
 crate feature and `TsainConverter`. See [Converter](../converter/).
 
+## Types the maps reference
+
+A ret map names your types, but ahoi has no idea where your exporter put them:
+ts-rs writes a file per type, Tsify puts them in the pkg, and a hand-written
+`.d.ts` could be anywhere. So every type a `#[ret(..)]` mentions needs an
+`.import(..)` line.
+
+One import can carry several names, and aliases work:
+
+```rust
+TsFile::new()
+    .import("Fruit, Basket", "./types")
+    .import("Apple as Fruit", "./Apple")
+```
+
+Forget one and the generated file names a type nothing declares, which shows up
+later as a `tsc` error some distance from its cause.
+
+`unresolved` lists the names nothing accounts for, so the generate test can
+catch it at the source:
+
+```rust
+#[test]
+fn generate() {
+    let file = TsFile::new()
+        .import("Fruit", "./Fruit")
+        .with::<Hail>()
+        .with::<Tell>();
+
+    assert!(file.unresolved().is_empty(), "missing imports: {:?}", file.unresolved());
+
+    file.export("./bindings/Rets.ts");
+}
+```
+
+Built-in names are excluded already, so `string`, `number`, `Map`, `Record` and
+friends never need declaring.
+
+The assertion is opt-in, and `export` never refuses a file on its own. Whether a
+name resolves depends on your tsconfig, ambient declarations, and globals that
+ahoi cannot see, and `#[ret(ts = "...")]` passes arbitrary TypeScript straight
+through. ahoi is in no position to decide your file is wrong, so it reports and
+leaves the call to you. Skip the assertion if your project has such types.
+
 ## Wiring them together
 
 The five generic parameters on `createAhoi` are, in order: the pier key, the

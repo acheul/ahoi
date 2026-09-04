@@ -4,6 +4,7 @@ pub use wasm_bindgen;
 use wasm_bindgen::prelude::*;
 
 pub mod ts;
+#[cfg(not(target_arch = "wasm32"))]
 pub use ts::TsFile;
 
 mod converters;
