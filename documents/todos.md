@@ -6,6 +6,7 @@
 - [ ] versions for book
 - [ ] better version logs
 - [ ] i18n
+- [x] TsFile: rule out wasm32 target &  add `unresolved()` inspector 
 
 ---
 
