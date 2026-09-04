@@ -3,6 +3,7 @@
 - [ ] test examples run on published packages
 - [ ] bench result
 - [ ] contribute guide
+- [ ] versions for book
 - [ ] better version logs
 - [ ] i18n
 
