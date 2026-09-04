@@ -31,7 +31,7 @@ mod tests;
 pub mod __macro_support {
     pub use crate::hooks::{
         ChainedPipe, Derivable, GetNext, GetNextOpt, MapNext, MapNextOpt, Memo, OptReadStock,
-        OptStock, Pipeline, ReadStock, Stock,
+        Pipeline, ReadStock,
     };
 }
 

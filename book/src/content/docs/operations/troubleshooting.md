@@ -17,17 +17,18 @@ The `ahoi` crate and `@acheul/ahoi-js` are from different releases.
 
 Upgrade both together. If you pin one version, pin both.
 
-## RefCell already mutably borrowed
+## BorrowConflict
 
 ```
 panicked at src/lib.rs:265:39:
-RefCell already mutably borrowed
+called `Result::unwrap()` on an `Err` value: BorrowConflict
 ```
 
-A write guard was still alive when the same value was read again.
+A guard on the same root stock was still alive when another one was taken, and
+at least one of them was a write.
 
 ```rust
-// wrong: the guard lives to the end of the statement
+// wrong: the read guard lives to the end of the statement
 state.count().set(*state.count().read() + 1);
 
 // right: the guard is dropped before anything else runs
@@ -37,6 +38,22 @@ let next = {
     *c
 };
 ```
+
+The same applies across **different fields of one stock**, which is the version
+that surprises people. Borrows are tracked per root, not per path:
+
+```rust
+// wrong: disjoint fields, but one root and overlapping guards
+let value = state.value().read();
+*state.runs().write() += 1;
+
+// right
+let value = *state.value().read();
+*state.runs().write() += value as u32;
+```
+
+A memo that writes a counter while reading other state is the usual way this
+shows up. Give the counter its own `Stock` and the conflict cannot happen.
 
 In a debug build the line number is **yours**, not one inside ahoi. Release
 builds compile that tracking out, so diagnose this with `--dev`.
