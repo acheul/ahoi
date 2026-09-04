@@ -34,7 +34,7 @@ reactive value was created**, so a panic blames your line:
 
 ```
 panicked at src/lib.rs:265:39:
-RefCell already mutably borrowed
+called `Result::unwrap()` on an `Err` value: BorrowConflict
 ```
 
 Release builds compile that tracking out. You get a smaller binary, and **no

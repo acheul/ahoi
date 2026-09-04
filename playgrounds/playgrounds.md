@@ -22,7 +22,7 @@ build blames the caller's own line:
 
 ```
 panicked at playgrounds\ahoi-wasm-tsrs\src\lib.rs:265:39:
-RefCell already mutably borrowed
+called `Result::unwrap()` on an `Err` value: BorrowConflict
 ```
 
 rather than a line inside ahoi-core. Those locations are compiled out of

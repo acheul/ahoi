@@ -143,8 +143,28 @@ The error is `BorrowError`, and there are exactly two:
 
 - **`Disposed`**: the sphere that owned the stock was cleared. The usual
   source is async work finishing after its component unmounted.
-- **`BorrowConflict`**: a guard on the same value is still alive somewhere up
-  the call stack.
+- **`BorrowConflict`**: a guard on the same **root stock** is still alive
+  somewhere up the call stack.
+
+The root part matters, and it is the one thing people get wrong. Borrows are
+tracked per root, not per path, so two guards on different fields of one stock
+still collide if either is a write:
+
+```rust
+let value = state.value().read();
+*state.runs().write() += 1; // BorrowConflict, though the fields are disjoint
+```
+
+Two reads coexist fine. Anything else on the same root has to be sequenced:
+
+```rust
+let value = *state.value().read(); // guard dropped here
+*state.runs().write() += value as u32;
+```
+
+This is the one place where paths are *not* independent. Notification is
+path-selective ([deriving stocks](../deriving-stocks/#writes-notify-only-the-path-that-changed)),
+borrowing is not.
 
 The plain methods are the `try_` forms with the error unwrapped; they panic
 instead. That is usually what you want: a `BorrowConflict` is a bug in the

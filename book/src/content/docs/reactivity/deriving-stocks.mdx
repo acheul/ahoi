@@ -79,6 +79,29 @@ notify `items[1]`.
 So a list of a thousand rows does not rerender because one row changed. You get
 that without writing any comparison logic.
 
+## Borrowing is not path-selective
+
+Notification is per path. Borrowing is per **root**, and mixing the two up is
+the easiest mistake to make here.
+
+```rust
+let first = state.items().get(0).read();
+*state.count().write() += 1; // BorrowConflict: same root, overlapping guards
+```
+
+Those are different paths, and the write notifies nothing the read is watching,
+yet the guards still collide. Two reads are fine; a write needs the other guard
+already dropped:
+
+```rust
+let first = *state.items().get(0).read().unwrap(); // dropped here
+*state.count().write() += first;
+```
+
+Worth knowing before you reach for a memo that updates a counter while reading
+other state: put that counter in its own `Stock`, and the question does not come
+up. See [when an access can fail](../stock/#when-an-access-can-fail).
+
 ## See the selectivity
 
 On the Rust side of this demo, one effect watches `items[0]` and another
