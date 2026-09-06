@@ -260,22 +260,23 @@ fn expand_struct(ctx: &Ctx, fields: &Fields) -> Result<TokenStream2, syn::Error>
 
     // Non-optional accessors keep the target's capability row via `DeriveType`
     // (Stock → Stock, ReadStock → ReadStock, Opt* → Opt*).
-    let mut push_accessor = |cname: &Ident, method: &Ident, fty: &syn::Type, accessor: TokenStream2| {
-        let ret = quote! {
-            <Self as #ahoi::Derivable<#name_ty, __Pipe>>::DeriveType<
-                #fty,
-                #ahoi::ChainedPipe<__Pipe, #ahoi::GetNext<#name_ty, #fty>, #name_ty, #fty>,
-            >
+    let mut push_accessor =
+        |cname: &Ident, method: &Ident, fty: &syn::Type, accessor: TokenStream2| {
+            let ret = quote! {
+                <Self as #ahoi::Derivable<#name_ty, __Pipe>>::DeriveType<
+                    #fty,
+                    #ahoi::ChainedPipe<__Pipe, #ahoi::GetNext<#name_ty, #fty>, #name_ty, #fty>,
+                >
+            };
+            trait_fns.push(quote! {
+                fn #method(self) -> #ret;
+            });
+            impl_fns.push(quote! {
+                fn #method(self) -> #ret {
+                    self.derive(#cname, #accessor)
+                }
+            });
         };
-        trait_fns.push(quote! {
-            fn #method(self) -> #ret;
-        });
-        impl_fns.push(quote! {
-            fn #method(self) -> #ret {
-                self.derive(#cname, #accessor)
-            }
-        });
-    };
 
     match fields {
         Fields::Named(named) => {
@@ -293,8 +294,7 @@ fn expand_struct(ctx: &Ctx, fields: &Fields) -> Result<TokenStream2, syn::Error>
                 );
 
                 consts.push(quote! { pub const #cname: u64 = #lit; });
-                let accessor =
-                    quote! { #ahoi::GetNext::new(|x| &x.#fname, |x| &mut x.#fname) };
+                let accessor = quote! { #ahoi::GetNext::new(|x| &x.#fname, |x| &mut x.#fname) };
                 push_accessor(&cname, fname, fty, accessor);
             }
         }
@@ -310,8 +310,7 @@ fn expand_struct(ctx: &Ctx, fields: &Fields) -> Result<TokenStream2, syn::Error>
                 let cname = format_ident!("{}_F{}_KEY", name_upper, idx);
 
                 consts.push(quote! { pub const #cname: u64 = #lit; });
-                let accessor =
-                    quote! { #ahoi::GetNext::new(|x| &x.#idx_syn, |x| &mut x.#idx_syn) };
+                let accessor = quote! { #ahoi::GetNext::new(|x| &x.#idx_syn, |x| &mut x.#idx_syn) };
                 push_accessor(&cname, &method, fty, accessor);
             }
         }
@@ -357,22 +356,23 @@ fn expand_enum(
 
     // Variant accessors are optional derives, so the return type is
     // `DeriveOptType`: the `Opt*` counterpart of the target stock.
-    let mut push_accessor = |cname: &Ident, method: &Ident, fty: &syn::Type, accessor: TokenStream2| {
-        let ret = quote! {
-            <Self as #ahoi::Derivable<#name_ty, __Pipe>>::DeriveOptType<
-                #fty,
-                #ahoi::ChainedPipe<__Pipe, #ahoi::GetNextOpt<#name_ty, #fty>, #name_ty, #fty>,
-            >
+    let mut push_accessor =
+        |cname: &Ident, method: &Ident, fty: &syn::Type, accessor: TokenStream2| {
+            let ret = quote! {
+                <Self as #ahoi::Derivable<#name_ty, __Pipe>>::DeriveOptType<
+                    #fty,
+                    #ahoi::ChainedPipe<__Pipe, #ahoi::GetNextOpt<#name_ty, #fty>, #name_ty, #fty>,
+                >
+            };
+            acc_trait_fns.push(quote! {
+                fn #method(self) -> #ret;
+            });
+            acc_impl_fns.push(quote! {
+                fn #method(self) -> #ret {
+                    self.derive_opt(#cname, #accessor)
+                }
+            });
         };
-        acc_trait_fns.push(quote! {
-            fn #method(self) -> #ret;
-        });
-        acc_impl_fns.push(quote! {
-            fn #method(self) -> #ret {
-                self.derive_opt(#cname, #accessor)
-            }
-        });
-    };
 
     for (idx, variant) in variants.iter().enumerate() {
         if is_skipped(&variant.attrs) {

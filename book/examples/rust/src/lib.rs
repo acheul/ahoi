@@ -253,8 +253,7 @@ fn run_tell(tell: Tell) -> JsValue {
             let Ticker(ticker) = use_context::<Ticker>().unwrap();
             ticker.cancel();
             JsValue::undefined()
-        }
-        // #region quickstart
+        } // #region quickstart
     }
 }
 // #endregion quickstart

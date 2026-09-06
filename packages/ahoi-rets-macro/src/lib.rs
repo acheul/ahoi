@@ -208,13 +208,12 @@ fn ts_of_path(p: &syn::TypePath) -> syn::Result<String> {
     };
 
     Ok(match ident.as_str() {
-        "i8" | "i16" | "i32" | "i64" | "i128" | "isize" | "u8" | "u16" | "u32" | "u64"
-        | "u128" | "usize" | "f32" | "f64" => "number".into(),
+        "i8" | "i16" | "i32" | "i64" | "i128" | "isize" | "u8" | "u16" | "u32" | "u64" | "u128"
+        | "usize" | "f32" | "f64" => "number".into(),
         "bool" => "boolean".into(),
         "String" | "str" | "char" => "string".into(),
         "Option" => format!("{} | undefined", ts_of(arg(0)?)?),
-        "Vec" | "VecDeque" | "LinkedList" | "BinaryHeap" | "HashSet" | "BTreeSet"
-        | "IndexSet" => {
+        "Vec" | "VecDeque" | "LinkedList" | "BinaryHeap" | "HashSet" | "BTreeSet" | "IndexSet" => {
             format!("{}[]", grouped(&ts_of(arg(0)?)?))
         }
         // NOTE: `serde-wasm-bindgen` serializes maps to JS `Map` by default.
