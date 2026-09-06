@@ -15,7 +15,7 @@
 ### v0.2.0
 
 - [x] panic location debug (high priority)
-- [x] js \_hail_keys -> must distinguish differnet piers' hail keys! (high priority)
+- [x] js \_hail_keys -> must distinguish different piers' hail keys! (high priority)
 
 - [x] tsify example
 - [x] support serde_json converter
