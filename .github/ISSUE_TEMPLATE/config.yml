@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Docs (the Book)
+    url: https://acheul.github.io/ahoi/
+    about: Guide, API, and live examples. Worth checking first.
