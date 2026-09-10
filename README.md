@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://raw.githubusercontent.com/acheul/ahoi/main/documents/ahoi.svg" width="200" />
+    <img src="https://raw.githubusercontent.com/acheul/ahoi/main/documentation/ahoi.svg" width="200" />
 </div>
 
 # Ahoi: Reactivity _from_ Rust _to_ JS
@@ -34,7 +34,7 @@ Read the **[Book](https://acheul.github.io/ahoi/)** to get started!
 ### Why Ahoi?
 
 <div align="center">
-    <img src="https://raw.githubusercontent.com/acheul/ahoi/main/documents/PainPoints.png" width="800" />
+    <img src="https://raw.githubusercontent.com/acheul/ahoi/main/documentation/PainPoints.png" width="800" />
 </div>
 
 - 💥 **Js Framework + Wasm**: maintain communication between JS reactive state & rust-side data all by hand.
@@ -171,7 +171,7 @@ See [`playgrounds/playgrounds.md`](playgrounds/playgrounds.md) for how to run th
 ---
 
 ## AI Use Disclaimer
-See [AI Use Disclaimer](/documents/UseOfAI.md) of current version.
+See [AI Use Disclaimer](/documentation/UseOfAI.md) of current version.
 
 ---
 
