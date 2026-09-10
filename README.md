@@ -170,6 +170,11 @@ See [`playgrounds/playgrounds.md`](playgrounds/playgrounds.md) for how to run th
 
 ---
 
+## AI Use Disclaimer
+See [AI Use Disclaimer](/documents/UseOfAI.md) of current version.
+
+---
+
 ## License
 
 [MIT LICENSE](LICENSE)
