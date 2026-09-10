@@ -170,8 +170,8 @@ See [`playgrounds/playgrounds.md`](playgrounds/playgrounds.md) for how to run th
 
 ---
 
-## AI Use Disclaimer
-See [AI Use Disclaimer](/documentation/UseOfAI.md) of current version.
+## AI Usage Disclaimer
+See [AI Usage Disclaimer](/documentation/UseOfAI.md) of current version.
 
 ---
 
