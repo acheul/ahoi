@@ -8,4 +8,4 @@
 
 * **Playgrounds & Book**: Human designed, AI-implemented.
 
-* All tests and examples implemented by AI are human-reviewed.
+* All AI-implemented tests and examples are human-reviewed.
